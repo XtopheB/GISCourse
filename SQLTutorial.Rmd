@@ -1,0 +1,35 @@
+---
+title: "SQL Tutorial"
+author: "Christophe Bontemps"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+# install packages ONCE  (Un-comment) if missing:
+
+# needed <- c("DBI", "RMySQL", "dplyr", "glue", "dbplyr", "knitr", "kableExtra", "ggplot2", "readr")
+# installed <- rownames(installed.packages())
+# to_install <- setdiff(needed, installed)
+# if(length(to_install)) install.packages(to_install)
+
+library(DBI)
+library(RMySQL)
+library(dplyr)
+library(dbplyr)
+library(glue)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(readr)
+options(dplyr.print_min = 20)
+
+```
+
+
+

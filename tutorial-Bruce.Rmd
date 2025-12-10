@@ -1,0 +1,127 @@
+---
+title: "Connecting to a MySQL Database from R"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(DBI)
+library(RMySQL)
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+In this tutorial you will:
+
+- Learn how an R session can connect to a **remote MySQL database**
+- Run SQL queries directly from R
+- Retrieve results into a data frame
+- Practice by querying a publicly available test database  
+- Learn how to disconnect cleanly
+
+
+---
+
+# 1. Connect to the Public MySQL Server
+
+```{r connect-db}
+
+# We connect to database here https://www.phpmyadmin.co/server_sql.php?db=
+
+
+con <- dbConnect(
+  RMySQL::MySQL(),
+  host = "sql12.freesqldatabase.com",
+  user = "sql12811352",
+  password = "sZ2PBZBjEd",
+  dbname = "sql12811352",
+  port = 3306
+)
+con
+```
+
+---
+
+# 2. List Tables
+
+```{r list-tables}
+dbListTables(con)
+```
+
+---
+
+
+
+# 3. Your First SQL Query
+
+```{r user-sql, exercise=TRUE}
+
+ dbGetQuery(con, "SELECT * FROM customers LIMIT 5")
+```
+
+```{r}
+dbGetQuery(con, "SELECT * FROM sdg551 LIMIT 5;")
+
+
+```
+
+# Step 4 — Join Tables
+
+```{r user-sql-solution}
+df <- dbGetQuery(con, "
+  SELECT c.country_name, c.region, s.year, s.value
+  FROM sdg551 s
+  JOIN countries c ON s.country_id = c.country_id
+  ORDER BY country_name, year
+")
+
+head(df)
+
+```
+
+---
+
+# Step 5 — Filter for Asia-Pacific
+
+```{r}
+df_asia <- df %>%
+filter(region == "Asia-Pacific")
+
+head(df_asia)
+
+```
+
+# Step 6 — Visualize SDG 5.5.1 Over Time
+```{r}
+df_asia %>%
+ggplot(aes(x = year, y = value, color = country_name)) +
+geom_line(size = 1) +
+geom_point() +
+theme_minimal() +
+labs(
+title = "SDG 5.5.1 – Women in National Parliaments",
+x = "Year", y = "Percent of Seats Held by Women",
+color = "Country"
+)
+
+```
+
+
+# Exercise: Write Your Own SQL Query
+Task:
+
+- Select only Japan
+- Return years 2020–2024
+- Order results by year
+
+- Write your query below.
+
+
+# 7. Disconnect (important)
+
+```{r}
+dbDisconnect(con)
+```
