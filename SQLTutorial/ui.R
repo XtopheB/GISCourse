@@ -14,13 +14,13 @@ dashboardPage(
     
     sidebarMenu(id = "sidebar",
                 menuItem("Introduction", tabName = "intro", icon = icon("home")),
-                menuItem("Lesson 1: SELECT", tabName = "lesson1", icon = icon("1")),
-                menuItem("Lesson 2: WHERE", tabName = "lesson2", icon = icon("2")),
-                menuItem("Lesson 3: Aggregates", tabName = "lesson3", icon = icon("3")),
-                menuItem("Lesson 4: GROUP BY", tabName = "lesson4", icon = icon("4")),
-                menuItem("Lesson 5: JOINs", tabName = "lesson5", icon = icon("5")),
-                menuItem("Lesson 6: ORDER/LIMIT", tabName = "lesson6", icon = icon("6")),
-                menuItem("Challenge", tabName = "challenge", icon = icon("trophy"))
+                menuItem("1: Using SELECT", tabName = "lesson1", icon = icon("1")),
+                menuItem("2: Using WHERE", tabName = "lesson2", icon = icon("2")),
+                menuItem("3: Using Aggregates", tabName = "lesson3", icon = icon("3")),
+                menuItem("4: Using GROUP BY", tabName = "lesson4", icon = icon("4")),
+                menuItem("5: Using JOINs", tabName = "lesson5", icon = icon("5")),
+                menuItem("6: Using ORDER/LIMIT", tabName = "lesson6", icon = icon("6")),
+                menuItem("Challenge!", tabName = "challenge", icon = icon("trophy"))
     )
   ),
   
@@ -138,32 +138,32 @@ dashboardPage(
       
       # Lesson tabs
       tabItem(tabName = "lesson1",
-              h2("Lesson 1: SELECT Basics"),
+              h2("1: SELECT Basics"),
               uiOutput("lesson1_exercises")
       ),
       
       tabItem(tabName = "lesson2",
-              h2("Lesson 2: WHERE Clause - Filtering Data"),
+              h2("2: WHERE Clause - Filtering Data"),
               uiOutput("lesson2_exercises")
       ),
       
       tabItem(tabName = "lesson3",
-              h2("Lesson 3: Aggregate Functions"),
+              h2("3: Aggregate Functions"),
               uiOutput("lesson3_exercises")
       ),
       
       tabItem(tabName = "lesson4",
-              h2("Lesson 4: GROUP BY"),
+              h2("4: GROUP BY"),
               uiOutput("lesson4_exercises")
       ),
       
       tabItem(tabName = "lesson5",
-              h2("Lesson 5: JOIN Operations"),
+              h2("5: JOIN Operations"),
               uiOutput("lesson5_exercises")
       ),
       
       tabItem(tabName = "lesson6",
-              h2("Lesson 6: ORDER BY and LIMIT"),
+              h2("6: ORDER BY and LIMIT"),
               uiOutput("lesson6_exercises")
       ),
       

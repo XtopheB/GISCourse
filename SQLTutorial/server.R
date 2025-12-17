@@ -4,7 +4,6 @@ library(RMySQL)
 library(DT)
 
 
-
 # Create database connection
 con <- dbConnect(
   RMySQL::MySQL(),
