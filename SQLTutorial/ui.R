@@ -3,12 +3,13 @@ library(shinydashboard)
 library(DT)
 
 dashboardPage(
-  dashboardHeader(title = "SQL Tutorial: Agricultural Database"),
+  dashboardHeader(title = "SQL Tutorial"),
   
   dashboardSidebar(
     # Logo at the top
-    div(style = "padding: 20px; text-align: center; background-color: #222d32;",
-        img(src = "SIAPNEW_logo_2020_1800.png", width = "80%", alt = "SQL Tutorial Logo")
+    div(style = "padding: 20px; text-align: center;
+        background-color: #222d32;",
+        img(src = "SIAPNEW_logo_2020_1800.png", width = "80%", alt = "SIAP Logo")
     ),
     
     sidebarMenu(id = "sidebar",
@@ -97,7 +98,9 @@ dashboardPage(
     tabItems(
       # Introduction tab
       tabItem(tabName = "intro",
-              h2("Introduction to SQL: Agricultural Database"),
+              h2("A Short Introduction to SQL"),
+              h4(em("Christophe Bontemps")),
+              h5(em("Version 1.0")),
               box(width = 12,
                   h3("Welcome!"),
                   p("In this tutorial, you'll learn how to query data from a database containing information about:"),
@@ -120,14 +123,16 @@ dashboardPage(
                   tags$ol(
                     tags$li("Navigate through the lessons using the sidebar menu"),
                     tags$li("Read the concept explanations before each exercise"),
-                    tags$li("Write your SQL queries in the text boxes (", strong("pure SQL, no R code needed"), ")"),
+                    tags$li("Write your SQL queries in the text boxes"),
                     tags$li("Click ", strong("'Run Query'"), " to execute your query and see results"),
-                    tags$li("Click 'Check Answer' to verify if your solution is correct"),
-                    tags$li("Use 'Show Hint' if you need help"),
-                    tags$li("Use 'Show Solution' to see the correct answer")
+                    tags$li("Click", strong("'Check Answer'"), "to verify if your solution is correct"),
+                    tags$li("Use", strong("'Show Hint'"),  "if you need help"),
+                    tags$li("Use", strong("'Show Solution'"),  "to see the correct answer")
                   ),
                   br(),
-                  actionButton("start_lesson1", "Start Lesson 1", icon = icon("play"), class = "btn-success btn-lg")
+                  actionButton("start_lesson1", "Start Lesson 1", 
+                               icon = icon("play"),
+                               class = "btn btn-secondary")
               )
       ),
       
