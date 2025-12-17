@@ -1,0 +1,61 @@
+---
+title: "Connecting to a MySQL Database from R"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(DBI)
+library(RMySQL)
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+
+# We connect to database here
+con <- dbConnect(
+  RMySQL::MySQL(),
+  host = "sql12.freesqldatabase.com",
+  user = "sql12811352",
+  password = "sZ2PBZBjEd",
+  dbname = "sql12811352",
+  port = 3306
+)
+
+```
+
+# Introduction
+
+Tutorial used to test the connection with sql12.freesqldatabase.com. 
+
+---
+
+# 1. Connect to the Public MySQL Server
+
+```{r connect-db}
+
+
+con
+```
+
+---
+
+# 2. List Tables
+
+```{r list-tables}
+dbListTables(con)
+```
+
+---
+
+# 2. Your First SQL Query
+
+```{r user-sql, exercise=TRUE}
+
+ dbGetQuery(con, "SELECT * FROM  regions")
+```
+
+# 7. Disconnect (important)
+
+```{r}
+dbDisconnect(con)
+```
