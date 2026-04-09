@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protected Areas — Dataset Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: #e2dfd8;
+    --border2: #c8c4bc;
+    --text: #1a1916;
+    --text2: #6b6760;
+    --text3: #9b9790;
+    --accent: #2a6496;
+    --accent-bg: #eaf1f8;
+    --green: #2d7a4f;
+    --green-bg: #eaf5ee;
+    --amber: #8a5c0a;
+    --amber-bg: #fdf3e0;
+    --purple: #5b3fa6;
+    --purple-bg: #f0ecfb;
+    --teal: #1a7070;
+    --teal-bg: #e6f5f5;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); padding: 0; }
+
+  /* ── Header ── */
+  .page-header { background: var(--text); color: #f7f6f2; padding: 52px 60px 44px; }
+  .header-eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #9b9790; font-weight: 500; margin-bottom: 14px; }
+  .header-title { font-size: 34px; font-weight: 600; line-height: 1.2; margin-bottom: 12px; }
+  .header-title span { color: #9b9790; font-weight: 300; }
+  .header-meta { display: flex; gap: 28px; margin-top: 20px; flex-wrap: wrap; }
+  .header-stat { }
+  .header-stat .stat-val { font-family: var(--mono); font-size: 22px; font-weight: 500; color: #f7f6f2; }
+  .header-stat .stat-label { font-size: 11px; color: #9b9790; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.1em; }
+  .header-desc { margin-top: 20px; font-size: 14px; color: #b0ada8; line-height: 1.7; max-width: 680px; }
+
+  /* ── Body ── */
+  .page-body { max-width: 1000px; margin: 0 auto; padding: 52px 40px; }
+
+  /* ── Section titles ── */
+  .section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text3); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+  /* ── Data dictionary ── */
+  .dict-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 52px; }
+  .dict-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+  .dict-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .dict-colname { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--text); }
+  .dict-type { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 400; }
+  .type-int { background: var(--accent-bg); color: var(--accent); }
+  .type-text { background: var(--purple-bg); color: var(--purple); }
+  .dict-desc { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 8px; }
+  .dict-examples { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+  .dict-examples span { background: var(--bg); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; margin-right: 4px; display: inline-block; margin-top: 3px; }
+
+  /* ── Table ── */
+  .table-section { margin-bottom: 52px; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead tr { background: var(--bg); }
+  thead th { padding: 11px 16px; text-align: left; font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); border-bottom: 1px solid var(--border); font-family: var(--mono); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #faf9f6; }
+  tbody td { padding: 11px 16px; color: var(--text); vertical-align: middle; }
+  .td-id { font-family: var(--mono); font-size: 12px; color: var(--text3); }
+  .td-name { font-weight: 500; }
+  .td-num { font-family: var(--mono); font-size: 13px; }
+  .td-year { font-family: var(--mono); font-size: 13px; color: var(--text2); }
+  .td-region { font-size: 12px; color: var(--text2); }
+
+  /* Type badges */
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; font-size: 11.5px; font-weight: 500; }
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
+  .b-Park      { background: var(--green-bg);  color: var(--green);  } .b-Park::before  { background: var(--green); }
+  .b-Forest    { background: var(--teal-bg);   color: var(--teal);   } .b-Forest::before{ background: var(--teal); }
+  .b-Wetland   { background: var(--accent-bg); color: var(--accent); } .b-Wetland::before{ background: var(--accent); }
+  .b-Urban     { background: var(--amber-bg);  color: var(--amber);  } .b-Urban::before { background: var(--amber); }
+  .b-Reserve   { background: var(--purple-bg); color: var(--purple); } .b-Reserve::before{ background: var(--purple); }
+
+  /* Area bar */
+  .area-cell { display: flex; align-items: center; gap: 10px; }
+  .area-bar-wrap { flex: 1; height: 5px; background: var(--border); border-radius: 99px; min-width: 60px; max-width: 100px; }
+  .area-bar { height: 100%; border-radius: 99px; background: var(--accent); }
+
+  /* ── Summary row ── */
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 52px; }
+  .sum-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+  .sum-val { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .sum-label { font-size: 12px; color: var(--text3); }
+
+  /* ── Footer ── */
+  .page-footer { border-top: 1px solid var(--border); padding: 28px 40px; max-width: 1000px; margin: 0 auto; font-size: 12px; color: var(--text3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+  @media (max-width: 640px) {
+    .page-header { padding: 36px 24px 32px; }
+    .page-body { padding: 32px 20px; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .header-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="header-eyebrow">GIS Training · Dataset reference</div>
+  <h1 class="header-title">Protected Areas <span>/ Japan</span></h1>
+  <p class="header-desc">A sample dataset of 10 protected natural areas across Japan, used in SQL training exercises. It covers parks, forests, wetlands, urban green spaces, and nature reserves — with attributes suitable for practicing filtering, sorting, grouping, and joining operations.</p>
+  <div class="header-meta">
+    <div class="header-stat"><div class="stat-val">10</div><div class="stat-label">Features</div></div>
+    <div class="header-stat"><div class="stat-val">6</div><div class="stat-label">Columns</div></div>
+    <div class="header-stat"><div class="stat-val">5</div><div class="stat-label">Land types</div></div>
+    <div class="header-stat"><div class="stat-val">5</div><div class="stat-label">Regions</div></div>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- DATA DICTIONARY -->
+  <div class="section-title">Data dictionary — protected_areas</div>
+  <div class="dict-grid">
+    <div class="dict-card">
+      <div class="dict-card-top">
+        <span class="dict-colname">id</span>
+        <span class="dict-type type-int">integer</span>
+      </div>
+      <div class="dict-desc">Unique numeric identifier for each feature. Used as a primary key when joining tables.</div>
+      <div class="dict-examples">Examples: <span>1</span><span>2</span><span>10</span></div>
+    </div>
+    <div class="dict-card">
+      <div class="dict-card-top">
+        <span class="dict-colname">name</span>
+        <span class="dict-type type-text">text</span>
+      </div>
+      <div class="dict-desc">Full name of the protected area in English. Each name is unique within the dataset.</div>
+      <div class="dict-examples">Examples: <span>Kushiro Wetlands</span><span>Shinjuku Gyoen</span></div>
+    </div>
+    <div class="dict-card">
+      <div class="dict-card-top">
+        <span class="dict-colname">type</span>
+        <span class="dict-type type-text">text</span>
+      </div>
+      <div class="dict-desc">Category of protected area. One of five possible values representing the land management classification.</div>
+      <div class="dict-examples">Values: <span>Park</span><span>Forest</span><span>Wetland</span><span>Urban green</span><span>Reserve</span></div>
+    </div>
+    <div class="dict-card">
+      <div class="dict-card-top">
+        <span class="dict-colname">area_ha</span>
+        <span class="dict-type type-int">integer</span>
+      </div>
+      <div class="dict-desc">Surface area of the protected area in hectares (ha). Ranges from small urban parks to very large national reserves.</div>
+      <div class="dict-examples">Range: <span>38 ha</span> → <span>226,764 ha</span></div>
+    </div>
+    <div class="dict-card">
+      <div class="dict-card-top">
+        <span class="dict-colname">est_year</span>
+        <span class="dict-type type-int">integer</span>
+      </div>
+      <div class="dict-desc">Year the protected area was officially established. Useful for temporal filtering and ordering queries.</div>
+      <div class="dict-examples">Range: <span>1917</span> → <span>2007</span></div>
+    </div>
+    <div class="dict-card">
+      <div class="dict-card-top">
+        <span class="dict-colname">region</span>
+        <span class="dict-type type-text">text</span>
+      </div>
+      <div class="dict-desc">Administrative region of Japan where the area is located. Acts as a foreign key linking to the <code style="font-size:11px;background:var(--bg);padding:1px 5px;border-radius:3px;border:1px solid var(--border);">regions</code> table.</div>
+      <div class="dict-examples">Values: <span>Hokkaido</span><span>Kanto</span><span>Chubu</span><span>Kyushu</span><span>Okinawa</span></div>
+    </div>
+  </div>
+
+  <!-- SUMMARY STATS -->
+  <div class="section-title">Summary statistics</div>
+  <div class="summary-grid" style="margin-bottom:52px;">
+    <div class="sum-card"><div class="sum-val">10</div><div class="sum-label">Total features</div></div>
+    <div class="sum-card"><div class="sum-val">258,067</div><div class="sum-label">Total area (ha)</div></div>
+    <div class="sum-card"><div class="sum-val">25,807</div><div class="sum-label">Mean area (ha)</div></div>
+    <div class="sum-card"><div class="sum-val">1917–2007</div><div class="sum-label">Est. year range</div></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-section">
+    <div class="section-title">Full dataset</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>id</th>
+            <th>name</th>
+            <th>type</th>
+            <th>area_ha</th>
+            <th>est_year</th>
+            <th>region</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-id">01</td>
+            <td class="td-name">Aokigahara Reserve</td>
+            <td><span class="badge b-Forest">Forest</span></td>
+            <td class="td-num">
+              <div class="area-cell">3,000 <div class="area-bar-wrap"><div class="area-bar" style="width:1.3%"></div></div></div>
+            </td>
+            <td class="td-year">1973</td>
+            <td class="td-region">Chubu</td>
+          </tr>
+          <tr>
+            <td class="td-id">02</td>
+            <td class="td-name">Kasai Seaside Park</td>
+            <td><span class="badge b-Park">Park</span></td>
+            <td class="td-num">
+              <div class="area-cell">80 <div class="area-bar-wrap"><div class="area-bar" style="width:0.04%"></div></div></div>
+            </td>
+            <td class="td-year">1981</td>
+            <td class="td-region">Kanto</td>
+          </tr>
+          <tr>
+            <td class="td-id">03</td>
+            <td class="td-name">Kushiro Wetlands</td>
+            <td><span class="badge b-Wetland">Wetland</span></td>
+            <td class="td-num">
+              <div class="area-cell">7,000 <div class="area-bar-wrap"><div class="area-bar" style="width:3.1%"></div></div></div>
+            </td>
+            <td class="td-year">1987</td>
+            <td class="td-region">Hokkaido</td>
+          </tr>
+          <tr>
+            <td class="td-id">04</td>
+            <td class="td-name">Shinjuku Gyoen</td>
+            <td><span class="badge b-Urban">Urban green</span></td>
+            <td class="td-num">
+              <div class="area-cell">58 <div class="area-bar-wrap"><div class="area-bar" style="width:0.03%"></div></div></div>
+            </td>
+            <td class="td-year">1949</td>
+            <td class="td-region">Kanto</td>
+          </tr>
+          <tr>
+            <td class="td-id">05</td>
+            <td class="td-name">Daisetsuzan NP</td>
+            <td><span class="badge b-Reserve">Reserve</span></td>
+            <td class="td-num">
+              <div class="area-cell">226,764 <div class="area-bar-wrap"><div class="area-bar" style="width:100%"></div></div></div>
+            </td>
+            <td class="td-year">1934</td>
+            <td class="td-region">Hokkaido</td>
+          </tr>
+          <tr>
+            <td class="td-id">06</td>
+            <td class="td-name">Fuji-Hakone Park</td>
+            <td><span class="badge b-Park">Park</span></td>
+            <td class="td-num">
+              <div class="area-cell">1,227 <div class="area-bar-wrap"><div class="area-bar" style="width:0.5%"></div></div></div>
+            </td>
+            <td class="td-year">1936</td>
+            <td class="td-region">Chubu</td>
+          </tr>
+          <tr>
+            <td class="td-id">07</td>
+            <td class="td-name">Sarobetsu Wetland</td>
+            <td><span class="badge b-Wetland">Wetland</span></td>
+            <td class="td-num">
+              <div class="area-cell">2,100 <div class="area-bar-wrap"><div class="area-bar" style="width:0.9%"></div></div></div>
+            </td>
+            <td class="td-year">1974</td>
+            <td class="td-region">Hokkaido</td>
+          </tr>
+          <tr>
+            <td class="td-id">08</td>
+            <td class="td-name">Inokashira Park</td>
+            <td><span class="badge b-Urban">Urban green</span></td>
+            <td class="td-num">
+              <div class="area-cell">38 <div class="area-bar-wrap"><div class="area-bar" style="width:0.02%"></div></div></div>
+            </td>
+            <td class="td-year">1917</td>
+            <td class="td-region">Kanto</td>
+          </tr>
+          <tr>
+            <td class="td-id">09</td>
+            <td class="td-name">Yakushima Forest</td>
+            <td><span class="badge b-Forest">Forest</span></td>
+            <td class="td-num">
+              <div class="area-cell">4,300 <div class="area-bar-wrap"><div class="area-bar" style="width:1.9%"></div></div></div>
+            </td>
+            <td class="td-year">1993</td>
+            <td class="td-region">Kyushu</td>
+          </tr>
+          <tr>
+            <td class="td-id">10</td>
+            <td class="td-name">Iriomote Reserve</td>
+            <td><span class="badge b-Reserve">Reserve</span></td>
+            <td class="td-num">
+              <div class="area-cell">20,700 <div class="area-bar-wrap"><div class="area-bar" style="width:9.1%"></div></div></div>
+            </td>
+            <td class="td-year">2007</td>
+            <td class="td-region">Okinawa</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  <span>GIS SQL Training · Sample dataset</span>
+  <span>10 records · protected_areas table</span>
+</div>
+
+</body>
+</html>

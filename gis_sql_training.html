@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIS SQL Training</title>
+<script src="https://cdn.jsdelivr.net/npm/alasql@4.2.1/dist/alasql.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2333;
+    --border: #2a3050;
+    --border2: #3a4570;
+    --text: #e8ecf5;
+    --text2: #8b93b0;
+    --text3: #555f80;
+    --accent: #4f8ef7;
+    --accent-dim: #1a2d5a;
+    --green: #3ecf8e;
+    --green-dim: #0d3326;
+    --red: #f7614f;
+    --red-dim: #3d150e;
+    --amber: #f5a623;
+    --amber-dim: #3a2a08;
+    --purple: #a78bfa;
+    --purple-dim: #2d2050;
+    --teal: #2dd4bf;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+  /* ── Layout ── */
+  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 28px 0; display: flex; flex-direction: column; }
+  .sidebar-logo { padding: 0 20px 28px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .sidebar-logo .logo-tag { font-size: 10px; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; font-weight: 500; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 17px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .sidebar-logo p { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .nav-section { padding: 0 12px; margin-bottom: 8px; }
+  .nav-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); padding: 0 8px; margin-bottom: 6px; font-weight: 500; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text2); transition: all 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent); border-color: #2a4a8a; }
+  .nav-item .nav-badge { margin-left: auto; font-size: 10px; font-family: var(--mono); background: var(--surface2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; color: var(--text3); }
+  .nav-item.active .nav-badge { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .nav-item .nav-status { margin-left: auto; width: 7px; height: 7px; border-radius: 50%; background: var(--border2); }
+  .nav-item.done .nav-status { background: var(--green); }
+  .nav-item.active .nav-status { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+  /* ── Main ── */
+  .main { padding: 36px 40px; overflow-y: auto; }
+  .ex-header { margin-bottom: 28px; }
+  .ex-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--mono); color: var(--accent); background: var(--accent-dim); border: 1px solid #2a4a8a; padding: 3px 10px; border-radius: 5px; margin-bottom: 12px; }
+  .ex-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+  .ex-desc { font-size: 14px; color: var(--text2); line-height: 1.7; max-width: 680px; }
+  .ex-desc strong { color: var(--amber); font-weight: 500; }
+
+  /* ── Schema ── */
+  .schema-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .schema-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; min-width: 200px; }
+  .schema-name { font-size: 11px; font-family: var(--mono); color: var(--teal); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .schema-name::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+  .schema-cols { display: flex; flex-direction: column; gap: 3px; }
+  .schema-col { font-family: var(--mono); font-size: 11px; color: var(--text2); display: flex; gap: 8px; }
+  .schema-col .col-name { color: var(--text); }
+  .schema-col .col-type { color: var(--text3); }
+
+  /* ── Editor ── */
+  .editor-wrap { background: #0a0d14; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+  .editor-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .editor-dots { display: flex; gap: 6px; }
+  .editor-dots span { width: 10px; height: 10px; border-radius: 50%; }
+  .editor-dots span:nth-child(1) { background: #ff5f56; }
+  .editor-dots span:nth-child(2) { background: #ffbd2e; }
+  .editor-dots span:nth-child(3) { background: #27c93f; }
+  .editor-label { font-size: 11px; font-family: var(--mono); color: var(--text3); }
+  textarea.sql-input { width: 100%; background: transparent; color: #c8d3f5; font-family: var(--mono); font-size: 13.5px; line-height: 1.7; padding: 16px 18px; border: none; outline: none; resize: vertical; min-height: 100px; }
+  textarea.sql-input::placeholder { color: var(--text3); }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; font-family: var(--sans); }
+  .btn-run { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-run:hover { background: #3a7be0; }
+  .btn-hint { background: transparent; color: var(--text2); border-color: var(--border2); }
+  .btn-hint:hover { background: var(--surface2); color: var(--text); }
+  .btn-sol { background: transparent; color: var(--amber); border-color: #4a3510; }
+  .btn-sol:hover { background: var(--amber-dim); }
+
+  /* ── Hint / Solution ── */
+  .hint-box { display: none; background: var(--accent-dim); border: 1px solid #2a4a8a; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #a0bff8; margin-bottom: 14px; line-height: 1.6; }
+  .hint-box.show { display: block; }
+  .sol-box { display: none; background: #0a0d14; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-family: var(--mono); font-size: 12.5px; color: #c8d3f5; line-height: 1.8; margin-bottom: 14px; }
+  .sol-box.show { display: block; }
+  .kw { color: #89ddff; } .val { color: #f78c6c; } .fn { color: var(--green); } .cmt { color: #4a5570; }
+
+  /* ── Results ── */
+  .result-wrap { min-height: 48px; }
+  .result-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 12px; color: var(--text2); }
+  .result-count { font-family: var(--mono); }
+  .verdict { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .verdict.correct { background: var(--green-dim); color: var(--green); border: 1px solid #1a6040; }
+  .verdict.wrong { background: var(--red-dim); color: var(--red); border: 1px solid #5a2010; }
+  .verdict.info { background: var(--accent-dim); color: var(--accent); border: 1px solid #2a4a8a; }
+  .error-box { background: var(--red-dim); border: 1px solid #5a2010; border-radius: 8px; padding: 10px 14px; font-family: var(--mono); font-size: 12px; color: var(--red); line-height: 1.6; }
+  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { background: var(--surface); color: var(--text3); font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; font-family: var(--mono); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 8px 12px; color: var(--text); font-size: 13px; }
+  tbody td.num { font-family: var(--mono); color: var(--teal); }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+  .b-Park { background: #0d3326; color: var(--green); }
+  .b-Forest { background: #0a2a1e; color: #5eead4; }
+  .b-Wetland { background: var(--accent-dim); color: var(--accent); }
+  .b-Urban { background: var(--amber-dim); color: var(--amber); }
+  .b-Reserve { background: var(--purple-dim); color: var(--purple); }
+  .no-rows { text-align: center; padding: 2.5rem; color: var(--text3); font-size: 13px; }
+
+  /* ── Chart ── */
+  .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 20px; }
+  .chart-title { font-size: 12px; color: var(--text2); margin-bottom: 16px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; }
+  .chart-container { position: relative; height: 220px; }
+
+  /* ── Playground note ── */
+  .pg-examples { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+  .pg-example { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; font-family: var(--mono); font-size: 11.5px; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+  .pg-example:hover { border-color: var(--border2); color: var(--text); background: var(--surface2); }
+  .pg-example-label { font-size: 10px; color: var(--text3); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--sans); }
+
+  /* ── Progress bar (sidebar) ── */
+  .progress-section { margin-top: auto; padding: 20px; border-top: 1px solid var(--border); }
+  .progress-label { font-size: 11px; color: var(--text3); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .progress-bar { height: 4px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width 0.4s ease; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-tag">GIS Training</div>
+      <h1>SQL for<br>Spatial Data</h1>
+      <p>5 exercises · browser-based</p>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Exercises</div>
+      <div class="nav-item active" id="nav0" onclick="switchEx(0)">
+        <span>WHERE</span>
+        <span class="nav-badge">01</span>
+        <span class="nav-status" id="st0"></span>
+      </div>
+      <div class="nav-item" id="nav1" onclick="switchEx(1)">
+        <span>SELECT</span>
+        <span class="nav-badge">02</span>
+        <span class="nav-status" id="st1"></span>
+      </div>
+      <div class="nav-item" id="nav2" onclick="switchEx(2)">
+        <span>ORDER BY</span>
+        <span class="nav-badge">03</span>
+        <span class="nav-status" id="st2"></span>
+      </div>
+      <div class="nav-item" id="nav3" onclick="switchEx(3)">
+        <span>GROUP BY</span>
+        <span class="nav-badge">04</span>
+        <span class="nav-status" id="st3"></span>
+      </div>
+      <div class="nav-item" id="nav4" onclick="switchEx(4)">
+        <span>JOIN</span>
+        <span class="nav-badge">05</span>
+        <span class="nav-status" id="st4"></span>
+      </div>
+    </div>
+    <div class="nav-section" style="margin-top:8px;">
+      <div class="nav-label">Tools</div>
+      <div class="nav-item" id="nav5" onclick="switchEx(5)">
+        <span>Free Playground</span>
+      </div>
+    </div>
+    <div class="progress-section">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span id="prog-label">0 / 5</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- EX 0: WHERE -->
+    <div class="exercise" id="ex0">
+      <div class="ex-header">
+        <div class="ex-tag">01 · SQL</div>
+        <div class="ex-title">Filter features with WHERE</div>
+        <div class="ex-desc">Write a query that returns only protected areas of type <strong>'Wetland'</strong> with an area larger than <strong>1000 ha</strong>. You should get 2 results.</div>
+      </div>
+      <div class="schema-row">
+        <div class="schema-card">
+          <div class="schema-name">protected_areas</div>
+          <div class="schema-cols">
+            <div class="schema-col"><span class="col-name">id</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">name</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">type</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">area_ha</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">est_year</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">region</span><span class="col-type">text</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint-box" id="hint0">Use WHERE with two conditions joined by AND. Text values need single quotes: <code>type = 'Wetland'</code></div>
+      <div class="sol-box" id="sol0"><span class="kw">SELECT</span> *
+<span class="kw">FROM</span> protected_areas
+<span class="kw">WHERE</span> type = <span class="val">'Wetland'</span>
+  <span class="kw">AND</span> area_ha > <span class="val">1000</span>;</div>
+      <div class="editor-wrap">
+        <div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+        <textarea class="sql-input" id="q0" placeholder="SELECT ...&#10;FROM protected_areas&#10;WHERE ..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-run" onclick="runQuery(0)">▶ Run</button>
+        <button class="btn btn-hint" onclick="toggleHint(0)">Hint</button>
+        <button class="btn btn-sol" onclick="toggleSol(0)">Solution</button>
+      </div>
+      <div class="result-wrap" id="res0"></div>
+    </div>
+
+    <!-- EX 1: SELECT -->
+    <div class="exercise" id="ex1" style="display:none">
+      <div class="ex-header">
+        <div class="ex-tag">02 · SQL</div>
+        <div class="ex-title">Project columns with SELECT</div>
+        <div class="ex-desc">Return only the <strong>name</strong>, <strong>type</strong>, and <strong>area_ha</strong> columns for all features. No other fields should appear.</div>
+      </div>
+      <div class="schema-row">
+        <div class="schema-card">
+          <div class="schema-name">protected_areas</div>
+          <div class="schema-cols">
+            <div class="schema-col"><span class="col-name">id</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">name</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">type</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">area_ha</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">est_year</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">region</span><span class="col-type">text</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint-box" id="hint1">List column names separated by commas after SELECT, instead of *</div>
+      <div class="sol-box" id="sol1"><span class="kw">SELECT</span> name, type, area_ha
+<span class="kw">FROM</span> protected_areas;</div>
+      <div class="editor-wrap">
+        <div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+        <textarea class="sql-input" id="q1" placeholder="SELECT ...&#10;FROM protected_areas;"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-run" onclick="runQuery(1)">▶ Run</button>
+        <button class="btn btn-hint" onclick="toggleHint(1)">Hint</button>
+        <button class="btn btn-sol" onclick="toggleSol(1)">Solution</button>
+      </div>
+      <div class="result-wrap" id="res1"></div>
+    </div>
+
+    <!-- EX 2: ORDER BY -->
+    <div class="exercise" id="ex2" style="display:none">
+      <div class="ex-header">
+        <div class="ex-tag">03 · SQL</div>
+        <div class="ex-title">Sort features with ORDER BY</div>
+        <div class="ex-desc">Return all features sorted by <strong>area_ha</strong> from largest to smallest. The biggest protected area should appear first.</div>
+      </div>
+      <div class="schema-row">
+        <div class="schema-card">
+          <div class="schema-name">protected_areas</div>
+          <div class="schema-cols">
+            <div class="schema-col"><span class="col-name">id</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">name</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">type</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">area_ha</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">est_year</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">region</span><span class="col-type">text</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint-box" id="hint2">Add ORDER BY area_ha DESC at the end. DESC means descending (largest first).</div>
+      <div class="sol-box" id="sol2"><span class="kw">SELECT</span> *
+<span class="kw">FROM</span> protected_areas
+<span class="kw">ORDER BY</span> area_ha <span class="val">DESC</span>;</div>
+      <div class="editor-wrap">
+        <div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+        <textarea class="sql-input" id="q2" placeholder="SELECT ...&#10;FROM protected_areas&#10;ORDER BY ..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-run" onclick="runQuery(2)">▶ Run</button>
+        <button class="btn btn-hint" onclick="toggleHint(2)">Hint</button>
+        <button class="btn btn-sol" onclick="toggleSol(2)">Solution</button>
+      </div>
+      <div class="result-wrap" id="res2"></div>
+    </div>
+
+    <!-- EX 3: GROUP BY -->
+    <div class="exercise" id="ex3" style="display:none">
+      <div class="ex-header">
+        <div class="ex-tag">04 · SQL</div>
+        <div class="ex-title">Aggregate with GROUP BY</div>
+        <div class="ex-desc">Count how many features exist per <strong>type</strong> and calculate the <strong>total area</strong> per type. Name the columns <strong>count</strong> and <strong>total_area_ha</strong>. Order by total area descending.</div>
+      </div>
+      <div class="schema-row">
+        <div class="schema-card">
+          <div class="schema-name">protected_areas</div>
+          <div class="schema-cols">
+            <div class="schema-col"><span class="col-name">id</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">name</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">type</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">area_ha</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">est_year</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">region</span><span class="col-type">text</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint-box" id="hint3">Use COUNT(*) AS count and SUM(area_ha) AS total_area_ha. Then GROUP BY type.</div>
+      <div class="sol-box" id="sol3"><span class="kw">SELECT</span> type,
+       <span class="fn">COUNT</span>(*) <span class="kw">AS</span> count,
+       <span class="fn">SUM</span>(area_ha) <span class="kw">AS</span> total_area_ha
+<span class="kw">FROM</span> protected_areas
+<span class="kw">GROUP BY</span> type
+<span class="kw">ORDER BY</span> total_area_ha <span class="val">DESC</span>;</div>
+      <div class="editor-wrap">
+        <div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+        <textarea class="sql-input" id="q3" placeholder="SELECT type, COUNT(*) AS ...&#10;FROM protected_areas&#10;GROUP BY ..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-run" onclick="runQuery(3)">▶ Run</button>
+        <button class="btn btn-hint" onclick="toggleHint(3)">Hint</button>
+        <button class="btn btn-sol" onclick="toggleSol(3)">Solution</button>
+      </div>
+      <div class="result-wrap" id="res3"></div>
+      <div id="chart3-wrap" style="display:none">
+        <div class="chart-wrap">
+          <div class="chart-title">Total area by type (ha)</div>
+          <div class="chart-container"><canvas id="chart3"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EX 4: JOIN -->
+    <div class="exercise" id="ex4" style="display:none">
+      <div class="ex-header">
+        <div class="ex-tag">05 · SQL</div>
+        <div class="ex-title">Combine tables with JOIN</div>
+        <div class="ex-desc">Join the two tables to get each area's <strong>name</strong>, <strong>type</strong>, <strong>area_ha</strong>, and the <strong>country</strong> and <strong>population</strong> of its region. Use the shared <strong>region</strong> column as the key.</div>
+      </div>
+      <div class="schema-row">
+        <div class="schema-card">
+          <div class="schema-name">protected_areas</div>
+          <div class="schema-cols">
+            <div class="schema-col"><span class="col-name">id</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">name</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">type</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">area_ha</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name" style="color:var(--amber)">region</span><span class="col-type">text 🔑</span></div>
+          </div>
+        </div>
+        <div class="schema-card">
+          <div class="schema-name">regions</div>
+          <div class="schema-cols">
+            <div class="schema-col"><span class="col-name" style="color:var(--amber)">region</span><span class="col-type">text 🔑</span></div>
+            <div class="schema-col"><span class="col-name">country</span><span class="col-type">text</span></div>
+            <div class="schema-col"><span class="col-name">area_km2</span><span class="col-type">integer</span></div>
+            <div class="schema-col"><span class="col-name">population</span><span class="col-type">integer</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint-box" id="hint4">Use JOIN ... ON to link the tables: FROM protected_areas p JOIN regions r ON p.region = r.region. Then select the specific columns using p.name, r.country, etc.</div>
+      <div class="sol-box" id="sol4"><span class="kw">SELECT</span> p.name, p.type, p.area_ha,
+       r.country, r.population
+<span class="kw">FROM</span> protected_areas p
+<span class="kw">JOIN</span> regions r <span class="kw">ON</span> p.region = r.region;</div>
+      <div class="editor-wrap">
+        <div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+        <textarea class="sql-input" id="q4" placeholder="SELECT p.name, p.type, ...&#10;FROM protected_areas p&#10;JOIN regions r ON ..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-run" onclick="runQuery(4)">▶ Run</button>
+        <button class="btn btn-hint" onclick="toggleHint(4)">Hint</button>
+        <button class="btn btn-sol" onclick="toggleSol(4)">Solution</button>
+      </div>
+      <div class="result-wrap" id="res4"></div>
+    </div>
+
+    <!-- PLAYGROUND -->
+    <div class="exercise" id="ex5" style="display:none">
+      <div class="ex-header">
+        <div class="ex-tag">Free playground</div>
+        <div class="ex-title">Write any query</div>
+        <div class="ex-desc">Both tables are loaded. Explore freely — try any SQL you like. Click an example below to pre-fill the editor.</div>
+      </div>
+      <div class="schema-row">
+        <div class="schema-card">
+          <div class="schema-name">protected_areas</div>
+          <div class="schema-cols">
+            <div class="schema-col"><span class="col-name">id, name, type, area_ha, est_year, region</span></div>
+          </div>
+        </div>
+        <div class="schema-card">
+          <div class="schema-name">regions</div>
+          <div class="schema-cols">
+            <div class="schema-col"><span class="col-name">region, country, area_km2, population</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="pg-examples">
+        <div class="pg-example" onclick="fillPG(`SELECT * FROM protected_areas WHERE est_year < 1950;`)">
+          <div class="pg-example-label">Filter by year</div>
+          SELECT * FROM protected_areas WHERE est_year &lt; 1950;
+        </div>
+        <div class="pg-example" onclick="fillPG(`SELECT region, COUNT(*) AS count, SUM(area_ha) AS total_ha\nFROM protected_areas\nGROUP BY region\nORDER BY total_ha DESC;`)">
+          <div class="pg-example-label">Group by region</div>
+          SELECT region, COUNT(*) AS count, SUM(area_ha) AS total_ha FROM protected_areas GROUP BY region ...
+        </div>
+        <div class="pg-example" onclick="fillPG(`SELECT p.name, p.type, p.area_ha, r.population\nFROM protected_areas p\nJOIN regions r ON p.region = r.region\nWHERE p.area_ha > 1000\nORDER BY p.area_ha DESC;`)">
+          <div class="pg-example-label">JOIN + WHERE + ORDER BY</div>
+          SELECT p.name, p.type, r.population FROM protected_areas p JOIN regions r ON p.region = r.region WHERE ...
+        </div>
+      </div>
+      <div class="editor-wrap">
+        <div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+        <textarea class="sql-input" id="q5" style="min-height:130px;" placeholder="SELECT ..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-run" onclick="runQuery(5)">▶ Run</button>
+      </div>
+      <div class="result-wrap" id="res5"></div>
+      <div id="chart5-wrap" style="display:none">
+        <div class="chart-wrap">
+          <div class="chart-title" id="chart5-title">Result chart</div>
+          <div class="chart-container"><canvas id="chart5"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const PA = [
+  {id:1,name:"Aokigahara Reserve",type:"Forest",area_ha:3000,est_year:1973,region:"Chubu"},
+  {id:2,name:"Kasai Seaside Park",type:"Park",area_ha:80,est_year:1981,region:"Kanto"},
+  {id:3,name:"Kushiro Wetlands",type:"Wetland",area_ha:7000,est_year:1987,region:"Hokkaido"},
+  {id:4,name:"Shinjuku Gyoen",type:"Urban green",area_ha:58,est_year:1949,region:"Kanto"},
+  {id:5,name:"Daisetsuzan NP",type:"Reserve",area_ha:226764,est_year:1934,region:"Hokkaido"},
+  {id:6,name:"Fuji-Hakone Park",type:"Park",area_ha:1227,est_year:1936,region:"Chubu"},
+  {id:7,name:"Sarobetsu Wetland",type:"Wetland",area_ha:2100,est_year:1974,region:"Hokkaido"},
+  {id:8,name:"Inokashira Park",type:"Urban green",area_ha:38,est_year:1917,region:"Kanto"},
+  {id:9,name:"Yakushima Forest",type:"Forest",area_ha:4300,est_year:1993,region:"Kyushu"},
+  {id:10,name:"Iriomote Reserve",type:"Reserve",area_ha:20700,est_year:2007,region:"Okinawa"},
+];
+const RG = [
+  {region:"Hokkaido",country:"Japan",area_km2:83424,population:5228000},
+  {region:"Kanto",country:"Japan",area_km2:32424,population:43000000},
+  {region:"Chubu",country:"Japan",area_km2:66777,population:21000000},
+  {region:"Kyushu",country:"Japan",area_km2:36782,population:12900000},
+  {region:"Okinawa",country:"Japan",area_km2:2281,population:1467000},
+];
+
+// Expected answers (as result-set signatures for comparison)
+const ANSWERS = {
+  0: { rows: 2, check: r => r.length===2 && r.every(x=>x.type==='Wetland'&&x.area_ha>1000) },
+  1: { cols: ['name','type','area_ha'], check: r => {
+    if(!r.length) return false;
+    const k = Object.keys(r[0]).sort().join(',');
+    return k === 'area_ha,name,type';
+  }},
+  2: { check: r => r.length===10 && r[0].area_ha >= r[r.length-1].area_ha && r[0].area_ha===226764 },
+  3: { check: r => r.length===5 && Object.keys(r[0]).map(k=>k.toLowerCase()).includes('count') && Object.keys(r[0]).map(k=>k.toLowerCase()).includes('total_area_ha') },
+  4: { check: r => r.length===10 && Object.keys(r[0]).includes('country') && Object.keys(r[0]).includes('population') },
+};
+
+const solved = new Set();
+let chartInstances = {};
+
+alasql('DROP TABLE IF EXISTS protected_areas');
+alasql('DROP TABLE IF EXISTS regions');
+alasql('CREATE TABLE protected_areas');
+alasql('CREATE TABLE regions');
+alasql.tables.protected_areas.data = PA;
+alasql.tables.regions.data = RG;
+
+function badgeClass(v) {
+  const m={Park:'b-Park',Forest:'b-Forest',Wetland:'b-Wetland','Urban green':'b-Urban',Reserve:'b-Reserve'};
+  return m[v]||'';
+}
+
+function buildTable(rows) {
+  if(!rows||!rows.length) return '<div class="no-rows">Query returned 0 rows.</div>';
+  const cols = Object.keys(rows[0]);
+  let h = '<div class="table-wrap"><table><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{
+    h += '<tr>'+cols.map(c=>{
+      const v = r[c];
+      if(v===null||v===undefined) return '<td style="color:var(--text3)">NULL</td>';
+      if(c==='type'&&badgeClass(v)) return '<td><span class="badge '+badgeClass(v)+'">'+v+'</span></td>';
+      if(typeof v==='number') return '<td class="num">'+v.toLocaleString()+'</td>';
+      return '<td>'+v+'</td>';
+    }).join('')+'</tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+
+function tryDrawChart(exIdx, rows) {
+  const wrapId = 'chart'+exIdx+'-wrap';
+  const canvasId = 'chart'+exIdx;
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  if(!rows||!rows.length) { wrap.style.display='none'; return; }
+  const cols = Object.keys(rows[0]);
+  const numCols = cols.filter(c=>typeof rows[0][c]==='number');
+  const strCols = cols.filter(c=>typeof rows[0][c]==='string');
+  if(numCols.length<1||strCols.length<1) { wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  if(chartInstances[exIdx]) { chartInstances[exIdx].destroy(); }
+  const labelCol = strCols[0];
+  const valueCol = numCols[numCols.length-1];
+  if(exIdx===5) document.getElementById('chart5-title').textContent = valueCol+' by '+labelCol;
+  const colors = ['#4f8ef7','#3ecf8e','#a78bfa','#f5a623','#f7614f','#2dd4bf','#f472b6','#facc15'];
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  chartInstances[exIdx] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: rows.map(r=>r[labelCol]),
+      datasets: [{
+        data: rows.map(r=>r[valueCol]),
+        backgroundColor: rows.map((_,i)=>colors[i%colors.length]+'cc'),
+        borderColor: rows.map((_,i)=>colors[i%colors.length]),
+        borderWidth: 1, borderRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b93b0', font:{size:11,family:'IBM Plex Mono'} }, grid: { color: '#2a3050' } },
+        y: { ticks: { color: '#8b93b0', font:{size:11,family:'IBM Plex Mono'} }, grid: { color: '#2a3050' } }
+      }
+    }
+  });
+}
+
+function runQuery(i) {
+  const q = document.getElementById('q'+i).value.trim();
+  const out = document.getElementById('res'+i);
+  if(!q){out.innerHTML='<div class="error-box">Please write a query first.</div>';return;}
+  try {
+    const rows = alasql(q);
+    if(!Array.isArray(rows)){out.innerHTML='<div class="result-meta"><span class="verdict info">Query executed.</span></div>';return;}
+    let verdict = '';
+    if(i<=4 && ANSWERS[i]) {
+      const correct = ANSWERS[i].check(rows);
+      if(correct) {
+        verdict = '<span class="verdict correct">✓ Correct!</span>';
+        if(!solved.has(i)){ solved.add(i); markSolved(i); }
+      } else {
+        verdict = '<span class="verdict wrong">✗ Not quite — check your conditions</span>';
+      }
+    }
+    const meta = '<div class="result-meta"><span class="result-count">'+rows.length+' row'+(rows.length!==1?'s':'')+' returned</span>'+verdict+'</div>';
+    out.innerHTML = meta + buildTable(rows);
+    if(i===3||i===5) tryDrawChart(i, rows);
+  } catch(e){
+    out.innerHTML='<div class="error-box">'+e.message+'</div>';
+  }
+}
+
+function markSolved(i) {
+  document.getElementById('st'+i).style.background='var(--green)';
+  document.getElementById('st'+i).style.boxShadow='0 0 6px var(--green)';
+  document.getElementById('nav'+i).classList.add('done');
+  updateProgress();
+}
+
+function updateProgress() {
+  const n = solved.size;
+  document.getElementById('prog-label').textContent = n+' / 5';
+  document.getElementById('prog-fill').style.width = (n/5*100)+'%';
+}
+
+function toggleHint(i){ document.getElementById('hint'+i).classList.toggle('show'); }
+function toggleSol(i){ document.getElementById('sol'+i).classList.toggle('show'); }
+
+function switchEx(i) {
+  document.querySelectorAll('.exercise').forEach((e,j)=>e.style.display=j===i?'block':'none');
+  document.querySelectorAll('.nav-item').forEach((n,j)=>n.classList.toggle('active',j===i));
+}
+
+function fillPG(q){ document.getElementById('q5').value=q; }
+</script>
+</body>
+</html>
