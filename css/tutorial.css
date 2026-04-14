@@ -1,0 +1,232 @@
+/* ── Typography & base ── */
+body {
+  font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  color: #1a1916;
+  line-height: 1.7;
+}
+
+h1, h2, h3, h4 { font-weight: 600; }
+
+/* ── Tutorial header ── */
+.tutorial-title {
+  background: #0f1117;
+  color: #e8ecf5;
+  padding: 28px 32px;
+  border-radius: 0 0 12px 12px;
+  margin-bottom: 2rem;
+}
+
+/* ── Section titles ── */
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #9b9790;
+  margin-bottom: 1rem;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2dfd8;
+}
+
+/* ── SQL vs R comparison blocks ── */
+.compare-wrap {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 1.2rem 0 1.6rem;
+}
+
+.sql-box, .r-box {
+  flex: 1;
+  min-width: 220px;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: 'IBM Plex Mono', 'Fira Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+.sql-box {
+  background: #1e2333;
+  color: #c8d3f5;
+}
+
+.r-box {
+  background: #0d3326;
+  color: #9af0cc;
+}
+
+.box-label {
+  font-family: system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 8px;
+}
+
+/* ── Exercise prompt boxes ── */
+.exercise-prompt {
+  background: #f7f6f2;
+  border-left: 4px solid #2a6496;
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin: 1rem 0 1.2rem;
+  color: #2a2a28;
+}
+
+.exercise-prompt .prompt-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: #2a6496;
+  margin-bottom: 5px;
+}
+
+/* ── learnr exercise chunks ── */
+.tutorial-exercise-output {
+  background: #f7f6f2;
+  border: 1px solid #e2dfd8;
+  border-radius: 0 0 8px 8px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+}
+
+.tutorial-exercise-code-editor {
+  border-radius: 8px 8px 0 0 !important;
+  font-size: 13.5px !important;
+}
+
+/* Run button */
+.btn-tutorial-run {
+  background: #2a6496 !important;
+  border-color: #2a6496 !important;
+  color: #fff !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  padding: 6px 18px !important;
+}
+
+.btn-tutorial-run:hover {
+  background: #1d4f78 !important;
+}
+
+/* Hint button */
+.btn-tutorial-hint {
+  background: transparent !important;
+  border: 1px solid #b5d4f4 !important;
+  color: #185fa5 !important;
+  border-radius: 6px !important;
+  padding: 6px 14px !important;
+}
+
+/* Solution button */
+.btn-default.btn-xs {
+  border-radius: 6px !important;
+}
+
+/* ── Quiz styling ── */
+.tutorial-quiz-question {
+  background: #fff;
+  border: 1px solid #e2dfd8;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 1rem 0;
+}
+
+.radio label, .checkbox label {
+  font-size: 14px;
+  color: #3a3a38;
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+/* Correct answer */
+.alert-success {
+  background: #eaf5ee !important;
+  border-color: #2d7a4f !important;
+  color: #1a5035 !important;
+  border-radius: 8px !important;
+}
+
+/* Wrong answer */
+.alert-danger {
+  background: #fdf0ee !important;
+  border-color: #c04b38 !important;
+  color: #7a2516 !important;
+  border-radius: 8px !important;
+}
+
+/* ── Progress bar ── */
+.tutorial-nav .progress {
+  height: 5px;
+  border-radius: 99px;
+  background: #e2dfd8;
+}
+
+.tutorial-nav .progress-bar {
+  background: #2a6496;
+}
+
+/* ── Tables (kable) ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin: 1rem 0;
+}
+
+thead th {
+  background: #f7f6f2;
+  color: #6b6760;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 8px 12px;
+  border-bottom: 2px solid #e2dfd8;
+  text-align: left;
+}
+
+tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0ede8;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  color: #2a2a28;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: #faf9f6; }
+
+/* ── Code blocks ── */
+code {
+  font-family: 'IBM Plex Mono', 'Fira Mono', monospace;
+  font-size: 12.5px;
+  background: #edeae4;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: #1a7070;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* ── Horizontal rules ── */
+hr {
+  border: none;
+  border-top: 1px solid #e2dfd8;
+  margin: 2rem 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .compare-wrap { flex-direction: column; }
+  .sql-box, .r-box { min-width: 100%; }
+}

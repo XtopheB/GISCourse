@@ -1,0 +1,892 @@
+---
+title: "Data Manipulation in R "
+subtitle: "Tutorial- 2025"
+author: "Christophe Bontemps"
+output:
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    theme: flatly
+    highlight: kate
+    css: css/tutorial.css
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(tidyverse)
+library(DT)
+
+knitr::opts_chunk$set(
+  echo    = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  comment = ""
+)
+
+tutorial_options(
+  exercise.timelimit  = 60,
+  exercise.lines      = 8,
+  exercise.completion = TRUE
+)
+
+# ── Embed datasets directly so no CSV files are needed ──────────────────────
+
+districts <- tibble::tribble(
+  ~district_id, ~district,                  ~population,
+  "D001", "ABAIARA",                  21800,
+  "D002", "ACOPIARA",                 54000,
+  "D003", "AIUABA",                   17600,
+  "D004", "ALTANEIRA",                 7200,
+  "D005", "ALTO SANTO",               17800,
+  "D006", "ANTONINA DO NORTE",         9500,
+  "D007", "ARACATI",                  75000,
+  "D008", "ARARIPE",                  22000,
+  "D009", "ARNEIROZ",                  8400,
+  "D010", "ASSARE",                   24000,
+  "D011", "AURORA",                   24800,
+  "D012", "BAIXIO",                    7400,
+  "D013", "BANABUIU",                 16200,
+  "D014", "BARBALHA",                 61000,
+  "D015", "BARRO",                    20000,
+  "D016", "BOA VIAGEM",               52000,
+  "D017", "BREJO SANTO",              43000,
+  "D018", "CAMPOS SALES",             29000,
+  "D019", "CARIRIACU",                22000,
+  "D020", "CARIUS",                   22000,
+  "D021", "CATARINA",                 18000,
+  "D022", "CEDRO",                    26000,
+  "D023", "CRATO",                   125000,
+  "D024", "DEP. IRAPUAN PINHEIRO",    12500,
+  "D025", "ERERE",                     8000,
+  "D026", "FARIAS BRITO",             18000,
+  "D027", "GRANJEIRO",                 5100,
+  "D028", "IBICUITINGA",              11000,
+  "D029", "ICAPUI",                   19000,
+  "D030", "ICO",                      66000,
+  "D031", "IGUATU",                  102000,
+  "D032", "IPAUMIRIM",                12000,
+  "D033", "IRACEMA",                  13000,
+  "D034", "ITAICABA",                  8000,
+  "D035", "ITATIRA",                  18000,
+  "D036", "JAGUARETAMA",              19000,
+  "D037", "JAGUARIBARA",              10000,
+  "D038", "JAGUARIBE",                35000,
+  "D039", "JAGUARUANA",               33000,
+  "D040", "JARDIM",                   26000,
+  "D041", "JATI",                      8700,
+  "D042", "JUAZEIRO DO NORTE",       275000,
+  "D043", "JUCAS",                    23000,
+  "D044", "LAVRAS DA MANGABEIRA",     31000,
+  "D045", "LIMOEIRO DO NORTE",        56000,
+  "D046", "MADALENA",                 20000,
+  "D047", "MAURITI",                  43000,
+  "D048", "MILAGRES",                 29000,
+  "D049", "MILHA",                    13000,
+  "D050", "MISSAO VELHA",             35000,
+  "D051", "MOMBACA",                  42000,
+  "D052", "MONSENHOR TABOSA",         21000,
+  "D053", "MORADA NOVA",              62000,
+  "D054", "NOVA OLINDA",              14000,
+  "D055", "OROS",                     21000,
+  "D056", "PALHANO",                   9500,
+  "D057", "PARAMBU",                  38000,
+  "D058", "PEDRA BRANCA",             40000,
+  "D059", "PENAFORTE",                 7300,
+  "D060", "PEREIRO",                  16000,
+  "D061", "PIQUET CARNEIRO",          17000,
+  "D062", "PORTEIRAS",                14000,
+  "D063", "POTENGI",                  13000,
+  "D064", "POTIRETAMA",                9000,
+  "D065", "QUIXADA",                  88000,
+  "D066", "QUIXELO",                  23000,
+  "D067", "QUIXERAMOBIM",             79000,
+  "D068", "QUIXERE",                  18000,
+  "D069", "RUSSAS",                   75000,
+  "D070", "SABOEIRO",                 16000,
+  "D071", "SALITRE",                  12500,
+  "D072", "SANTANA DO CARIRI",        16000,
+  "D073", "SAO JOAO DO JAGUARIBE",     8500,
+  "D074", "SENADOR POMPEU",           27000,
+  "D075", "SOLONOPOLE",               17000,
+  "D076", "TABULEIRO DO NORTE",       32000,
+  "D077", "TARRAFAS",                 11000,
+  "D078", "TAUA",                     56000,
+  "D079", "UMARI",                     8500,
+  "D080", "VARZEA ALEGRE",            41000
+)
+
+agriculture <- tibble::tribble(
+  ~district_id, ~year, ~crop,   ~area_ha, ~prod_kg, ~value_real,
+  "D001", 2025L, "Rice",    180L,    189L,    67.19,
+  "D001", 2025L, "Maize",  1158L,    903L,   221.37,
+  "D001", 2025L, "Bean",    532L,    117L,    91.73,
+  "D002", 2025L, "Rice",    486L,     61L,    21.68,
+  "D002", 2025L, "Maize",  7531L,    595L,   145.86,
+  "D002", 2025L, "Bean",   6877L,    540L,   423.38,
+  "D003", 2025L, "Rice",     40L,     56L,    19.91,
+  "D003", 2025L, "Maize",  6200L,   4595L,  1126.45,
+  "D003", 2025L, "Bean",   4670L,    869L,   681.33,
+  "D004", 2025L, "Rice",     22L,     14L,     4.98,
+  "D004", 2025L, "Maize",   600L,    716L,   175.53,
+  "D004", 2025L, "Bean",    350L,    101L,    79.19,
+  "D005", 2025L, "Rice",     NA,       0L,      NA,
+  "D005", 2025L, "Maize",   290L,     85L,    20.84,
+  "D005", 2025L, "Bean",   2224L,   1033L,   809.91,
+  "D006", 2025L, "Rice",     76L,     88L,    31.28,
+  "D006", 2025L, "Maize",   929L,    352L,    86.29,
+  "D006", 2025L, "Bean",    719L,    112L,    87.81,
+  "D007", 2025L, "Rice",     NA,       0L,      NA,
+  "D007", 2025L, "Maize",  1670L,    645L,   158.12,
+  "D007", 2025L, "Bean",   1940L,    567L,   444.55,
+  "D008", 2025L, "Rice",    150L,    138L,    49.06,
+  "D008", 2025L, "Maize",  4595L,   4806L,  1178.18,
+  "D008", 2025L, "Bean",   1800L,    407L,   319.10,
+  "D009", 2025L, "Rice",     NA,       0L,      NA,
+  "D009", 2025L, "Maize",  2730L,    898L,   220.14,
+  "D009", 2025L, "Bean",   2520L,    365L,   286.18,
+  "D010", 2025L, "Rice",   1145L,   1073L,   381.44,
+  "D010", 2025L, "Maize",  4537L,   2037L,   499.37,
+  "D010", 2025L, "Bean",   3125L,    641L,   502.57,
+  "D011", 2025L, "Rice",    770L,    832L,   295.77,
+  "D011", 2025L, "Maize",  4977L,   3932L,   963.92,
+  "D011", 2025L, "Bean",   3565L,    715L,   560.59,
+  "D012", 2025L, "Rice",     13L,      6L,     2.13,
+  "D012", 2025L, "Maize",   962L,    370L,    90.70,
+  "D012", 2025L, "Bean",    560L,     80L,    62.72,
+  "D013", 2025L, "Rice",     NA,       0L,      NA,
+  "D013", 2025L, "Maize",   800L,    640L,   156.89,
+  "D013", 2025L, "Bean",    800L,    326L,   255.60,
+  "D014", 2025L, "Rice",    108L,    112L,    39.82,
+  "D014", 2025L, "Maize",   312L,    243L,    59.57,
+  "D014", 2025L, "Bean",    317L,     94L,    73.70,
+  "D015", 2025L, "Rice",    640L,    614L,   218.27,
+  "D015", 2025L, "Maize",  4008L,   1178L,   288.78,
+  "D015", 2025L, "Bean",   2595L,    535L,   419.46,
+  "D016", 2025L, "Rice",     NA,       0L,      NA,
+  "D016", 2025L, "Maize", 18678L,   7444L,  1824.88,
+  "D016", 2025L, "Bean",  12181L,   2071L,  1623.75,
+  "D017", 2025L, "Rice",     65L,     74L,    26.31,
+  "D017", 2025L, "Maize",  5160L,   3679L,   901.90,
+  "D017", 2025L, "Bean",   2335L,   1013L,   794.23,
+  "D018", 2025L, "Rice",     NA,       0L,      NA,
+  "D018", 2025L, "Maize",  4137L,   2668L,   654.05,
+  "D018", 2025L, "Bean",   2035L,    497L,   389.67,
+  "D019", 2025L, "Rice",    675L,    680L,   241.73,
+  "D019", 2025L, "Maize",  1350L,    857L,   210.09,
+  "D019", 2025L, "Bean",   1306L,    267L,   209.34,
+  "D020", 2025L, "Rice",    930L,    494L,   175.61,
+  "D020", 2025L, "Maize",  2097L,    885L,   216.96,
+  "D020", 2025L, "Bean",   1645L,    335L,   262.65,
+  "D021", 2025L, "Rice",     18L,      2L,     0.71,
+  "D021", 2025L, "Maize",  1444L,    110L,    26.97,
+  "D021", 2025L, "Bean",   1316L,    151L,   118.39,
+  "D022", 2025L, "Rice",    330L,    338L,   120.16,
+  "D022", 2025L, "Maize",  3063L,   1081L,   265.00,
+  "D022", 2025L, "Bean",   2484L,    268L,   210.12,
+  "D023", 2025L, "Rice",    640L,    454L,   161.39,
+  "D023", 2025L, "Maize",  1993L,   1104L,   270.64,
+  "D023", 2025L, "Bean",   1937L,    393L,   308.13,
+  "D024", 2025L, "Rice",    320L,    384L,   136.51,
+  "D024", 2025L, "Maize",  2142L,   1617L,   396.40,
+  "D024", 2025L, "Bean",   1910L,    764L,   599.01,
+  "D025", 2025L, "Rice",     54L,     10L,     3.55,
+  "D025", 2025L, "Maize",   995L,    437L,   107.13,
+  "D025", 2025L, "Bean",    672L,    136L,   106.63,
+  "D026", 2025L, "Rice",    815L,    423L,   150.37,
+  "D026", 2025L, "Maize",  1580L,    964L,   236.32,
+  "D026", 2025L, "Bean",   1900L,    300L,   235.21,
+  "D027", 2025L, "Rice",     80L,     73L,    25.95,
+  "D027", 2025L, "Maize",   432L,    244L,    59.82,
+  "D027", 2025L, "Bean",    260L,     78L,    61.16,
+  "D028", 2025L, "Rice",     NA,       0L,      NA,
+  "D028", 2025L, "Maize",  1725L,   1725L,   422.88,
+  "D028", 2025L, "Bean",   3540L,   2124L,  1665.30,
+  "D029", 2025L, "Rice",     NA,       0L,      NA,
+  "D029", 2025L, "Maize",   450L,    168L,    41.18,
+  "D029", 2025L, "Bean",    600L,    115L,    90.16,
+  "D030", 2025L, "Rice",    870L,   2635L,   936.72,
+  "D030", 2025L, "Maize",  9530L,   4096L,  1004.12,
+  "D030", 2025L, "Bean",   7750L,   1881L,  1474.78,
+  "D031", 2025L, "Rice",   4200L,  25143L,  8938.13,
+  "D031", 2025L, "Maize",  2796L,    452L,   110.81,
+  "D031", 2025L, "Bean",   1936L,    611L,   479.05,
+  "D032", 2025L, "Rice",     39L,     19L,     6.75,
+  "D032", 2025L, "Maize",  1755L,    693L,   169.89,
+  "D032", 2025L, "Bean",   1023L,    136L,   106.63,
+  "D033", 2025L, "Rice",     NA,       0L,      NA,
+  "D033", 2025L, "Maize",   958L,    321L,    78.69,
+  "D033", 2025L, "Bean",    197L,     68L,    53.31,
+  "D034", 2025L, "Rice",     NA,       0L,      NA,
+  "D034", 2025L, "Maize",   320L,    192L,    47.07,
+  "D034", 2025L, "Bean",    435L,    213L,   167.00,
+  "D035", 2025L, "Rice",     NA,       0L,      NA,
+  "D035", 2025L, "Maize",  3897L,   1072L,   262.80,
+  "D035", 2025L, "Bean",   3828L,    668L,   523.74,
+  "D036", 2025L, "Rice",     50L,    210L,    74.65,
+  "D036", 2025L, "Maize",  1760L,    634L,   155.42,
+  "D036", 2025L, "Bean",   4300L,   1100L,   862.45,
+  "D037", 2025L, "Rice",     NA,       0L,      NA,
+  "D037", 2025L, "Maize",   491L,    185L,    45.35,
+  "D037", 2025L, "Bean",   1147L,    329L,   257.95,
+  "D038", 2025L, "Rice",     45L,    215L,    76.43,
+  "D038", 2025L, "Maize",  1729L,    547L,   134.10,
+  "D038", 2025L, "Bean",   2841L,   1234L,   967.51,
+  "D039", 2025L, "Rice",    950L,   5700L,  2026.30,
+  "D039", 2025L, "Maize",  2500L,   1867L,   457.69,
+  "D039", 2025L, "Bean",   1400L,    572L,   448.47,
+  "D040", 2025L, "Rice",     60L,     57L,    20.26,
+  "D040", 2025L, "Maize",   950L,    609L,   149.29,
+  "D040", 2025L, "Bean",    525L,    174L,   136.42,
+  "D041", 2025L, "Rice",     12L,     11L,     3.91,
+  "D041", 2025L, "Maize",  1740L,   1248L,   305.94,
+  "D041", 2025L, "Bean",    994L,    126L,    98.79,
+  "D042", 2025L, "Rice",    225L,    221L,    78.56,
+  "D042", 2025L, "Maize",   510L,    314L,    76.98,
+  "D042", 2025L, "Bean",    482L,    148L,   116.04,
+  "D043", 2025L, "Rice",    291L,    232L,    82.47,
+  "D043", 2025L, "Maize",  2528L,    689L,   168.91,
+  "D043", 2025L, "Bean",   1694L,    350L,   274.41,
+  "D044", 2025L, "Rice",   1365L,   2044L,   726.63,
+  "D044", 2025L, "Maize",  3391L,   1046L,   256.42,
+  "D044", 2025L, "Bean",   2946L,    352L,   275.98,
+  "D045", 2025L, "Rice",   1000L,   6000L,  2132.95,
+  "D045", 2025L, "Maize",  1060L,   2939L,   720.49,
+  "D045", 2025L, "Bean",   1835L,   1356L,  1063.16,
+  "D046", 2025L, "Rice",     NA,       0L,      NA,
+  "D046", 2025L, "Maize",  8679L,   1197L,   293.44,
+  "D046", 2025L, "Bean",   3480L,    355L,   278.33,
+  "D047", 2025L, "Rice",    135L,    143L,    50.84,
+  "D047", 2025L, "Maize", 16531L,   3571L,   875.42,
+  "D047", 2025L, "Bean",   7284L,   1212L,   950.26,
+  "D048", 2025L, "Rice",    125L,     88L,    31.28,
+  "D048", 2025L, "Maize",  3618L,    644L,   157.88,
+  "D048", 2025L, "Bean",   1632L,    175L,   137.21,
+  "D049", 2025L, "Rice",    150L,    162L,    57.59,
+  "D049", 2025L, "Maize",  4170L,   3336L,   817.81,
+  "D049", 2025L, "Bean",   2580L,   1032L,   809.13,
+  "D050", 2025L, "Rice",    150L,    140L,    49.77,
+  "D050", 2025L, "Maize",  1528L,    390L,    95.61,
+  "D050", 2025L, "Bean",   1553L,    358L,   280.69,
+  "D051", 2025L, "Rice",     84L,     54L,    19.20,
+  "D051", 2025L, "Maize",  5660L,   3288L,   806.05,
+  "D051", 2025L, "Bean",   4330L,   1249L,   979.27,
+  "D052", 2025L, "Rice",     NA,       0L,      NA,
+  "D052", 2025L, "Maize",  4429L,   1085L,   265.99,
+  "D052", 2025L, "Bean",   3774L,    437L,   342.63,
+  "D053", 2025L, "Rice",   1731L,  10386L,  3692.14,
+  "D053", 2025L, "Maize",  1600L,    864L,   211.81,
+  "D053", 2025L, "Bean",  10865L,   4477L,  3510.15,
+  "D054", 2025L, "Rice",    300L,    188L,    66.83,
+  "D054", 2025L, "Maize",  1400L,    851L,   208.62,
+  "D054", 2025L, "Bean",   1005L,    166L,   130.15,
+  "D055", 2025L, "Rice",    390L,   1598L,   568.08,
+  "D055", 2025L, "Maize",  2380L,   1373L,   336.59,
+  "D055", 2025L, "Bean",   1080L,    355L,   278.33,
+  "D056", 2025L, "Rice",     NA,       0L,      NA,
+  "D056", 2025L, "Maize",   259L,    186L,    45.60,
+  "D056", 2025L, "Bean",   1155L,    436L,   341.84,
+  "D057", 2025L, "Rice",     NA,       0L,      NA,
+  "D057", 2025L, "Maize", 13510L,   8228L,  2017.07,
+  "D057", 2025L, "Bean",  11100L,   3141L,  2462.67,
+  "D058", 2025L, "Rice",    301L,    135L,    47.99,
+  "D058", 2025L, "Maize", 14280L,  11424L,  2800.57,
+  "D058", 2025L, "Bean",   6070L,   2769L,  2171.01,
+  "D059", 2025L, "Rice",     18L,     15L,     5.33,
+  "D059", 2025L, "Maize",   920L,    124L,    30.40,
+  "D059", 2025L, "Bean",    844L,     61L,    47.83,
+  "D060", 2025L, "Rice",     40L,     27L,     9.60,
+  "D060", 2025L, "Maize",  3720L,    877L,   214.99,
+  "D060", 2025L, "Bean",   3397L,    414L,   324.59,
+  "D061", 2025L, "Rice",     20L,      4L,     1.42,
+  "D061", 2025L, "Maize",  2811L,   1287L,   315.50,
+  "D061", 2025L, "Bean",   1828L,    377L,   295.58,
+  "D062", 2025L, "Rice",     21L,     18L,     6.40,
+  "D062", 2025L, "Maize",  3300L,    587L,   143.90,
+  "D062", 2025L, "Bean",    549L,    249L,   195.23,
+  "D063", 2025L, "Rice",     25L,     25L,     8.89,
+  "D063", 2025L, "Maize",  3991L,   3076L,   754.07,
+  "D063", 2025L, "Bean",   2950L,    664L,   520.60,
+  "D064", 2025L, "Rice",     NA,       0L,      NA,
+  "D064", 2025L, "Maize",   414L,    125L,    30.64,
+  "D064", 2025L, "Bean",   1461L,    255L,   199.93,
+  "D065", 2025L, "Rice",      1L,      2L,     0.71,
+  "D065", 2025L, "Maize",  5400L,   4320L,  1059.04,
+  "D065", 2025L, "Bean",   6800L,   4333L,  3397.25,
+  "D066", 2025L, "Rice",   2190L,  12905L,  4587.62,
+  "D066", 2025L, "Maize",  1550L,    384L,    94.14,
+  "D066", 2025L, "Bean",   1080L,    453L,   355.17,
+  "D067", 2025L, "Rice",      1L,      2L,     0.71,
+  "D067", 2025L, "Maize",  6000L,   6564L,  1609.15,
+  "D067", 2025L, "Bean",   3400L,   1588L,  1245.06,
+  "D068", 2025L, "Rice",     30L,    180L,    63.99,
+  "D068", 2025L, "Maize",   495L,    495L,   121.35,
+  "D068", 2025L, "Bean",    655L,    446L,   349.68,
+  "D069", 2025L, "Rice",    150L,    900L,   319.94,
+  "D069", 2025L, "Maize",   578L,    416L,   101.98,
+  "D069", 2025L, "Bean",   2350L,   1397L,  1095.31,
+  "D070", 2025L, "Rice",     41L,     13L,     4.62,
+  "D070", 2025L, "Maize",  3000L,    874L,   214.26,
+  "D070", 2025L, "Bean",   2163L,    224L,   175.63,
+  "D071", 2025L, "Rice",     NA,       0L,      NA,
+  "D071", 2025L, "Maize",  3496L,   1779L,   436.12,
+  "D071", 2025L, "Bean",   4146L,   1227L,   962.02,
+  "D072", 2025L, "Rice",     NA,       0L,      NA,
+  "D072", 2025L, "Maize", 13550L,   3835L,   940.14,
+  "D072", 2025L, "Bean",  11524L,   1832L,  1436.36,
+  "D073", 2025L, "Rice",    130L,    780L,   277.28,
+  "D073", 2025L, "Maize",    60L,     14L,     3.43,
+  "D073", 2025L, "Bean",    425L,    311L,   243.84,
+  "D074", 2025L, "Rice",    120L,    144L,    51.19,
+  "D074", 2025L, "Maize",  5838L,   4670L,  1144.84,
+  "D074", 2025L, "Bean",   4670L,   1961L,  1537.50,
+  "D075", 2025L, "Rice",    235L,    310L,   110.20,
+  "D075", 2025L, "Maize",  2748L,   1676L,   410.87,
+  "D075", 2025L, "Bean",   2395L,    880L,   689.96,
+  "D076", 2025L, "Rice",    200L,   1200L,   426.59,
+  "D076", 2025L, "Maize",   730L,     92L,    22.55,
+  "D076", 2025L, "Bean",   1340L,    312L,   244.62,
+  "D077", 2025L, "Rice",    229L,    229L,    81.41,
+  "D077", 2025L, "Maize",  1667L,    745L,   182.63,
+  "D077", 2025L, "Bean",   1305L,    239L,   187.39,
+  "D078", 2025L, "Rice",     NA,       0L,      NA,
+  "D078", 2025L, "Maize", 18473L,  10382L,  2545.12,
+  "D078", 2025L, "Bean",  13116L,   2295L,  1799.37,
+  "D079", 2025L, "Rice",     10L,      4L,     1.42,
+  "D079", 2025L, "Maize",  1068L,    410L,   100.51,
+  "D079", 2025L, "Bean",    631L,    103L,    80.76,
+  "D080", 2025L, "Rice",   2950L,   3237L,  1150.73,
+  "D080", 2025L, "Maize",  3400L,   1650L,   404.49,
+  "D080", 2025L, "Bean",   2500L,    395L,   309.70
+)
+```
+
+## Welcome {data-progressive=FALSE}
+
+### About this tutorial
+
+This tutorial teaches **data manipulation for GIS** using agricultural
+production data  (2025). 
+
+Each exercise teaches data manipulation using a syntax (the R ***tidyverse*** syntax)  that is the direct equivalent of a SQL command you may already know:
+
+| SQL | tidyverse verb | What it does |
+|-----|----------------|--------------|
+| `WHERE` | `filter()` | Keep rows matching a condition |
+| `SELECT col1, col2` | `select()` | Keep only certain columns |
+| `ORDER BY col DESC` | `arrange(desc())` | Sort rows |
+| `GROUP BY` + `SUM()` | `group_by()` + `summarise()` | Aggregate by group |
+| `JOIN … ON` | `left_join()` | Combine two tables |
+
+Operations are chained with the **pipe** `%>%` — read it as *"then"*:
+
+```r
+agriculture %>%           # start with this table, THEN
+  filter(crop == "Rice")  # keep only Rice rows
+```
+
+---
+
+### The datasets
+
+Two tables - here two *data frames* - named **`agriculture`** and **`districts`**  are used. They are linked by a unique primary key variable  **`district_id`**. Below is a description of the the two data frames.
+
+**`agriculture`** — 240 rows (3 crops × 80 districts)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `district_id` 🔑 | text | Links to `districts` |
+| `year` | integer | Reference year (2025) |
+| `crop` | text | Rice, Maize or Bean |
+| `area_ha` | integer | Cultivated area (hectares) |
+| `prod_kg` | integer | Production (kilograms) |
+| `value_real` | decimal | Economic value (R$) |
+
+
+
+```{r preview-data-agri, exercise=FALSE, echo=TRUE}
+head(agriculture)
+```
+
+
+**`districts`** — 80 rows
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `district_id` 🔑 | text | Unique ID (D001–D080) |
+| `district` | text | District name |
+| `population` | integer | Estimated population |
+
+
+```{r preview-data-districts, exercise=FALSE, echo=TRUE}
+head(districts)
+```
+
+---
+
+## Exercise 1 · `filter()` {data-progressive=TRUE}
+
+### The concept
+
+`filter()` keeps only the rows that match your conditions — exactly like `WHERE` in SQL.
+
+<div class="compare-wrap">
+<div class="sql-box"><div class="box-label">SQL</div>
+SELECT * FROM agriculture<br>
+WHERE crop = 'Maize'<br>
+&nbsp;&nbsp;AND prod_kg > 5000;
+</div>
+<div class="r-box"><div class="box-label">tidyverse</div>
+agriculture %>%<br>
+&nbsp;&nbsp;filter(crop == "Maize",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prod_kg > 5000)
+</div>
+</div>
+
+**Key differences from SQL:**
+
+- Use `==` (double equals) to test equality — `=` alone is assignment in R
+- Separate multiple conditions with a **comma** (means AND)
+- Text values use `"double quotes"`
+
+### Exercise
+
+From the `agriculture` table, keep only rows where **crop is `"Maize"`** and **`prod_kg` is greater than 5000**.
+
+```{r ex01, exercise=TRUE, exercise.lines=5}
+agriculture %>%
+  filter(___ == "___",
+         ___ > ___)
+```
+
+```{r ex01-hint-1}
+# The first condition filters on the crop column
+agriculture %>%
+  filter(crop == "Maize",
+         ___ > ___)
+```
+
+```{r ex01-hint-2}
+# The second condition filters on the prod_kg column
+agriculture %>%
+  filter(crop == "Maize",
+         prod_kg > ___)
+```
+
+```{r ex01-solution}
+agriculture %>%
+  filter(crop == "Maize",
+         prod_kg > 5000)
+```
+
+### Check your understanding
+
+```{r quiz01}
+quiz(
+  question(
+    "How many rows does the result contain?",
+    answer("5"),
+    answer("7", correct = TRUE),
+    answer("10"),
+    answer("12"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  ),
+  question(
+    "In tidyverse, which operator tests equality in filter()?",
+    answer("="),
+    answer("==", correct = TRUE),
+    answer("<-"),
+    answer("%in%"),
+    allow_retry = TRUE
+  )
+)
+```
+
+---
+
+## Exercise 2 · `select()` {data-progressive=TRUE}
+
+### The concept
+
+`select()` keeps only the columns you name — like listing column names after `SELECT` in SQL.
+
+<div class="compare-wrap">
+<div class="sql-box"><div class="box-label">SQL</div>
+SELECT district_id, crop, value_real<br>
+FROM agriculture;
+</div>
+<div class="r-box"><div class="box-label">tidyverse</div>
+agriculture %>%<br>
+&nbsp;&nbsp;select(district_id, crop, value_real)
+</div>
+</div>
+
+**Key points:**
+
+- Column names are written **without quotes**
+- Order in `select()` determines column order in the output
+- Use `-col` to *drop* a column instead of keeping it
+
+### Exercise
+
+From the `agriculture` table, keep only the columns **`district_id`**, **`crop`**, and **`value_real`**.
+
+```{r ex02, exercise=TRUE, exercise.lines=4}
+agriculture %>%
+  select(___, ___, ___)
+```
+
+```{r ex02-hint-1}
+# Name the three columns separated by commas — no quotes needed
+agriculture %>%
+  select(district_id, ___, ___)
+```
+
+```{r ex02-solution}
+agriculture %>%
+  select(district_id, crop, value_real)
+```
+
+### Check your understanding
+
+```{r quiz02}
+quiz(
+  question(
+    "How many columns does the result have?",
+    answer("2"),
+    answer("3", correct = TRUE),
+    answer("6"),
+    answer("240"),
+    allow_retry = TRUE
+  ),
+  question(
+    "How would you DROP the 'year' column instead of selecting others?",
+    answer("select(-year)", correct = TRUE),
+    answer("select(year = FALSE)"),
+    answer("remove(year)"),
+    answer("filter(year == NA)"),
+    allow_retry = TRUE
+  )
+)
+```
+
+---
+
+## Exercise 3 · `arrange()` {data-progressive=TRUE}
+
+### The concept
+
+`arrange()` sorts rows — like `ORDER BY` in SQL. Wrap a column name in `desc()` to sort descending.
+
+<div class="compare-wrap">
+<div class="sql-box"><div class="box-label">SQL</div>
+SELECT * FROM agriculture<br>
+ORDER BY value_real DESC;
+</div>
+<div class="r-box"><div class="box-label">tidyverse</div>
+agriculture %>%<br>
+&nbsp;&nbsp;arrange(desc(value_real))
+</div>
+</div>
+
+**Key points:**
+
+- Default is ascending — `arrange(col)` = `ORDER BY col ASC`
+- Descending requires wrapping: `arrange(desc(col))` = `ORDER BY col DESC`
+- Sort by multiple columns: `arrange(crop, desc(value_real))`
+
+### Exercise
+
+Sort the `agriculture` table by **`value_real`** from **highest to lowest**.
+
+```{r ex03, exercise=TRUE, exercise.lines=4}
+agriculture %>%
+  arrange(___(___))
+```
+
+```{r ex03-hint-1}
+# Use desc() inside arrange() for descending order
+agriculture %>%
+  arrange(desc(___))
+```
+
+```{r ex03-solution}
+agriculture %>%
+  arrange(desc(value_real))
+```
+
+### Check your understanding
+
+```{r quiz03}
+quiz(
+  question(
+    "Which district and crop appears in the first row?",
+    answer("IGUATU — Rice", correct = TRUE),
+    answer("QUIXELO — Rice"),
+    answer("TAUA — Maize"),
+    answer("MORADA NOVA — Bean"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  ),
+  question(
+    "How would you sort by crop alphabetically, then by prod_kg descending within each crop?",
+    answer("arrange(crop, desc(prod_kg))", correct = TRUE),
+    answer("arrange(desc(crop), prod_kg)"),
+    answer("arrange(crop) %>% arrange(desc(prod_kg))"),
+    answer("order_by(crop, -prod_kg)"),
+    allow_retry = TRUE
+  )
+)
+```
+
+---
+
+## Exercise 4 · `group_by()` + `summarise()` {data-progressive=TRUE}
+
+### The concept
+
+`group_by()` defines groups, then `summarise()` computes one value per group — equivalent to `GROUP BY` + aggregate functions in SQL.
+
+<div class="compare-wrap">
+<div class="sql-box"><div class="box-label">SQL</div>
+SELECT district_id,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(prod_kg) AS total_prod_kg<br>
+FROM agriculture<br>
+GROUP BY district_id;
+</div>
+<div class="r-box"><div class="box-label">tidyverse</div>
+agriculture %>%<br>
+&nbsp;&nbsp;group_by(district_id) %>%<br>
+&nbsp;&nbsp;summarise(total_prod_kg =<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sum(prod_kg, na.rm = TRUE))
+</div>
+</div>
+
+**Key points:**
+
+- Always use `na.rm = TRUE` inside `sum()` — otherwise a single `NA` makes the whole sum `NA`
+- Common aggregates: `sum()`, `mean()`, `n()` (count rows), `n_distinct()`, `max()`, `min()`
+- `group_by()` alone changes nothing visible — it only takes effect in the next `summarise()` or `mutate()`
+
+### Exercise
+
+For each **`district_id`**, calculate the **total production** (sum of `prod_kg`). Name the result column **`total_prod_kg`**.
+
+```{r ex04, exercise=TRUE, exercise.lines=6}
+agriculture %>%
+  group_by(___) %>%
+  summarise(total_prod_kg = ___(prod_kg, na.rm = TRUE))
+```
+
+```{r ex04-hint-1}
+# group_by() takes the column you want to group on
+agriculture %>%
+  group_by(district_id) %>%
+  summarise(total_prod_kg = ___(prod_kg, na.rm = TRUE))
+```
+
+```{r ex04-hint-2}
+# Use sum() to add up all values within each group
+agriculture %>%
+  group_by(district_id) %>%
+  summarise(total_prod_kg = sum(prod_kg, na.rm = TRUE))
+```
+
+```{r ex04-solution}
+agriculture %>%
+  group_by(district_id) %>%
+  summarise(total_prod_kg = sum(prod_kg, na.rm = TRUE))
+```
+
+### Check your understanding
+
+```{r quiz04}
+quiz(
+  question(
+    "How many rows does the result have?",
+    answer("3"),
+    answer("80", correct = TRUE),
+    answer("240"),
+    answer("160"),
+    allow_retry = TRUE
+  ),
+  question(
+    "Why do we write na.rm = TRUE inside sum()?",
+    answer("To remove the grouping after summarise()"),
+    answer("Because sum() needs it to work at all"),
+    answer("To avoid returning NA when any value in the group is missing", correct = TRUE),
+    answer("To round the result to integers"),
+    allow_retry = TRUE
+  )
+)
+```
+
+---
+
+## Exercise 5 · `left_join()` {data-progressive=TRUE}
+
+### The concept
+
+`left_join()` adds columns from a second table by matching on a shared key — equivalent to `JOIN … ON` in SQL.
+
+<div class="compare-wrap">
+<div class="sql-box"><div class="box-label">SQL</div>
+SELECT d.district, a.crop,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a.prod_kg, d.population<br>
+FROM agriculture a<br>
+JOIN districts d<br>
+&nbsp;&nbsp;ON a.district_id = d.district_id;
+</div>
+<div class="r-box"><div class="box-label">tidyverse</div>
+agriculture %>%<br>
+&nbsp;&nbsp;left_join(districts,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;by = "district_id") %>%<br>
+&nbsp;&nbsp;select(district, crop,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prod_kg, population)
+</div>
+</div>
+
+**Key points:**
+
+- `left_join()` keeps **all rows from the left table** and adds matching columns from the right
+- The `by =` argument names the shared key column — must match exactly in both tables
+- Chain `select()` afterwards to keep only the columns you need
+
+### Exercise
+
+Join `agriculture` and `districts` using **`district_id`** as the key. Then keep only the columns **`district`**, **`crop`**, **`prod_kg`**, and **`population`**.
+
+```{r ex05, exercise=TRUE, exercise.lines=7}
+agriculture %>%
+  left_join(___, by = "___") %>%
+  select(___, ___, ___, ___)
+```
+
+```{r ex05-hint-1}
+# The second table to join is districts; the key is district_id
+agriculture %>%
+  left_join(districts, by = "district_id") %>%
+  select(___, ___, ___, ___)
+```
+
+```{r ex05-hint-2}
+# Select the four columns: district (from districts), crop, prod_kg, population
+agriculture %>%
+  left_join(districts, by = "district_id") %>%
+  select(district, crop, prod_kg, population)
+```
+
+```{r ex05-solution}
+agriculture %>%
+  left_join(districts, by = "district_id") %>%
+  select(district, crop, prod_kg, population)
+```
+
+### Check your understanding
+
+```{r quiz05}
+quiz(
+  question(
+    "How many rows does the joined result have?",
+    answer("80"),
+    answer("160"),
+    answer("240", correct = TRUE),
+    answer("320"),
+    allow_retry = TRUE
+  ),
+  question(
+    "What does left_join() do when a district_id in agriculture has no match in districts?",
+    answer("It removes that row from the result"),
+    answer("It stops with an error"),
+    answer("It keeps the row and fills the districts columns with NA", correct = TRUE),
+    answer("It duplicates the row"),
+    allow_retry = TRUE
+  )
+)
+```
+
+---
+
+## Bonus · Combining verbs {data-progressive=TRUE}
+
+### Real analysis chains multiple verbs
+
+Run each chunk to see how verbs combine. Feel free to modify them!
+
+**Top 10 Bean-producing districts by name:**
+
+```{r bonus1, exercise=TRUE, exercise.lines=9}
+agriculture %>%
+  filter(crop == "Bean") %>%
+  group_by(district_id) %>%
+  summarise(total_prod_kg = sum(prod_kg, na.rm = TRUE)) %>%
+  arrange(desc(total_prod_kg)) %>%
+  left_join(districts, by = "district_id") %>%
+  select(district, total_prod_kg) %>%
+  head(10)
+```
+
+**Total production and value per crop:**
+
+```{r bonus2, exercise=TRUE, exercise.lines=8}
+agriculture %>%
+  group_by(crop) %>%
+  summarise(
+    total_prod_kg = sum(prod_kg,    na.rm = TRUE),
+    total_value   = sum(value_real, na.rm = TRUE),
+    n_districts   = n_distinct(district_id)
+  ) %>%
+  arrange(desc(total_value))
+```
+
+**Bar chart — total production by crop:**
+
+```{r bonus3, exercise=TRUE, exercise.lines=15}
+agriculture %>%
+  group_by(crop) %>%
+  summarise(total_prod_kg = sum(prod_kg, na.rm = TRUE)) %>%
+  ggplot(aes(x = reorder(crop, total_prod_kg),
+             y = total_prod_kg,
+             fill = crop)) +
+  geom_col(width = 0.6) +
+  coord_flip() +
+  scale_fill_manual(values = c(Bean = "#a78bfa", Maize = "#f5a623", Rice = "#3ecf8e")) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Total production by crop 2025",
+       x = NULL, y = "Production (kg)") +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+```
+
+---
+
+## Summary · SQL → tidyverse cheatsheet {data-progressive=FALSE}
+
+```{r cheatsheet, echo=FALSE}
+tibble::tribble(
+  ~SQL,                           ~tidyverse,                                    ~Notes,
+  "SELECT col1, col2",            "select(col1, col2)",                          "No quotes on column names",
+  "SELECT *",                     "(default — omit select)",                     "All columns by default",
+  "SELECT DISTINCT col",          "distinct(col)",                               "Removes duplicate rows",
+  "WHERE col = 'x'",              "filter(col == 'x')",                          "== for equality",
+  "WHERE col > 5 AND col2 = 'y'", "filter(col > 5, col2 == 'y')",               "Comma means AND",
+  "WHERE col IN ('a','b')",       "filter(col %in% c('a','b'))",                 "Use %in% for lists",
+  "WHERE col IS NULL",            "filter(is.na(col))",                          "NA not NULL in R",
+  "ORDER BY col ASC",             "arrange(col)",                                "Ascending is default",
+  "ORDER BY col DESC",            "arrange(desc(col))",                          "Wrap in desc()",
+  "GROUP BY col",                 "group_by(col)",                               "Pair with summarise()",
+  "SUM(col) AS total",            "summarise(total = sum(col, na.rm=TRUE))",     "na.rm drops NAs",
+  "COUNT(*) AS n",                "summarise(n = n())",                          "n() counts rows in group",
+  "COUNT(DISTINCT col)",          "summarise(n = n_distinct(col))",              "Unique values per group",
+  "JOIN t2 ON t1.k = t2.k",      "left_join(t2, by = 'k')",                    "Keeps all left rows",
+  "SELECT col, col*2 AS double",  "mutate(double = col * 2)",                    "mutate() adds new columns"
+) %>%
+  knitr::kable(col.names = c("SQL", "tidyverse", "Notes"),
+               align = c("l","l","l"))
+```
+
+---
+
+*Dataset: Agricultural production, — 2025.*  
+*Packages: `learnr`, `tidyverse` (dplyr, ggplot2, readr), `DT`.*
