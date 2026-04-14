@@ -1,0 +1,537 @@
+---
+title: "Data Manipulation with tidyverse"
+subtitle: "Data Manipulation  — 2025"
+author: "Christophe Bontemps (SIAP)"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    highlight: kate
+    toc: true
+    toc_float:
+      collapsed: false
+    number_sections: false
+    df_print: paged
+    code_folding: show
+---
+
+```{css, echo=FALSE}
+/* ── General ── */
+body { font-family: 'DM Sans', 'Segoe UI', sans-serif; font-size: 15px; color: #1a1916; }
+h1, h2, h3 { font-weight: 600; }
+h2 { border-bottom: 2px solid #e2dfd8; padding-bottom: 6px; margin-top: 2rem; }
+h3 { color: #2a6496; margin-top: 1.6rem; }
+
+/* ── Exercise boxes ── */
+.exercise {
+  background: #f7f6f2;
+  border-left: 4px solid #2a6496;
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  margin: 1.2rem 0;
+}
+.exercise .ex-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: #2a6496;
+  margin-bottom: 6px;
+}
+.exercise p { margin: 0; color: #3a3a38; line-height: 1.7; }
+.exercise strong { color: #8a5c0a; }
+.exercise code { background: #e8e6e0; padding: 1px 5px; border-radius: 3px; font-size: 13px; }
+
+/* ── Hint boxes ── */
+.hint {
+  background: #eaf1f8;
+  border: 1px solid #b5d4f4;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: .8rem 0;
+  font-size: 13.5px;
+  color: #185fa5;
+  line-height: 1.6;
+}
+.hint::before { content: "💡 Hint: "; font-weight: 600; }
+
+/* ── Solution boxes ── */
+.solution {
+  background: #f0ecfb;
+  border: 1px solid #c4b5f8;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: .8rem 0;
+  font-size: 13.5px;
+  color: #5b3fa6;
+}
+.solution::before { content: "✅ Solution — expand code block above"; font-weight: 600; display: block; margin-bottom: 4px; }
+
+/* ── Schema cards ── */
+.schema-wrap { display: flex; gap: 14px; flex-wrap: wrap; margin: 1rem 0 1.4rem; }
+.schema-card {
+  background: #fff;
+  border: 1px solid #e2dfd8;
+  border-radius: 10px;
+  padding: 12px 16px;
+  min-width: 200px;
+  font-size: 13px;
+}
+.schema-card .sc-title {
+  font-family: monospace;
+  font-size: 12px;
+  color: #1a7070;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.schema-card .sc-title::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #1a7070; }
+.schema-card table { width: 100%; border-collapse: collapse; }
+.schema-card td { padding: 2px 6px 2px 0; font-family: monospace; font-size: 12px; }
+.schema-card td:first-child { color: #1a1916; font-weight: 500; }
+.schema-card td:last-child { color: #9b9790; }
+.key-col td:first-child { color: #8a5c0a !important; }
+
+/* ── SQL comparison block ── */
+.sql-compare {
+  display: flex; gap: 12px; flex-wrap: wrap; margin: 1rem 0;
+}
+.sql-box, .r-box {
+  flex: 1; min-width: 220px;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: monospace;
+  font-size: 12.5px;
+  line-height: 1.8;
+}
+.sql-box { background: #1e2333; color: #c8d3f5; }
+.r-box   { background: #0d3326; color: #9af0cc; }
+.sql-box .label, .r-box .label {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  margin-bottom: 6px; opacity: .6; font-family: sans-serif;
+}
+.sql-kw  { color: #89ddff; }
+.sql-val { color: #f78c6c; }
+.r-fn    { color: #2dd4bf; }
+.r-arg   { color: #f5a623; }
+
+/* ── Progress tracker ── */
+.progress-section {
+  background: #fff; border: 1px solid #e2dfd8; border-radius: 10px;
+  padding: 16px 20px; margin: 1.5rem 0;
+}
+.progress-section h4 { margin: 0 0 10px; font-size: 13px; color: #6b6760; text-transform: uppercase; letter-spacing: .1em; }
+.prog-items { display: flex; gap: 8px; flex-wrap: wrap; }
+.prog-item {
+  padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 500;
+  border: 1px solid #e2dfd8; color: #9b9790; background: #f7f6f2;
+}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo    = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  comment = ""
+)
+```
+
+```{r load-packages, echo=TRUE}
+library(tidyverse)
+```
+
+---
+
+## About this notebook
+
+This notebook teaches **data manipulation with tidyverse** using real agricultural data from Ceará, Brazil (2025). Each exercise mirrors a SQL command — so you can see both approaches side by side.
+
+<div class="progress-section">
+<h4>Exercises</h4>
+<div class="prog-items">
+  <span class="prog-item">01 · filter()</span>
+  <span class="prog-item">02 · select()</span>
+  <span class="prog-item">03 · arrange()</span>
+  <span class="prog-item">04 · group_by() + summarise()</span>
+  <span class="prog-item">05 · left_join()</span>
+</div>
+</div>
+
+---
+
+## The datasets
+
+Two tables are available for all exercises. They are linked by **district_id**.
+
+<div class="schema-wrap">
+  <div class="schema-card">
+    <div class="sc-title">districts</div>
+    <table>
+      <tr class="key-col"><td>district_id</td><td>text 🔑</td></tr>
+      <tr><td>district</td><td>text</td></tr>
+      <tr><td>population</td><td>integer</td></tr>
+    </table>
+  </div>
+  <div class="schema-card">
+    <div class="sc-title">agriculture</div>
+    <table>
+      <tr class="key-col"><td>district_id</td><td>text 🔑</td></tr>
+      <tr><td>year</td><td>text</td></tr>
+      <tr><td>crop</td><td>text</td></tr>
+      <tr><td>area_ha</td><td>integer</td></tr>
+      <tr><td>prod_kg</td><td>integer</td></tr>
+      <tr><td>value_real</td><td>decimal</td></tr>
+    </table>
+  </div>
+</div>
+
+```{r load-data}
+districts   <- read_csv("Data/districts.csv",   show_col_types = FALSE)
+agriculture <- read_csv("Data/agriculture.csv", show_col_types = FALSE)
+```
+
+```{r preview-districts}
+glimpse(districts)
+```
+
+```{r preview-agriculture}
+glimpse(agriculture)
+```
+
+---
+
+## tidyverse vs SQL — quick reference
+
+Every SQL clause maps directly to a tidyverse verb:
+
+| SQL | tidyverse | What it does |
+|-----|-----------|--------------|
+| `SELECT col1, col2` | `select(col1, col2)` | Keep only certain columns |
+| `WHERE condition` | `filter(condition)` | Keep only rows matching a condition |
+| `ORDER BY col DESC` | `arrange(desc(col))` | Sort rows |
+| `GROUP BY col` | `group_by(col)` | Define groups for aggregation |
+| `SUM(col) AS total` | `summarise(total = sum(col))` | Compute aggregates per group |
+| `JOIN ... ON key` | `left_join(..., by = "key")` | Combine two tables |
+
+The **pipe operator `%>%`** chains operations together — equivalent to nesting SQL clauses. Read it as *"then"*:
+
+```r
+agriculture %>%        # start with this table, THEN
+  filter(crop == "Rice") %>%   # keep only Rice rows, THEN
+  select(district_id, prod_kg) # keep only these columns
+```
+
+---
+
+## Exercise 01 · `filter()` {#ex01}
+
+*SQL equivalent: `WHERE`*
+
+<div class="sql-compare">
+<div class="sql-box">
+<div class="label">SQL</div>
+<span class="sql-kw">SELECT</span> * <span class="sql-kw">FROM</span> agriculture<br>
+<span class="sql-kw">WHERE</span> crop = <span class="sql-val">'Maize'</span><br>
+&nbsp;&nbsp;<span class="sql-kw">AND</span> prod_kg > <span class="sql-val">5000</span>;
+</div>
+<div class="r-box">
+<div class="label">tidyverse</div>
+agriculture <span class="r-fn">%>%</span><br>
+&nbsp;&nbsp;<span class="r-fn">filter</span>(<span class="r-arg">crop == "Maize"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="r-arg">prod_kg > 5000</span>)
+</div>
+</div>
+
+<div class="exercise">
+<div class="ex-label">Exercise 01</div>
+<p>From the <code>agriculture</code> table, keep only rows where the <strong>crop is "Maize"</strong> and <strong>prod_kg is greater than 5000</strong>. How many districts produced more than 5,000 kg of Maize?</p>
+</div>
+
+<div class="hint">
+In <code>filter()</code>, use <code>==</code> (double equals) to test equality for text. Separate multiple conditions with a comma (which means AND).
+</div>
+
+```{r ex01, eval=FALSE}
+# Write your answer here
+agriculture %>%
+  filter(___ == "___",
+         ___ > ___)
+```
+
+```{r ex01-solution, echo=TRUE, code_folding='hide'}
+# Solution — click to reveal
+agriculture %>%
+  filter(crop == "Maize",
+         prod_kg > 5000)
+```
+
+<div class="solution">
+The result should show districts where Maize production exceeded 5,000 kg.
+</div>
+
+---
+
+## Exercise 02 · `select()` {#ex02}
+
+*SQL equivalent: `SELECT col1, col2`*
+
+<div class="sql-compare">
+<div class="sql-box">
+<div class="label">SQL</div>
+<span class="sql-kw">SELECT</span> district_id, crop, value_real<br>
+<span class="sql-kw">FROM</span> agriculture;
+</div>
+<div class="r-box">
+<div class="label">tidyverse</div>
+agriculture <span class="r-fn">%>%</span><br>
+&nbsp;&nbsp;<span class="r-fn">select</span>(<span class="r-arg">district_id, crop, value_real</span>)
+</div>
+</div>
+
+<div class="exercise">
+<div class="ex-label">Exercise 02</div>
+<p>From the <code>agriculture</code> table, keep only the columns <strong>district_id</strong>, <strong>crop</strong>, and <strong>value_real</strong>. The result should have 240 rows and exactly 3 columns.</p>
+</div>
+
+<div class="hint">
+List column names separated by commas inside <code>select()</code>. No quotes needed for column names.
+</div>
+
+```{r ex02, eval=FALSE}
+# Write your answer here
+agriculture %>%
+  select(___, ___, ___)
+```
+
+```{r ex02-solution, echo=TRUE, code_folding='hide'}
+# Solution — click to reveal
+agriculture %>%
+  select(district_id, crop, value_real)
+```
+
+<div class="solution">
+The result should have 240 rows and 3 columns: district_id, crop, value_real.
+</div>
+
+---
+
+## Exercise 03 · `arrange()` {#ex03}
+
+*SQL equivalent: `ORDER BY col DESC`*
+
+<div class="sql-compare">
+<div class="sql-box">
+<div class="label">SQL</div>
+<span class="sql-kw">SELECT</span> * <span class="sql-kw">FROM</span> agriculture<br>
+<span class="sql-kw">ORDER BY</span> value_real <span class="sql-val">DESC</span>;
+</div>
+<div class="r-box">
+<div class="label">tidyverse</div>
+agriculture <span class="r-fn">%>%</span><br>
+&nbsp;&nbsp;<span class="r-fn">arrange</span>(<span class="r-fn">desc</span>(<span class="r-arg">value_real</span>))
+</div>
+</div>
+
+<div class="exercise">
+<div class="ex-label">Exercise 03</div>
+<p>Sort the <code>agriculture</code> table by <strong>value_real</strong> from highest to lowest. Which district and crop has the highest agricultural value?</p>
+</div>
+
+<div class="hint">
+Use <code>arrange(desc(column_name))</code> for descending order. For ascending order you would just write <code>arrange(column_name)</code>.
+</div>
+
+```{r ex03, eval=FALSE}
+# Write your answer here
+agriculture %>%
+  arrange(___(___))
+```
+
+```{r ex03-solution, echo=TRUE, code_folding='hide'}
+# Solution — click to reveal
+agriculture %>%
+  arrange(desc(value_real))
+```
+
+<div class="solution">
+The first row should be the district/crop combination with the highest value_real.
+</div>
+
+---
+
+## Exercise 04 · `group_by()` + `summarise()` {#ex04}
+
+*SQL equivalent: `GROUP BY` + `SUM()`*
+
+<div class="sql-compare">
+<div class="sql-box">
+<div class="label">SQL</div>
+<span class="sql-kw">SELECT</span> district_id,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="sql-kw">SUM</span>(prod_kg) <span class="sql-kw">AS</span> total_prod_kg<br>
+<span class="sql-kw">FROM</span> agriculture<br>
+<span class="sql-kw">GROUP BY</span> district_id;
+</div>
+<div class="r-box">
+<div class="label">tidyverse</div>
+agriculture <span class="r-fn">%>%</span><br>
+&nbsp;&nbsp;<span class="r-fn">group_by</span>(<span class="r-arg">district_id</span>) <span class="r-fn">%>%</span><br>
+&nbsp;&nbsp;<span class="r-fn">summarise</span>(<span class="r-arg">total_prod_kg = sum(prod_kg, na.rm = TRUE)</span>)
+</div>
+</div>
+
+<div class="exercise">
+<div class="ex-label">Exercise 04</div>
+<p>For each <strong>district_id</strong>, calculate the <strong>total production</strong> in kg. Name the new column <strong>total_prod_kg</strong>. The result should have one row per district (80 rows).</p>
+</div>
+
+<div class="hint">
+<code>group_by()</code> defines the groups, then <code>summarise()</code> computes one value per group. Use <code>na.rm = TRUE</code> inside <code>sum()</code> to ignore missing values.
+</div>
+
+```{r ex04, eval=FALSE}
+# Write your answer here
+agriculture %>%
+  group_by(___) %>%
+  summarise(total_prod_kg = ___(prod_kg, na.rm = TRUE))
+```
+
+```{r ex04-solution, echo=TRUE, code_folding='hide'}
+# Solution — click to reveal
+agriculture %>%
+  group_by(district_id) %>%
+  summarise(total_prod_kg = sum(prod_kg, na.rm = TRUE))
+```
+
+<div class="solution">
+The result should have 80 rows — one per district — with columns district_id and total_prod_kg.
+</div>
+
+---
+
+## Exercise 05 · `left_join()` {#ex05}
+
+*SQL equivalent: `JOIN ... ON`*
+
+<div class="sql-compare">
+<div class="sql-box">
+<div class="label">SQL</div>
+<span class="sql-kw">SELECT</span> d.district, a.crop,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a.prod_kg, d.population<br>
+<span class="sql-kw">FROM</span> agriculture a<br>
+<span class="sql-kw">JOIN</span> districts d<br>
+&nbsp;&nbsp;<span class="sql-kw">ON</span> a.district_id = d.district_id;
+</div>
+<div class="r-box">
+<div class="label">tidyverse</div>
+agriculture <span class="r-fn">%>%</span><br>
+&nbsp;&nbsp;<span class="r-fn">left_join</span>(districts,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="r-arg">by = "district_id"</span>) <span class="r-fn">%>%</span><br>
+&nbsp;&nbsp;<span class="r-fn">select</span>(<span class="r-arg">district, crop, prod_kg, population</span>)
+</div>
+</div>
+
+<div class="exercise">
+<div class="ex-label">Exercise 05</div>
+<p>Join <code>agriculture</code> and <code>districts</code> using <strong>district_id</strong> as the key. Then select only the columns <strong>district</strong>, <strong>crop</strong>, <strong>prod_kg</strong>, and <strong>population</strong>. The result should have 240 rows.</p>
+</div>
+
+<div class="hint">
+<code>left_join(table2, by = "key_column")</code> adds columns from <code>table2</code> to your table, matching on the key. Chain a <code>select()</code> afterwards to keep only the columns you need.
+</div>
+
+```{r ex05, eval=FALSE}
+# Write your answer here
+agriculture %>%
+  left_join(___, by = "___") %>%
+  select(___, ___, ___, ___)
+```
+
+```{r ex05-solution, echo=TRUE, code_folding='hide'}
+# Solution — click to reveal
+agriculture %>%
+  left_join(districts, by = "district_id") %>%
+  select(district, crop, prod_kg, population)
+```
+
+<div class="solution">
+The result should have 240 rows and 4 columns: district, crop, prod_kg, population.
+</div>
+
+---
+
+## Going further — combining verbs {#bonus}
+
+Real analyses chain multiple verbs together. Try these on your own:
+
+```{r bonus-1}
+# Which districts have the highest total Bean production?
+# (GROUP BY + filter + arrange + join to get district names)
+agriculture %>%
+  filter(crop == "Bean") %>%
+  group_by(district_id) %>%
+  summarise(total_prod_kg = sum(prod_kg, na.rm = TRUE)) %>%
+  arrange(desc(total_prod_kg)) %>%
+  left_join(districts, by = "district_id") %>%
+  select(district, total_prod_kg) %>%
+  head(10)
+```
+
+```{r bonus-2}
+# Total value and production per crop across all districts
+agriculture %>%
+  group_by(crop) %>%
+  summarise(
+    total_prod_kg  = sum(prod_kg,    na.rm = TRUE),
+    total_value    = sum(value_real, na.rm = TRUE),
+    n_districts    = n_distinct(district_id)
+  ) %>%
+  arrange(desc(total_value))
+```
+
+```{r bonus-3}
+# Simple bar chart — total production by crop
+agriculture %>%
+  group_by(crop) %>%
+  summarise(total_prod_kg = sum(prod_kg, na.rm = TRUE)) %>%
+  ggplot(aes(x = reorder(crop, total_prod_kg), y = total_prod_kg, fill = crop)) +
+  geom_col(width = 0.6) +
+  coord_flip() +
+  scale_fill_manual(values = c(Bean = "#a78bfa", Maize = "#f5a623", Rice = "#3ecf8e")) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title    = "Total production by crop — 2025",
+    x        = NULL,
+    y        = "Production (kg)",
+    fill     = NULL
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+```
+
+---
+
+## Summary — SQL → tidyverse cheatsheet
+
+```{r cheatsheet, echo=FALSE}
+tibble::tribble(
+  ~SQL,                              ~tidyverse,                                         ~Notes,
+  "SELECT col1, col2",               "select(col1, col2)",                               "Column names without quotes",
+  "SELECT * (all columns)",          "no verb needed / select(everything())",            "Default is all columns",
+  "WHERE col = 'x'",                 "filter(col == 'x')",                               "Use == not =",
+  "WHERE col > 5 AND col2 = 'y'",    "filter(col > 5, col2 == 'y')",                    "Comma = AND",
+  "WHERE col IN ('a','b')",          "filter(col %in% c('a','b'))",                      "Use %in% for lists",
+  "ORDER BY col DESC",               "arrange(desc(col))",                               "ASC is default",
+  "GROUP BY col",                    "group_by(col)",                                    "Always pair with summarise()",
+  "SUM(col) AS total",               "summarise(total = sum(col, na.rm=TRUE))",          "na.rm avoids NA results",
+  "COUNT(*) AS n",                   "summarise(n = n())",                               "n() counts rows",
+  "JOIN t2 ON t1.key = t2.key",      "left_join(t2, by = 'key')",                       "Keeps all rows from left table",
+  "SELECT DISTINCT col",             "distinct(col)",                                    "Remove duplicate values"
+) %>%
+  knitr::kable(col.names = c("SQL", "tidyverse", "Notes"))
+```
+
+---
+
+*Dataset: Agricultural production,— 2025.  
+Packages used: `tidyverse` (dplyr, ggplot2, readr).*

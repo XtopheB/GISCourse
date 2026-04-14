@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL for GIS — Ceará Agriculture 2025</title>
+<script src="https://cdn.jsdelivr.net/npm/alasql@4.2.1/dist/alasql.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;--border2:#3a4570;--text:#e8ecf5;--text2:#8b93b0;--text3:#555f80;--accent:#4f8ef7;--accent-dim:#1a2d5a;--green:#3ecf8e;--green-dim:#0d3326;--red:#f7614f;--red-dim:#3d150e;--amber:#f5a623;--amber-dim:#3a2a08;--purple:#a78bfa;--purple-dim:#2d2050;--teal:#2dd4bf;--mono:'IBM Plex Mono',monospace;--sans:'DM Sans',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:24px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.logo{padding:0 18px 24px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.logo-tag{font-size:10px;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;font-weight:500;margin-bottom:4px;}
+.logo h1{font-size:15px;font-weight:600;line-height:1.3;}
+.logo p{font-size:11px;color:var(--text3);margin-top:2px;}
+.nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:0 18px;margin-bottom:6px;font-weight:500;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:0 8px 2px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border:1px solid transparent;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--accent-dim);color:var(--accent);border-color:#2a4a8a;}
+.nav-item .nb{margin-left:auto;font-size:10px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:4px;color:var(--text3);}
+.nav-item.active .nb{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+.nav-dot{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;}
+.nav-item.done .nav-dot{background:var(--green);}
+.nav-item.active .nav-dot{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+.nav-section{margin-bottom:16px;}
+.prog-section{margin-top:auto;padding:16px 18px;border-top:1px solid var(--border);}
+.prog-label{font-size:11px;color:var(--text3);margin-bottom:6px;display:flex;justify-content:space-between;}
+.prog-bar{height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--green);border-radius:99px;transition:width .4s ease;}
+.main{padding:32px 36px;overflow-y:auto;}
+.exercise{display:none;}
+.exercise.visible{display:block;}
+.ex-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:var(--accent);background:var(--accent-dim);border:1px solid #2a4a8a;padding:3px 10px;border-radius:5px;margin-bottom:12px;}
+.ex-title{font-size:21px;font-weight:600;margin-bottom:8px;line-height:1.3;}
+.ex-desc{font-size:14px;color:var(--text2);line-height:1.7;max-width:700px;margin-bottom:20px;}
+.ex-desc strong{color:var(--amber);font-weight:500;}
+.ex-desc code{font-family:var(--mono);font-size:12px;background:var(--surface2);padding:1px 5px;border-radius:3px;color:var(--teal);}
+.schema-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.schema-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;min-width:190px;}
+.schema-name{font-size:11px;font-family:var(--mono);color:var(--teal);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.schema-name::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);}
+.schema-col{font-family:var(--mono);font-size:11px;color:var(--text2);display:flex;gap:8px;padding:2px 0;}
+.schema-col .cn{color:var(--text);}
+.schema-col .ct{color:var(--text3);}
+.schema-col .key{color:var(--amber);font-size:10px;}
+.hint-box{display:none;background:var(--accent-dim);border:1px solid #2a4a8a;border-radius:8px;padding:10px 14px;font-size:13px;color:#a0bff8;margin-bottom:12px;line-height:1.6;}
+.hint-box.show{display:block;}
+.sol-box{display:none;background:#0a0d14;border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-family:var(--mono);font-size:12.5px;color:#c8d3f5;line-height:1.8;margin-bottom:12px;}
+.sol-box.show{display:block;}
+.kw{color:#89ddff;}.val{color:#f78c6c;}.fn{color:var(--green);}.cmt{color:#4a5570;}
+.editor-wrap{background:#0a0d14;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.editor-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border);}
+.editor-dots{display:flex;gap:6px;}
+.editor-dots span{width:10px;height:10px;border-radius:50%;}
+.editor-dots span:nth-child(1){background:#ff5f56;}.editor-dots span:nth-child(2){background:#ffbd2e;}.editor-dots span:nth-child(3){background:#27c93f;}
+.editor-label{font-size:11px;font-family:var(--mono);color:var(--text3);}
+textarea.sql-input{width:100%;background:transparent;color:#c8d3f5;font-family:var(--mono);font-size:13px;line-height:1.7;padding:14px 16px;border:none;outline:none;resize:vertical;min-height:90px;}
+textarea.sql-input::placeholder{color:var(--text3);}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;font-family:var(--sans);}
+.btn-run{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-run:hover{background:#3a7be0;}
+.btn-hint{background:transparent;color:var(--text2);border-color:var(--border2);}
+.btn-hint:hover{background:var(--surface2);color:var(--text);}
+.btn-sol{background:transparent;color:var(--amber);border-color:#4a3510;}
+.btn-sol:hover{background:var(--amber-dim);}
+.result-meta{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:var(--text2);}
+.verdict{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;}
+.verdict.correct{background:var(--green-dim);color:var(--green);border:1px solid #1a6040;}
+.verdict.wrong{background:var(--red-dim);color:var(--red);border:1px solid #5a2010;}
+.error-box{background:var(--red-dim);border:1px solid #5a2010;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--red);line-height:1.6;}
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--surface);color:var(--text3);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;font-family:var(--mono);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:7px 12px;color:var(--text);}
+.num{font-family:var(--mono);color:var(--teal);}
+.did{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:500;}
+.b-Rice{background:#0d3326;color:var(--green);}
+.b-Maize{background:var(--amber-dim);color:var(--amber);}
+.b-Bean{background:var(--purple-dim);color:var(--purple);}
+.null-cell{color:var(--text3);font-style:italic;font-size:12px;}
+.no-rows{text-align:center;padding:2rem;color:var(--text3);font-size:13px;}
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-top:18px;}
+.chart-title-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.chart-title{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.07em;}
+.chart-container{position:relative;height:220px;}
+/* Data viewer tab */
+.dv-tabs{display:flex;gap:6px;margin-bottom:16px;}
+.dv-tab{padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;cursor:pointer;transition:all .15s;}
+.dv-tab.active{background:var(--teal);color:#0a1a1a;border-color:var(--teal);font-weight:500;}
+.dv-search{display:flex;gap:10px;margin-bottom:12px;align-items:center;}
+.dv-search input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:13px;font-family:var(--sans);outline:none;}
+.dv-search input:focus{border-color:var(--accent);}
+.dv-count{font-size:12px;color:var(--text3);font-family:var(--mono);}
+.pg-ex{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+.pg-row{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:var(--mono);font-size:11.5px;color:var(--text2);cursor:pointer;transition:all .15s;}
+.pg-row:hover{border-color:var(--border2);color:var(--text);background:var(--surface2);}
+.pg-row-label{font-size:10px;color:var(--text3);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-family:var(--sans);}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-tag">GIS Training</div>
+    <h1>SQL for Spatial Data</h1>
+    <p>Ceará Agriculture · 2025</p>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Data</div>
+    <div class="nav-item" id="nav-dv" onclick="switchEx('dv')">
+      <span>View datasets</span>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Exercises</div>
+    <div class="nav-item active" id="nav-0" onclick="switchEx(0)"><span>WHERE</span><span class="nb">01</span><span class="nav-dot" id="st0"></span></div>
+    <div class="nav-item" id="nav-1" onclick="switchEx(1)"><span>SELECT</span><span class="nb">02</span><span class="nav-dot" id="st1"></span></div>
+    <div class="nav-item" id="nav-2" onclick="switchEx(2)"><span>ORDER BY</span><span class="nb">03</span><span class="nav-dot" id="st2"></span></div>
+    <div class="nav-item" id="nav-3" onclick="switchEx(3)"><span>GROUP BY</span><span class="nb">04</span><span class="nav-dot" id="st3"></span></div>
+    <div class="nav-item" id="nav-4" onclick="switchEx(4)"><span>JOIN</span><span class="nb">05</span><span class="nav-dot" id="st4"></span></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Tools</div>
+    <div class="nav-item" id="nav-pg" onclick="switchEx('pg')"><span>Free playground</span></div>
+  </div>
+  <div class="prog-section">
+    <div class="prog-label"><span>Progress</span><span id="prog-lbl">0 / 5</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- DATA VIEWER -->
+<div class="exercise" id="ex-dv">
+  <div class="ex-tag">Dataset viewer</div>
+  <div class="ex-title">Explore the two tables</div>
+  <div class="ex-desc">These are the two tables available in all exercises. The <code>districts</code> table holds district names and population. The <code>agriculture</code> table holds crop production data — linked by <code>district_id</code>.</div>
+  <div class="dv-tabs">
+    <button class="dv-tab active" onclick="dvSwitch(0)">districts <span style="opacity:.6;font-size:10px;">(80 rows)</span></button>
+    <button class="dv-tab" onclick="dvSwitch(1)">agriculture <span style="opacity:.6;font-size:10px;">(240 rows)</span></button>
+  </div>
+  <div class="dv-search">
+    <input type="text" id="dv-search" placeholder="Search…" oninput="dvRender()">
+    <span class="dv-count" id="dv-count"></span>
+  </div>
+  <div id="dv-table"></div>
+</div>
+
+<!-- EX 0: WHERE -->
+<div class="exercise visible" id="ex-0">
+  <div class="ex-tag">01 · SQL</div>
+  <div class="ex-title">Filter rows with WHERE</div>
+  <div class="ex-desc">Write a query that returns all rows from the <code>agriculture</code> table where the <strong>crop is 'Maize'</strong> and the <strong>prod_kg is greater than 5000</strong>.</div>
+  <div class="schema-row">
+    <div class="schema-card">
+      <div class="schema-name">agriculture</div>
+      <div class="schema-col"><span class="cn">district_id</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">year</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">crop</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">area_ha</span><span class="ct">integer</span></div>
+      <div class="schema-col"><span class="cn">prod_kg</span><span class="ct">integer</span></div>
+      <div class="schema-col"><span class="cn">value_real</span><span class="ct">decimal</span></div>
+    </div>
+  </div>
+  <div class="hint-box" id="hint0">Use WHERE with AND to combine two conditions. Text values need quotes: <code>crop = 'Maize'</code></div>
+  <div class="sol-box" id="sol0"><span class="kw">SELECT</span> *
+<span class="kw">FROM</span> agriculture
+<span class="kw">WHERE</span> crop = <span class="val">'Maize'</span>
+  <span class="kw">AND</span> prod_kg > <span class="val">5000</span>;</div>
+  <div class="editor-wrap"><div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+  <textarea class="sql-input" id="q0" placeholder="SELECT ...&#10;FROM agriculture&#10;WHERE ..."></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQuery(0)">▶ Run</button>
+    <button class="btn btn-hint" onclick="toggleHint(0)">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol(0)">Solution</button>
+  </div>
+  <div id="res0"></div>
+</div>
+
+<!-- EX 1: SELECT -->
+<div class="exercise" id="ex-1">
+  <div class="ex-tag">02 · SQL</div>
+  <div class="ex-title">Project columns with SELECT</div>
+  <div class="ex-desc">Return only <strong>district_id</strong>, <strong>crop</strong>, and <strong>value_real</strong> from the <code>agriculture</code> table. No other columns should appear in the result.</div>
+  <div class="schema-row">
+    <div class="schema-card">
+      <div class="schema-name">agriculture</div>
+      <div class="schema-col"><span class="cn">district_id</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">year</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">crop</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">area_ha</span><span class="ct">integer</span></div>
+      <div class="schema-col"><span class="cn">prod_kg</span><span class="ct">integer</span></div>
+      <div class="schema-col"><span class="cn">value_real</span><span class="ct">decimal</span></div>
+    </div>
+  </div>
+  <div class="hint-box" id="hint1">List the column names separated by commas after SELECT, instead of *</div>
+  <div class="sol-box" id="sol1"><span class="kw">SELECT</span> district_id, crop, value_real
+<span class="kw">FROM</span> agriculture;</div>
+  <div class="editor-wrap"><div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+  <textarea class="sql-input" id="q1" placeholder="SELECT ...&#10;FROM agriculture;"></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQuery(1)">▶ Run</button>
+    <button class="btn btn-hint" onclick="toggleHint(1)">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol(1)">Solution</button>
+  </div>
+  <div id="res1"></div>
+</div>
+
+<!-- EX 2: ORDER BY -->
+<div class="exercise" id="ex-2">
+  <div class="ex-tag">03 · SQL</div>
+  <div class="ex-title">Sort results with ORDER BY</div>
+  <div class="ex-desc">Return all rows from <code>agriculture</code> sorted by <strong>value_real</strong> from highest to lowest. The most valuable crop production should appear first.</div>
+  <div class="schema-row">
+    <div class="schema-card">
+      <div class="schema-name">agriculture</div>
+      <div class="schema-col"><span class="cn">district_id</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">crop</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">area_ha</span><span class="ct">integer</span></div>
+      <div class="schema-col"><span class="cn">prod_kg</span><span class="ct">integer</span></div>
+      <div class="schema-col"><span class="cn">value_real</span><span class="ct">decimal</span></div>
+    </div>
+  </div>
+  <div class="hint-box" id="hint2">Add ORDER BY value_real DESC at the end. DESC = descending (highest first).</div>
+  <div class="sol-box" id="sol2"><span class="kw">SELECT</span> *
+<span class="kw">FROM</span> agriculture
+<span class="kw">ORDER BY</span> value_real <span class="val">DESC</span>;</div>
+  <div class="editor-wrap"><div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+  <textarea class="sql-input" id="q2" placeholder="SELECT ...&#10;FROM agriculture&#10;ORDER BY ..."></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQuery(2)">▶ Run</button>
+    <button class="btn btn-hint" onclick="toggleHint(2)">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol(2)">Solution</button>
+  </div>
+  <div id="res2"></div>
+</div>
+
+<!-- EX 3: GROUP BY -->
+<div class="exercise" id="ex-3">
+  <div class="ex-tag">04 · SQL</div>
+  <div class="ex-title">Aggregate data with GROUP BY</div>
+  <div class="ex-desc">For each <strong>district_id</strong>, calculate the <strong>total production</strong> (sum of prod_kg). Name the result column <strong>total_prod_kg</strong>.</div>
+  <div class="schema-row">
+    <div class="schema-card">
+      <div class="schema-name">agriculture</div>
+      <div class="schema-col"><span class="cn">district_id</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">crop</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">prod_kg</span><span class="ct">integer</span></div>
+      <div class="schema-col"><span class="cn">value_real</span><span class="ct">decimal</span></div>
+    </div>
+  </div>
+  <div class="hint-box" id="hint3">Use SUM(prod_kg) AS total_prod_kg to aggregate. Then GROUP BY district_id.</div>
+  <div class="sol-box" id="sol3"><span class="kw">SELECT</span> district_id,
+       <span class="fn">SUM</span>(prod_kg) <span class="kw">AS</span> total_prod_kg
+<span class="kw">FROM</span> agriculture
+<span class="kw">GROUP BY</span> district_id;</div>
+  <div class="editor-wrap"><div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+  <textarea class="sql-input" id="q3" placeholder="SELECT district_id, SUM(...) AS ...&#10;FROM agriculture&#10;GROUP BY ..."></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQuery(3)">▶ Run</button>
+    <button class="btn btn-hint" onclick="toggleHint(3)">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol(3)">Solution</button>
+  </div>
+  <div id="res3"></div>
+  <div id="chart3-wrap" style="display:none">
+    <div class="chart-wrap"><div class="chart-title-bar"><span class="chart-title">Total production by crop (kg)</span></div>
+    <div class="chart-container"><canvas id="chart3"></canvas></div></div>
+  </div>
+</div>
+
+<!-- EX 4: JOIN -->
+<div class="exercise" id="ex-4">
+  <div class="ex-tag">05 · SQL</div>
+  <div class="ex-title">Combine tables with JOIN</div>
+  <div class="ex-desc">Join <code>agriculture</code> and <code>districts</code> to get the <strong>district name</strong>, <strong>crop</strong>, <strong>prod_kg</strong>, and <strong>population</strong> for all rows. Use <strong>district_id</strong> as the join key.</div>
+  <div class="schema-row">
+    <div class="schema-card">
+      <div class="schema-name">agriculture</div>
+      <div class="schema-col"><span class="cn key">district_id</span><span class="ct">text 🔑</span></div>
+      <div class="schema-col"><span class="cn">crop</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">area_ha</span><span class="ct">integer</span></div>
+      <div class="schema-col"><span class="cn">prod_kg</span><span class="ct">integer</span></div>
+      <div class="schema-col"><span class="cn">value_real</span><span class="ct">decimal</span></div>
+    </div>
+    <div class="schema-card">
+      <div class="schema-name">districts</div>
+      <div class="schema-col"><span class="cn key">district_id</span><span class="ct">text 🔑</span></div>
+      <div class="schema-col"><span class="cn">district</span><span class="ct">text</span></div>
+      <div class="schema-col"><span class="cn">population</span><span class="ct">integer</span></div>
+    </div>
+  </div>
+  <div class="hint-box" id="hint4">Use JOIN … ON to link both tables: FROM agriculture a JOIN districts d ON a.district_id = d.district_id. Then select using aliases: d.district, a.crop, etc.</div>
+  <div class="sol-box" id="sol4"><span class="kw">SELECT</span> d.district, a.crop, a.prod_kg, d.population
+<span class="kw">FROM</span> agriculture a
+<span class="kw">JOIN</span> districts d <span class="kw">ON</span> a.district_id = d.district_id;</div>
+  <div class="editor-wrap"><div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+  <textarea class="sql-input" id="q4" placeholder="SELECT d.district, a.crop, a.prod_kg, d.population&#10;FROM agriculture a&#10;JOIN districts d ON ..."></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQuery(4)">▶ Run</button>
+    <button class="btn btn-hint" onclick="toggleHint(4)">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol(4)">Solution</button>
+  </div>
+  <div id="res4"></div>
+</div>
+
+<!-- PLAYGROUND -->
+<div class="exercise" id="ex-pg">
+  <div class="ex-tag">Free playground</div>
+  <div class="ex-title">Write any query</div>
+  <div class="ex-desc">Both tables are loaded. Click an example to prefill, or write your own query.</div>
+  <div class="schema-row">
+    <div class="schema-card">
+      <div class="schema-name">agriculture</div>
+      <div class="schema-col"><span class="cn" style="color:var(--amber)">district_id</span><span class="ct">· year · crop · area_ha · prod_kg · value_real</span></div>
+    </div>
+    <div class="schema-card">
+      <div class="schema-name">districts</div>
+      <div class="schema-col"><span class="cn" style="color:var(--amber)">district_id</span><span class="ct">· district · population</span></div>
+    </div>
+  </div>
+  <div class="pg-ex">
+    <div class="pg-row" onclick="fillPG(`SELECT district_id, SUM(prod_kg) AS total_prod\nFROM agriculture\nGROUP BY district_id\nORDER BY total_prod DESC;`)"><div class="pg-row-label">Total production per district</div>SELECT district_id, SUM(prod_kg) AS total_prod FROM agriculture GROUP BY district_id ORDER BY total_prod DESC;</div>
+    <div class="pg-row" onclick="fillPG(`SELECT d.district, d.population, SUM(a.value_real) AS total_value\nFROM agriculture a\nJOIN districts d ON a.district_id = d.district_id\nGROUP BY d.district, d.population\nORDER BY total_value DESC;`)"><div class="pg-row-label">District name + population + total agricultural value (JOIN + GROUP BY)</div>SELECT d.district, d.population, SUM(a.value_real) AS total_value FROM agriculture a JOIN districts d ON a.district_id = d.district_id GROUP BY ...</div>
+    <div class="pg-row" onclick="fillPG(`SELECT d.district, a.crop, a.area_ha, a.prod_kg\nFROM agriculture a\nJOIN districts d ON a.district_id = d.district_id\nWHERE a.crop = 'Rice' AND a.prod_kg > 1000\nORDER BY a.prod_kg DESC;`)"><div class="pg-row-label">Rice producers with production &gt; 1000 kg (JOIN + WHERE)</div>SELECT d.district, a.crop, a.area_ha, a.prod_kg FROM agriculture a JOIN districts d ON ... WHERE crop = 'Rice' AND prod_kg > 1000 ...</div>
+  </div>
+  <div class="editor-wrap"><div class="editor-header"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-label">query.sql</span></div>
+  <textarea class="sql-input" id="q-pg" style="min-height:120px;" placeholder="SELECT ..."></textarea></div>
+  <div class="btn-row"><button class="btn btn-run" onclick="runQuery('pg')">▶ Run</button></div>
+  <div id="res-pg"></div>
+  <div id="chart-pg-wrap" style="display:none">
+    <div class="chart-wrap"><div class="chart-title-bar"><span class="chart-title" id="chart-pg-title">Result chart</span></div>
+    <div class="chart-container"><canvas id="chart-pg"></canvas></div></div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+const DISTRICTS = [{"district_id": "D001", "district": "ABAIARA", "population": 21800}, {"district_id": "D002", "district": "ACOPIARA", "population": 54000}, {"district_id": "D003", "district": "AIUABA", "population": 17600}, {"district_id": "D004", "district": "ALTANEIRA", "population": 7200}, {"district_id": "D005", "district": "ALTO SANTO", "population": 17800}, {"district_id": "D006", "district": "ANTONINA DO NORTE", "population": 9500}, {"district_id": "D007", "district": "ARACATI", "population": 75000}, {"district_id": "D008", "district": "ARARIPE", "population": 22000}, {"district_id": "D009", "district": "ARNEIROZ", "population": 8400}, {"district_id": "D010", "district": "ASSARE", "population": 24000}, {"district_id": "D011", "district": "AURORA", "population": 24800}, {"district_id": "D012", "district": "BAIXIO", "population": 7400}, {"district_id": "D013", "district": "BANABUIU", "population": 16200}, {"district_id": "D014", "district": "BARBALHA", "population": 61000}, {"district_id": "D015", "district": "BARRO", "population": 20000}, {"district_id": "D016", "district": "BOA VIAGEM", "population": 52000}, {"district_id": "D017", "district": "BREJO SANTO", "population": 43000}, {"district_id": "D018", "district": "CAMPOS SALES", "population": 29000}, {"district_id": "D019", "district": "CARIRIACU", "population": 22000}, {"district_id": "D020", "district": "CARIUS", "population": 22000}, {"district_id": "D021", "district": "CATARINA", "population": 18000}, {"district_id": "D022", "district": "CEDRO", "population": 26000}, {"district_id": "D023", "district": "CRATO", "population": 125000}, {"district_id": "D024", "district": "DEP. IRAPUAN PINHEIRO", "population": 12500}, {"district_id": "D025", "district": "ERERE", "population": 8000}, {"district_id": "D026", "district": "FARIAS BRITO", "population": 18000}, {"district_id": "D027", "district": "GRANJEIRO", "population": 5100}, {"district_id": "D028", "district": "IBICUITINGA", "population": 11000}, {"district_id": "D029", "district": "ICAPUI", "population": 19000}, {"district_id": "D030", "district": "ICO", "population": 66000}, {"district_id": "D031", "district": "IGUATU", "population": 102000}, {"district_id": "D032", "district": "IPAUMIRIM", "population": 12000}, {"district_id": "D033", "district": "IRACEMA", "population": 13000}, {"district_id": "D034", "district": "ITAICABA", "population": 8000}, {"district_id": "D035", "district": "ITATIRA", "population": 18000}, {"district_id": "D036", "district": "JAGUARETAMA", "population": 19000}, {"district_id": "D037", "district": "JAGUARIBARA", "population": 10000}, {"district_id": "D038", "district": "JAGUARIBE", "population": 35000}, {"district_id": "D039", "district": "JAGUARUANA", "population": 33000}, {"district_id": "D040", "district": "JARDIM", "population": 26000}, {"district_id": "D041", "district": "JATI", "population": 8700}, {"district_id": "D042", "district": "JUAZEIRO DO NORTE", "population": 275000}, {"district_id": "D043", "district": "JUCAS", "population": 23000}, {"district_id": "D044", "district": "LAVRAS DA MANGABEIRA", "population": 31000}, {"district_id": "D045", "district": "LIMOEIRO DO NORTE", "population": 56000}, {"district_id": "D046", "district": "MADALENA", "population": 20000}, {"district_id": "D047", "district": "MAURITI", "population": 43000}, {"district_id": "D048", "district": "MILAGRES", "population": 29000}, {"district_id": "D049", "district": "MILHA", "population": 13000}, {"district_id": "D050", "district": "MISSAO VELHA", "population": 35000}, {"district_id": "D051", "district": "MOMBACA", "population": 42000}, {"district_id": "D052", "district": "MONSENHOR TABOSA", "population": 21000}, {"district_id": "D053", "district": "MORADA NOVA", "population": 62000}, {"district_id": "D054", "district": "NOVA OLINDA", "population": 14000}, {"district_id": "D055", "district": "OROS", "population": 21000}, {"district_id": "D056", "district": "PALHANO", "population": 9500}, {"district_id": "D057", "district": "PARAMBU", "population": 38000}, {"district_id": "D058", "district": "PEDRA BRANCA", "population": 40000}, {"district_id": "D059", "district": "PENAFORTE", "population": 7300}, {"district_id": "D060", "district": "PEREIRO", "population": 16000}, {"district_id": "D061", "district": "PIQUET CARNEIRO", "population": 17000}, {"district_id": "D062", "district": "PORTEIRAS", "population": 14000}, {"district_id": "D063", "district": "POTENGI", "population": 13000}, {"district_id": "D064", "district": "POTIRETAMA", "population": 9000}, {"district_id": "D065", "district": "QUIXADA", "population": 88000}, {"district_id": "D066", "district": "QUIXELO", "population": 23000}, {"district_id": "D067", "district": "QUIXERAMOBIM", "population": 79000}, {"district_id": "D068", "district": "QUIXERE", "population": 18000}, {"district_id": "D069", "district": "RUSSAS", "population": 75000}, {"district_id": "D070", "district": "SABOEIRO", "population": 16000}, {"district_id": "D071", "district": "SALITRE", "population": 12500}, {"district_id": "D072", "district": "SANTANA DO CARIRI", "population": 16000}, {"district_id": "D073", "district": "SAO JOAO DO JAGUARIBE", "population": 8500}, {"district_id": "D074", "district": "SENADOR POMPEU", "population": 27000}, {"district_id": "D075", "district": "SOLONOPOLE", "population": 17000}, {"district_id": "D076", "district": "TABULEIRO DO NORTE", "population": 32000}, {"district_id": "D077", "district": "TARRAFAS", "population": 11000}, {"district_id": "D078", "district": "TAUA", "population": 56000}, {"district_id": "D079", "district": "UMARI", "population": 8500}, {"district_id": "D080", "district": "VARZEA ALEGRE", "population": 41000}];
+const AGRICULTURE = [{"district_id": "D001", "year": "2025", "crop": "Rice", "area_ha": "180", "prod_kg": "189", "value_real": "67.19"}, {"district_id": "D001", "year": "2025", "crop": "Maize", "area_ha": "1158", "prod_kg": "903", "value_real": "221.37"}, {"district_id": "D001", "year": "2025", "crop": "Bean", "area_ha": "532", "prod_kg": "117", "value_real": "91.73"}, {"district_id": "D002", "year": "2025", "crop": "Rice", "area_ha": "486", "prod_kg": "61", "value_real": "21.68"}, {"district_id": "D002", "year": "2025", "crop": "Maize", "area_ha": "7531", "prod_kg": "595", "value_real": "145.86"}, {"district_id": "D002", "year": "2025", "crop": "Bean", "area_ha": "6877", "prod_kg": "540", "value_real": "423.38"}, {"district_id": "D003", "year": "2025", "crop": "Rice", "area_ha": "40", "prod_kg": "56", "value_real": "19.91"}, {"district_id": "D003", "year": "2025", "crop": "Maize", "area_ha": "6200", "prod_kg": "4595", "value_real": "1126.45"}, {"district_id": "D003", "year": "2025", "crop": "Bean", "area_ha": "4670", "prod_kg": "869", "value_real": "681.33"}, {"district_id": "D004", "year": "2025", "crop": "Rice", "area_ha": "22", "prod_kg": "14", "value_real": "4.98"}, {"district_id": "D004", "year": "2025", "crop": "Maize", "area_ha": "600", "prod_kg": "716", "value_real": "175.53"}, {"district_id": "D004", "year": "2025", "crop": "Bean", "area_ha": "350", "prod_kg": "101", "value_real": "79.19"}, {"district_id": "D005", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D005", "year": "2025", "crop": "Maize", "area_ha": "290", "prod_kg": "85", "value_real": "20.84"}, {"district_id": "D005", "year": "2025", "crop": "Bean", "area_ha": "2224", "prod_kg": "1033", "value_real": "809.91"}, {"district_id": "D006", "year": "2025", "crop": "Rice", "area_ha": "76", "prod_kg": "88", "value_real": "31.28"}, {"district_id": "D006", "year": "2025", "crop": "Maize", "area_ha": "929", "prod_kg": "352", "value_real": "86.29"}, {"district_id": "D006", "year": "2025", "crop": "Bean", "area_ha": "719", "prod_kg": "112", "value_real": "87.81"}, {"district_id": "D007", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D007", "year": "2025", "crop": "Maize", "area_ha": "1670", "prod_kg": "645", "value_real": "158.12"}, {"district_id": "D007", "year": "2025", "crop": "Bean", "area_ha": "1940", "prod_kg": "567", "value_real": "444.55"}, {"district_id": "D008", "year": "2025", "crop": "Rice", "area_ha": "150", "prod_kg": "138", "value_real": "49.06"}, {"district_id": "D008", "year": "2025", "crop": "Maize", "area_ha": "4595", "prod_kg": "4806", "value_real": "1178.18"}, {"district_id": "D008", "year": "2025", "crop": "Bean", "area_ha": "1800", "prod_kg": "407", "value_real": "319.1"}, {"district_id": "D009", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D009", "year": "2025", "crop": "Maize", "area_ha": "2730", "prod_kg": "898", "value_real": "220.14"}, {"district_id": "D009", "year": "2025", "crop": "Bean", "area_ha": "2520", "prod_kg": "365", "value_real": "286.18"}, {"district_id": "D010", "year": "2025", "crop": "Rice", "area_ha": "1145", "prod_kg": "1073", "value_real": "381.44"}, {"district_id": "D010", "year": "2025", "crop": "Maize", "area_ha": "4537", "prod_kg": "2037", "value_real": "499.37"}, {"district_id": "D010", "year": "2025", "crop": "Bean", "area_ha": "3125", "prod_kg": "641", "value_real": "502.57"}, {"district_id": "D011", "year": "2025", "crop": "Rice", "area_ha": "770", "prod_kg": "832", "value_real": "295.77"}, {"district_id": "D011", "year": "2025", "crop": "Maize", "area_ha": "4977", "prod_kg": "3932", "value_real": "963.92"}, {"district_id": "D011", "year": "2025", "crop": "Bean", "area_ha": "3565", "prod_kg": "715", "value_real": "560.59"}, {"district_id": "D012", "year": "2025", "crop": "Rice", "area_ha": "13", "prod_kg": "6", "value_real": "2.13"}, {"district_id": "D012", "year": "2025", "crop": "Maize", "area_ha": "962", "prod_kg": "370", "value_real": "90.7"}, {"district_id": "D012", "year": "2025", "crop": "Bean", "area_ha": "560", "prod_kg": "80", "value_real": "62.72"}, {"district_id": "D013", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D013", "year": "2025", "crop": "Maize", "area_ha": "800", "prod_kg": "640", "value_real": "156.89"}, {"district_id": "D013", "year": "2025", "crop": "Bean", "area_ha": "800", "prod_kg": "326", "value_real": "255.6"}, {"district_id": "D014", "year": "2025", "crop": "Rice", "area_ha": "108", "prod_kg": "112", "value_real": "39.82"}, {"district_id": "D014", "year": "2025", "crop": "Maize", "area_ha": "312", "prod_kg": "243", "value_real": "59.57"}, {"district_id": "D014", "year": "2025", "crop": "Bean", "area_ha": "317", "prod_kg": "94", "value_real": "73.7"}, {"district_id": "D015", "year": "2025", "crop": "Rice", "area_ha": "640", "prod_kg": "614", "value_real": "218.27"}, {"district_id": "D015", "year": "2025", "crop": "Maize", "area_ha": "4008", "prod_kg": "1178", "value_real": "288.78"}, {"district_id": "D015", "year": "2025", "crop": "Bean", "area_ha": "2595", "prod_kg": "535", "value_real": "419.46"}, {"district_id": "D016", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D016", "year": "2025", "crop": "Maize", "area_ha": "18678", "prod_kg": "7444", "value_real": "1824.88"}, {"district_id": "D016", "year": "2025", "crop": "Bean", "area_ha": "12181", "prod_kg": "2071", "value_real": "1623.75"}, {"district_id": "D017", "year": "2025", "crop": "Rice", "area_ha": "65", "prod_kg": "74", "value_real": "26.31"}, {"district_id": "D017", "year": "2025", "crop": "Maize", "area_ha": "5160", "prod_kg": "3679", "value_real": "901.9"}, {"district_id": "D017", "year": "2025", "crop": "Bean", "area_ha": "2335", "prod_kg": "1013", "value_real": "794.23"}, {"district_id": "D018", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D018", "year": "2025", "crop": "Maize", "area_ha": "4137", "prod_kg": "2668", "value_real": "654.05"}, {"district_id": "D018", "year": "2025", "crop": "Bean", "area_ha": "2035", "prod_kg": "497", "value_real": "389.67"}, {"district_id": "D019", "year": "2025", "crop": "Rice", "area_ha": "675", "prod_kg": "680", "value_real": "241.73"}, {"district_id": "D019", "year": "2025", "crop": "Maize", "area_ha": "1350", "prod_kg": "857", "value_real": "210.09"}, {"district_id": "D019", "year": "2025", "crop": "Bean", "area_ha": "1306", "prod_kg": "267", "value_real": "209.34"}, {"district_id": "D020", "year": "2025", "crop": "Rice", "area_ha": "930", "prod_kg": "494", "value_real": "175.61"}, {"district_id": "D020", "year": "2025", "crop": "Maize", "area_ha": "2097", "prod_kg": "885", "value_real": "216.96"}, {"district_id": "D020", "year": "2025", "crop": "Bean", "area_ha": "1645", "prod_kg": "335", "value_real": "262.65"}, {"district_id": "D021", "year": "2025", "crop": "Rice", "area_ha": "18", "prod_kg": "2", "value_real": "0.71"}, {"district_id": "D021", "year": "2025", "crop": "Maize", "area_ha": "1444", "prod_kg": "110", "value_real": "26.97"}, {"district_id": "D021", "year": "2025", "crop": "Bean", "area_ha": "1316", "prod_kg": "151", "value_real": "118.39"}, {"district_id": "D022", "year": "2025", "crop": "Rice", "area_ha": "330", "prod_kg": "338", "value_real": "120.16"}, {"district_id": "D022", "year": "2025", "crop": "Maize", "area_ha": "3063", "prod_kg": "1081", "value_real": "265"}, {"district_id": "D022", "year": "2025", "crop": "Bean", "area_ha": "2484", "prod_kg": "268", "value_real": "210.12"}, {"district_id": "D023", "year": "2025", "crop": "Rice", "area_ha": "640", "prod_kg": "454", "value_real": "161.39"}, {"district_id": "D023", "year": "2025", "crop": "Maize", "area_ha": "1993", "prod_kg": "1104", "value_real": "270.64"}, {"district_id": "D023", "year": "2025", "crop": "Bean", "area_ha": "1937", "prod_kg": "393", "value_real": "308.13"}, {"district_id": "D024", "year": "2025", "crop": "Rice", "area_ha": "320", "prod_kg": "384", "value_real": "136.51"}, {"district_id": "D024", "year": "2025", "crop": "Maize", "area_ha": "2142", "prod_kg": "1617", "value_real": "396.4"}, {"district_id": "D024", "year": "2025", "crop": "Bean", "area_ha": "1910", "prod_kg": "764", "value_real": "599.01"}, {"district_id": "D025", "year": "2025", "crop": "Rice", "area_ha": "54", "prod_kg": "10", "value_real": "3.55"}, {"district_id": "D025", "year": "2025", "crop": "Maize", "area_ha": "995", "prod_kg": "437", "value_real": "107.13"}, {"district_id": "D025", "year": "2025", "crop": "Bean", "area_ha": "672", "prod_kg": "136", "value_real": "106.63"}, {"district_id": "D026", "year": "2025", "crop": "Rice", "area_ha": "815", "prod_kg": "423", "value_real": "150.37"}, {"district_id": "D026", "year": "2025", "crop": "Maize", "area_ha": "1580", "prod_kg": "964", "value_real": "236.32"}, {"district_id": "D026", "year": "2025", "crop": "Bean", "area_ha": "1900", "prod_kg": "300", "value_real": "235.21"}, {"district_id": "D027", "year": "2025", "crop": "Rice", "area_ha": "80", "prod_kg": "73", "value_real": "25.95"}, {"district_id": "D027", "year": "2025", "crop": "Maize", "area_ha": "432", "prod_kg": "244", "value_real": "59.82"}, {"district_id": "D027", "year": "2025", "crop": "Bean", "area_ha": "260", "prod_kg": "78", "value_real": "61.16"}, {"district_id": "D028", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D028", "year": "2025", "crop": "Maize", "area_ha": "1725", "prod_kg": "1725", "value_real": "422.88"}, {"district_id": "D028", "year": "2025", "crop": "Bean", "area_ha": "3540", "prod_kg": "2124", "value_real": "1665.3"}, {"district_id": "D029", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D029", "year": "2025", "crop": "Maize", "area_ha": "450", "prod_kg": "168", "value_real": "41.18"}, {"district_id": "D029", "year": "2025", "crop": "Bean", "area_ha": "600", "prod_kg": "115", "value_real": "90.16"}, {"district_id": "D030", "year": "2025", "crop": "Rice", "area_ha": "870", "prod_kg": "2635", "value_real": "936.72"}, {"district_id": "D030", "year": "2025", "crop": "Maize", "area_ha": "9530", "prod_kg": "4096", "value_real": "1004.12"}, {"district_id": "D030", "year": "2025", "crop": "Bean", "area_ha": "7750", "prod_kg": "1881", "value_real": "1474.78"}, {"district_id": "D031", "year": "2025", "crop": "Rice", "area_ha": "4200", "prod_kg": "25143", "value_real": "8938.13"}, {"district_id": "D031", "year": "2025", "crop": "Maize", "area_ha": "2796", "prod_kg": "452", "value_real": "110.81"}, {"district_id": "D031", "year": "2025", "crop": "Bean", "area_ha": "1936", "prod_kg": "611", "value_real": "479.05"}, {"district_id": "D032", "year": "2025", "crop": "Rice", "area_ha": "39", "prod_kg": "19", "value_real": "6.75"}, {"district_id": "D032", "year": "2025", "crop": "Maize", "area_ha": "1755", "prod_kg": "693", "value_real": "169.89"}, {"district_id": "D032", "year": "2025", "crop": "Bean", "area_ha": "1023", "prod_kg": "136", "value_real": "106.63"}, {"district_id": "D033", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D033", "year": "2025", "crop": "Maize", "area_ha": "958", "prod_kg": "321", "value_real": "78.69"}, {"district_id": "D033", "year": "2025", "crop": "Bean", "area_ha": "197", "prod_kg": "68", "value_real": "53.31"}, {"district_id": "D034", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D034", "year": "2025", "crop": "Maize", "area_ha": "320", "prod_kg": "192", "value_real": "47.07"}, {"district_id": "D034", "year": "2025", "crop": "Bean", "area_ha": "435", "prod_kg": "213", "value_real": "167"}, {"district_id": "D035", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D035", "year": "2025", "crop": "Maize", "area_ha": "3897", "prod_kg": "1072", "value_real": "262.8"}, {"district_id": "D035", "year": "2025", "crop": "Bean", "area_ha": "3828", "prod_kg": "668", "value_real": "523.74"}, {"district_id": "D036", "year": "2025", "crop": "Rice", "area_ha": "50", "prod_kg": "210", "value_real": "74.65"}, {"district_id": "D036", "year": "2025", "crop": "Maize", "area_ha": "1760", "prod_kg": "634", "value_real": "155.42"}, {"district_id": "D036", "year": "2025", "crop": "Bean", "area_ha": "4300", "prod_kg": "1100", "value_real": "862.45"}, {"district_id": "D037", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D037", "year": "2025", "crop": "Maize", "area_ha": "491", "prod_kg": "185", "value_real": "45.35"}, {"district_id": "D037", "year": "2025", "crop": "Bean", "area_ha": "1147", "prod_kg": "329", "value_real": "257.95"}, {"district_id": "D038", "year": "2025", "crop": "Rice", "area_ha": "45", "prod_kg": "215", "value_real": "76.43"}, {"district_id": "D038", "year": "2025", "crop": "Maize", "area_ha": "1729", "prod_kg": "547", "value_real": "134.1"}, {"district_id": "D038", "year": "2025", "crop": "Bean", "area_ha": "2841", "prod_kg": "1234", "value_real": "967.51"}, {"district_id": "D039", "year": "2025", "crop": "Rice", "area_ha": "950", "prod_kg": "5700", "value_real": "2026.3"}, {"district_id": "D039", "year": "2025", "crop": "Maize", "area_ha": "2500", "prod_kg": "1867", "value_real": "457.69"}, {"district_id": "D039", "year": "2025", "crop": "Bean", "area_ha": "1400", "prod_kg": "572", "value_real": "448.47"}, {"district_id": "D040", "year": "2025", "crop": "Rice", "area_ha": "60", "prod_kg": "57", "value_real": "20.26"}, {"district_id": "D040", "year": "2025", "crop": "Maize", "area_ha": "950", "prod_kg": "609", "value_real": "149.29"}, {"district_id": "D040", "year": "2025", "crop": "Bean", "area_ha": "525", "prod_kg": "174", "value_real": "136.42"}, {"district_id": "D041", "year": "2025", "crop": "Rice", "area_ha": "12", "prod_kg": "11", "value_real": "3.91"}, {"district_id": "D041", "year": "2025", "crop": "Maize", "area_ha": "1740", "prod_kg": "1248", "value_real": "305.94"}, {"district_id": "D041", "year": "2025", "crop": "Bean", "area_ha": "994", "prod_kg": "126", "value_real": "98.79"}, {"district_id": "D042", "year": "2025", "crop": "Rice", "area_ha": "225", "prod_kg": "221", "value_real": "78.56"}, {"district_id": "D042", "year": "2025", "crop": "Maize", "area_ha": "510", "prod_kg": "314", "value_real": "76.98"}, {"district_id": "D042", "year": "2025", "crop": "Bean", "area_ha": "482", "prod_kg": "148", "value_real": "116.04"}, {"district_id": "D043", "year": "2025", "crop": "Rice", "area_ha": "291", "prod_kg": "232", "value_real": "82.47"}, {"district_id": "D043", "year": "2025", "crop": "Maize", "area_ha": "2528", "prod_kg": "689", "value_real": "168.91"}, {"district_id": "D043", "year": "2025", "crop": "Bean", "area_ha": "1694", "prod_kg": "350", "value_real": "274.41"}, {"district_id": "D044", "year": "2025", "crop": "Rice", "area_ha": "1365", "prod_kg": "2044", "value_real": "726.63"}, {"district_id": "D044", "year": "2025", "crop": "Maize", "area_ha": "3391", "prod_kg": "1046", "value_real": "256.42"}, {"district_id": "D044", "year": "2025", "crop": "Bean", "area_ha": "2946", "prod_kg": "352", "value_real": "275.98"}, {"district_id": "D045", "year": "2025", "crop": "Rice", "area_ha": "1000", "prod_kg": "6000", "value_real": "2132.95"}, {"district_id": "D045", "year": "2025", "crop": "Maize", "area_ha": "1060", "prod_kg": "2939", "value_real": "720.49"}, {"district_id": "D045", "year": "2025", "crop": "Bean", "area_ha": "1835", "prod_kg": "1356", "value_real": "1063.16"}, {"district_id": "D046", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D046", "year": "2025", "crop": "Maize", "area_ha": "8679", "prod_kg": "1197", "value_real": "293.44"}, {"district_id": "D046", "year": "2025", "crop": "Bean", "area_ha": "3480", "prod_kg": "355", "value_real": "278.33"}, {"district_id": "D047", "year": "2025", "crop": "Rice", "area_ha": "135", "prod_kg": "143", "value_real": "50.84"}, {"district_id": "D047", "year": "2025", "crop": "Maize", "area_ha": "16531", "prod_kg": "3571", "value_real": "875.42"}, {"district_id": "D047", "year": "2025", "crop": "Bean", "area_ha": "7284", "prod_kg": "1212", "value_real": "950.26"}, {"district_id": "D048", "year": "2025", "crop": "Rice", "area_ha": "125", "prod_kg": "88", "value_real": "31.28"}, {"district_id": "D048", "year": "2025", "crop": "Maize", "area_ha": "3618", "prod_kg": "644", "value_real": "157.88"}, {"district_id": "D048", "year": "2025", "crop": "Bean", "area_ha": "1632", "prod_kg": "175", "value_real": "137.21"}, {"district_id": "D049", "year": "2025", "crop": "Rice", "area_ha": "150", "prod_kg": "162", "value_real": "57.59"}, {"district_id": "D049", "year": "2025", "crop": "Maize", "area_ha": "4170", "prod_kg": "3336", "value_real": "817.81"}, {"district_id": "D049", "year": "2025", "crop": "Bean", "area_ha": "2580", "prod_kg": "1032", "value_real": "809.13"}, {"district_id": "D050", "year": "2025", "crop": "Rice", "area_ha": "150", "prod_kg": "140", "value_real": "49.77"}, {"district_id": "D050", "year": "2025", "crop": "Maize", "area_ha": "1528", "prod_kg": "390", "value_real": "95.61"}, {"district_id": "D050", "year": "2025", "crop": "Bean", "area_ha": "1553", "prod_kg": "358", "value_real": "280.69"}, {"district_id": "D051", "year": "2025", "crop": "Rice", "area_ha": "84", "prod_kg": "54", "value_real": "19.2"}, {"district_id": "D051", "year": "2025", "crop": "Maize", "area_ha": "5660", "prod_kg": "3288", "value_real": "806.05"}, {"district_id": "D051", "year": "2025", "crop": "Bean", "area_ha": "4330", "prod_kg": "1249", "value_real": "979.27"}, {"district_id": "D052", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D052", "year": "2025", "crop": "Maize", "area_ha": "4429", "prod_kg": "1085", "value_real": "265.99"}, {"district_id": "D052", "year": "2025", "crop": "Bean", "area_ha": "3774", "prod_kg": "437", "value_real": "342.63"}, {"district_id": "D053", "year": "2025", "crop": "Rice", "area_ha": "1731", "prod_kg": "10386", "value_real": "3692.14"}, {"district_id": "D053", "year": "2025", "crop": "Maize", "area_ha": "1600", "prod_kg": "864", "value_real": "211.81"}, {"district_id": "D053", "year": "2025", "crop": "Bean", "area_ha": "10865", "prod_kg": "4477", "value_real": "3510.15"}, {"district_id": "D054", "year": "2025", "crop": "Rice", "area_ha": "300", "prod_kg": "188", "value_real": "66.83"}, {"district_id": "D054", "year": "2025", "crop": "Maize", "area_ha": "1400", "prod_kg": "851", "value_real": "208.62"}, {"district_id": "D054", "year": "2025", "crop": "Bean", "area_ha": "1005", "prod_kg": "166", "value_real": "130.15"}, {"district_id": "D055", "year": "2025", "crop": "Rice", "area_ha": "390", "prod_kg": "1598", "value_real": "568.08"}, {"district_id": "D055", "year": "2025", "crop": "Maize", "area_ha": "2380", "prod_kg": "1373", "value_real": "336.59"}, {"district_id": "D055", "year": "2025", "crop": "Bean", "area_ha": "1080", "prod_kg": "355", "value_real": "278.33"}, {"district_id": "D056", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D056", "year": "2025", "crop": "Maize", "area_ha": "259", "prod_kg": "186", "value_real": "45.6"}, {"district_id": "D056", "year": "2025", "crop": "Bean", "area_ha": "1155", "prod_kg": "436", "value_real": "341.84"}, {"district_id": "D057", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D057", "year": "2025", "crop": "Maize", "area_ha": "13510", "prod_kg": "8228", "value_real": "2017.07"}, {"district_id": "D057", "year": "2025", "crop": "Bean", "area_ha": "11100", "prod_kg": "3141", "value_real": "2462.67"}, {"district_id": "D058", "year": "2025", "crop": "Rice", "area_ha": "301", "prod_kg": "135", "value_real": "47.99"}, {"district_id": "D058", "year": "2025", "crop": "Maize", "area_ha": "14280", "prod_kg": "11424", "value_real": "2800.57"}, {"district_id": "D058", "year": "2025", "crop": "Bean", "area_ha": "6070", "prod_kg": "2769", "value_real": "2171.01"}, {"district_id": "D059", "year": "2025", "crop": "Rice", "area_ha": "18", "prod_kg": "15", "value_real": "5.33"}, {"district_id": "D059", "year": "2025", "crop": "Maize", "area_ha": "920", "prod_kg": "124", "value_real": "30.4"}, {"district_id": "D059", "year": "2025", "crop": "Bean", "area_ha": "844", "prod_kg": "61", "value_real": "47.83"}, {"district_id": "D060", "year": "2025", "crop": "Rice", "area_ha": "40", "prod_kg": "27", "value_real": "9.6"}, {"district_id": "D060", "year": "2025", "crop": "Maize", "area_ha": "3720", "prod_kg": "877", "value_real": "214.99"}, {"district_id": "D060", "year": "2025", "crop": "Bean", "area_ha": "3397", "prod_kg": "414", "value_real": "324.59"}, {"district_id": "D061", "year": "2025", "crop": "Rice", "area_ha": "20", "prod_kg": "4", "value_real": "1.42"}, {"district_id": "D061", "year": "2025", "crop": "Maize", "area_ha": "2811", "prod_kg": "1287", "value_real": "315.5"}, {"district_id": "D061", "year": "2025", "crop": "Bean", "area_ha": "1828", "prod_kg": "377", "value_real": "295.58"}, {"district_id": "D062", "year": "2025", "crop": "Rice", "area_ha": "21", "prod_kg": "18", "value_real": "6.4"}, {"district_id": "D062", "year": "2025", "crop": "Maize", "area_ha": "3300", "prod_kg": "587", "value_real": "143.9"}, {"district_id": "D062", "year": "2025", "crop": "Bean", "area_ha": "549", "prod_kg": "249", "value_real": "195.23"}, {"district_id": "D063", "year": "2025", "crop": "Rice", "area_ha": "25", "prod_kg": "25", "value_real": "8.89"}, {"district_id": "D063", "year": "2025", "crop": "Maize", "area_ha": "3991", "prod_kg": "3076", "value_real": "754.07"}, {"district_id": "D063", "year": "2025", "crop": "Bean", "area_ha": "2950", "prod_kg": "664", "value_real": "520.6"}, {"district_id": "D064", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D064", "year": "2025", "crop": "Maize", "area_ha": "414", "prod_kg": "125", "value_real": "30.64"}, {"district_id": "D064", "year": "2025", "crop": "Bean", "area_ha": "1461", "prod_kg": "255", "value_real": "199.93"}, {"district_id": "D065", "year": "2025", "crop": "Rice", "area_ha": "1", "prod_kg": "2", "value_real": "0.71"}, {"district_id": "D065", "year": "2025", "crop": "Maize", "area_ha": "5400", "prod_kg": "4320", "value_real": "1059.04"}, {"district_id": "D065", "year": "2025", "crop": "Bean", "area_ha": "6800", "prod_kg": "4333", "value_real": "3397.25"}, {"district_id": "D066", "year": "2025", "crop": "Rice", "area_ha": "2190", "prod_kg": "12905", "value_real": "4587.62"}, {"district_id": "D066", "year": "2025", "crop": "Maize", "area_ha": "1550", "prod_kg": "384", "value_real": "94.14"}, {"district_id": "D066", "year": "2025", "crop": "Bean", "area_ha": "1080", "prod_kg": "453", "value_real": "355.17"}, {"district_id": "D067", "year": "2025", "crop": "Rice", "area_ha": "1", "prod_kg": "2", "value_real": "0.71"}, {"district_id": "D067", "year": "2025", "crop": "Maize", "area_ha": "6000", "prod_kg": "6564", "value_real": "1609.15"}, {"district_id": "D067", "year": "2025", "crop": "Bean", "area_ha": "3400", "prod_kg": "1588", "value_real": "1245.06"}, {"district_id": "D068", "year": "2025", "crop": "Rice", "area_ha": "30", "prod_kg": "180", "value_real": "63.99"}, {"district_id": "D068", "year": "2025", "crop": "Maize", "area_ha": "495", "prod_kg": "495", "value_real": "121.35"}, {"district_id": "D068", "year": "2025", "crop": "Bean", "area_ha": "655", "prod_kg": "446", "value_real": "349.68"}, {"district_id": "D069", "year": "2025", "crop": "Rice", "area_ha": "150", "prod_kg": "900", "value_real": "319.94"}, {"district_id": "D069", "year": "2025", "crop": "Maize", "area_ha": "578", "prod_kg": "416", "value_real": "101.98"}, {"district_id": "D069", "year": "2025", "crop": "Bean", "area_ha": "2350", "prod_kg": "1397", "value_real": "1095.31"}, {"district_id": "D070", "year": "2025", "crop": "Rice", "area_ha": "41", "prod_kg": "13", "value_real": "4.62"}, {"district_id": "D070", "year": "2025", "crop": "Maize", "area_ha": "3000", "prod_kg": "874", "value_real": "214.26"}, {"district_id": "D070", "year": "2025", "crop": "Bean", "area_ha": "2163", "prod_kg": "224", "value_real": "175.63"}, {"district_id": "D071", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D071", "year": "2025", "crop": "Maize", "area_ha": "3496", "prod_kg": "1779", "value_real": "436.12"}, {"district_id": "D071", "year": "2025", "crop": "Bean", "area_ha": "4146", "prod_kg": "1227", "value_real": "962.02"}, {"district_id": "D072", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D072", "year": "2025", "crop": "Maize", "area_ha": "13550", "prod_kg": "3835", "value_real": "940.14"}, {"district_id": "D072", "year": "2025", "crop": "Bean", "area_ha": "11524", "prod_kg": "1832", "value_real": "1436.36"}, {"district_id": "D073", "year": "2025", "crop": "Rice", "area_ha": "130", "prod_kg": "780", "value_real": "277.28"}, {"district_id": "D073", "year": "2025", "crop": "Maize", "area_ha": "60", "prod_kg": "14", "value_real": "3.43"}, {"district_id": "D073", "year": "2025", "crop": "Bean", "area_ha": "425", "prod_kg": "311", "value_real": "243.84"}, {"district_id": "D074", "year": "2025", "crop": "Rice", "area_ha": "120", "prod_kg": "144", "value_real": "51.19"}, {"district_id": "D074", "year": "2025", "crop": "Maize", "area_ha": "5838", "prod_kg": "4670", "value_real": "1144.84"}, {"district_id": "D074", "year": "2025", "crop": "Bean", "area_ha": "4670", "prod_kg": "1961", "value_real": "1537.5"}, {"district_id": "D075", "year": "2025", "crop": "Rice", "area_ha": "235", "prod_kg": "310", "value_real": "110.2"}, {"district_id": "D075", "year": "2025", "crop": "Maize", "area_ha": "2748", "prod_kg": "1676", "value_real": "410.87"}, {"district_id": "D075", "year": "2025", "crop": "Bean", "area_ha": "2395", "prod_kg": "880", "value_real": "689.96"}, {"district_id": "D076", "year": "2025", "crop": "Rice", "area_ha": "200", "prod_kg": "1200", "value_real": "426.59"}, {"district_id": "D076", "year": "2025", "crop": "Maize", "area_ha": "730", "prod_kg": "92", "value_real": "22.55"}, {"district_id": "D076", "year": "2025", "crop": "Bean", "area_ha": "1340", "prod_kg": "312", "value_real": "244.62"}, {"district_id": "D077", "year": "2025", "crop": "Rice", "area_ha": "229", "prod_kg": "229", "value_real": "81.41"}, {"district_id": "D077", "year": "2025", "crop": "Maize", "area_ha": "1667", "prod_kg": "745", "value_real": "182.63"}, {"district_id": "D077", "year": "2025", "crop": "Bean", "area_ha": "1305", "prod_kg": "239", "value_real": "187.39"}, {"district_id": "D078", "year": "2025", "crop": "Rice", "area_ha": "", "prod_kg": "0", "value_real": ""}, {"district_id": "D078", "year": "2025", "crop": "Maize", "area_ha": "18473", "prod_kg": "10382", "value_real": "2545.12"}, {"district_id": "D078", "year": "2025", "crop": "Bean", "area_ha": "13116", "prod_kg": "2295", "value_real": "1799.37"}, {"district_id": "D079", "year": "2025", "crop": "Rice", "area_ha": "10", "prod_kg": "4", "value_real": "1.42"}, {"district_id": "D079", "year": "2025", "crop": "Maize", "area_ha": "1068", "prod_kg": "410", "value_real": "100.51"}, {"district_id": "D079", "year": "2025", "crop": "Bean", "area_ha": "631", "prod_kg": "103", "value_real": "80.76"}, {"district_id": "D080", "year": "2025", "crop": "Rice", "area_ha": "2950", "prod_kg": "3237", "value_real": "1150.73"}, {"district_id": "D080", "year": "2025", "crop": "Maize", "area_ha": "3400", "prod_kg": "1650", "value_real": "404.49"}, {"district_id": "D080", "year": "2025", "crop": "Bean", "area_ha": "2500", "prod_kg": "395", "value_real": "309.7"}];
+
+// Load into AlaSQL
+alasql('DROP TABLE IF EXISTS districts');
+alasql('DROP TABLE IF EXISTS agriculture');
+alasql('CREATE TABLE districts');
+alasql('CREATE TABLE agriculture');
+alasql.tables.districts.data = DISTRICTS.map(r => ({
+  district_id: r.district_id,
+  district: r.district,
+  population: parseInt(r.population)
+}));
+alasql.tables.agriculture.data = AGRICULTURE.map(r => ({
+  district_id: r.district_id,
+  year: r.year,
+  crop: r.crop,
+  area_ha: r.area_ha === '' ? null : parseInt(r.area_ha),
+  prod_kg: r.prod_kg === '' ? null : parseInt(r.prod_kg),
+  value_real: r.value_real === '' ? null : parseFloat(r.value_real)
+}));
+
+// Answer checkers
+const ANSWERS = {
+  0: r => r.length > 0 && r.every(x => x.crop === 'Maize' && x.prod_kg > 5000),
+  1: r => {
+    if(!r.length) return false;
+    const k = Object.keys(r[0]).sort().join(',');
+    return k === 'district_id,crop,value_real' || k === 'crop,district_id,value_real' || k === 'district_id,value_real,crop';
+  },
+  2: r => r.length === 240 && parseFloat(r[0].value_real) >= parseFloat(r[r.length-1].value_real) && parseFloat(r[0].value_real) > 8000,
+  3: r => r.length === 80 && Object.keys(r[0]).some(k => k.toLowerCase().includes('total_prod')),
+  4: r => r.length === 240 && Object.keys(r[0]).includes('district') && Object.keys(r[0]).includes('population')
+};
+
+const solved = new Set();
+let chartInstances = {};
+let dvActive = 0;
+
+function cropBadge(v) {
+  const m = {Rice:'b-Rice',Maize:'b-Maize',Bean:'b-Bean'};
+  return m[v] ? `<span class="badge ${m[v]}">${v}</span>` : v;
+}
+
+function buildTable(rows) {
+  if(!rows || !rows.length) return '<div class="no-rows">Query returned 0 rows.</div>';
+  const cols = Object.keys(rows[0]);
+  let h = '<div class="table-wrap"><table><thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+  rows.forEach(r => {
+    h += '<tr>' + cols.map(c => {
+      const v = r[c];
+      if(v === null || v === undefined) return '<td class="null-cell">NULL</td>';
+      if(c === 'crop') return `<td>${cropBadge(v)}</td>`;
+      if(c === 'district_id') return `<td class="did">${v}</td>`;
+      if(typeof v === 'number') return `<td class="num">${v.toLocaleString()}</td>`;
+      return `<td>${v}</td>`;
+    }).join('') + '</tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+
+function tryChart(key, rows) {
+  const wrapId = key === 'pg' ? 'chart-pg-wrap' : `chart${key}-wrap`;
+  const canvasId = key === 'pg' ? 'chart-pg' : `chart${key}`;
+  const wrap = document.getElementById(wrapId);
+  if(!wrap || !rows || !rows.length) { if(wrap) wrap.style.display='none'; return; }
+  const cols = Object.keys(rows[0]);
+  const numCols = cols.filter(c => typeof rows[0][c] === 'number');
+  const strCols = cols.filter(c => typeof rows[0][c] === 'string');
+  if(!numCols.length || !strCols.length) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  if(chartInstances[key]) chartInstances[key].destroy();
+  const lc = strCols[0], vc = numCols[numCols.length - 1];
+  if(key === 'pg') document.getElementById('chart-pg-title').textContent = vc + ' by ' + lc;
+  const palette = ['#4f8ef7','#3ecf8e','#a78bfa','#f5a623','#f7614f','#2dd4bf','#f472b6'];
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  chartInstances[key] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: rows.slice(0,20).map(r => r[lc]),
+      datasets: [{ data: rows.slice(0,20).map(r => r[vc]), backgroundColor: rows.slice(0,20).map((_,i) => palette[i%palette.length]+'cc'), borderColor: rows.slice(0,20).map((_,i) => palette[i%palette.length]), borderWidth:1, borderRadius:5 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{color:'#8b93b0',font:{size:10,family:'IBM Plex Mono'}},grid:{color:'#2a3050'}}, y:{ticks:{color:'#8b93b0',font:{size:10,family:'IBM Plex Mono'}},grid:{color:'#2a3050'}}  } }
+  });
+}
+
+function runQuery(i) {
+  const qid = i === 'pg' ? 'q-pg' : `q${i}`;
+  const rid = i === 'pg' ? 'res-pg' : `res${i}`;
+  const q = document.getElementById(qid).value.trim();
+  const out = document.getElementById(rid);
+  if(!q) { out.innerHTML='<div class="error-box">Please write a query first.</div>'; return; }
+  try {
+    const rows = alasql(q);
+    if(!Array.isArray(rows)) { out.innerHTML='<div class="result-meta"><span class="verdict correct">Query executed.</span></div>'; return; }
+    let verdict = '';
+    if(typeof i === 'number' && ANSWERS[i]) {
+      const ok = ANSWERS[i](rows);
+      if(ok) { verdict = '<span class="verdict correct">✓ Correct!</span>'; if(!solved.has(i)) { solved.add(i); markSolved(i); } }
+      else verdict = '<span class="verdict wrong">✗ Not quite — check your conditions</span>';
+    }
+    out.innerHTML = `<div class="result-meta"><span style="font-family:var(--mono);font-size:12px">${rows.length} row${rows.length!==1?'s':''} returned</span>${verdict}</div>` + buildTable(rows);
+    if(i === 3 || i === 'pg') tryChart(i === 3 ? 3 : 'pg', rows);
+  } catch(e) {
+    out.innerHTML = `<div class="error-box">${e.message}</div>`;
+  }
+}
+
+function markSolved(i) {
+  const dot = document.getElementById(`st${i}`);
+  if(dot) { dot.style.background='var(--green)'; dot.style.boxShadow='0 0 6px var(--green)'; }
+  const nav = document.getElementById(`nav-${i}`);
+  if(nav) nav.classList.add('done');
+  updateProgress();
+}
+
+function updateProgress() {
+  const n = solved.size;
+  document.getElementById('prog-lbl').textContent = n + ' / 5';
+  document.getElementById('prog-fill').style.width = (n/5*100) + '%';
+}
+
+function toggleHint(i) { document.getElementById(`hint${i}`).classList.toggle('show'); }
+function toggleSol(i) { document.getElementById(`sol${i}`).classList.toggle('show'); }
+
+function switchEx(id) {
+  document.querySelectorAll('.exercise').forEach(e => e.classList.remove('visible'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const exId = typeof id === 'number' ? `ex-${id}` : `ex-${id}`;
+  const navId = typeof id === 'number' ? `nav-${id}` : `nav-${id}`;
+  const ex = document.getElementById(exId);
+  const nav = document.getElementById(navId);
+  if(ex) ex.classList.add('visible');
+  if(nav) nav.classList.add('active');
+  if(id === 'dv') dvRender();
+}
+
+function fillPG(q) { document.getElementById('q-pg').value = q; }
+
+// Data viewer
+function dvSwitch(i) {
+  dvActive = i;
+  document.getElementById('dv-search').value = '';
+  document.querySelectorAll('.dv-tab').forEach((t,j) => t.classList.toggle('active', i===j));
+  dvRender();
+}
+
+function dvRender() {
+  const q = document.getElementById('dv-search').value.toLowerCase();
+  const data = dvActive === 0 ? DISTRICTS : AGRICULTURE;
+  const filtered = q ? data.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q))) : data;
+  document.getElementById('dv-count').textContent = filtered.length + ' / ' + data.length + ' rows';
+  if(!filtered.length) { document.getElementById('dv-table').innerHTML = '<div class="no-rows">No results.</div>'; return; }
+  const cols = Object.keys(filtered[0]);
+  let h = '<div class="table-wrap"><table><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+  filtered.slice(0,100).forEach(r => {
+    h += '<tr>' + cols.map(c => {
+      const v = r[c];
+      if(v === null || v === '' || v === undefined) return '<td class="null-cell">—</td>';
+      if(c === 'crop') return `<td>${cropBadge(v)}</td>`;
+      if(c === 'district_id') return `<td class="did">${v}</td>`;
+      if(typeof v === 'number') return `<td class="num">${v.toLocaleString()}</td>`;
+      return `<td>${v}</td>`;
+    }).join('') + '</tr>';
+  });
+  h += '</tbody></table></div>';
+  if(filtered.length > 100) h += `<div style="padding:8px 12px;font-size:12px;color:var(--text3)">Showing first 100 of ${filtered.length} rows.</div>`;
+  document.getElementById('dv-table').innerHTML = h;
+}
+</script>
+</body>
+</html>
