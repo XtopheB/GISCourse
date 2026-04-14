@@ -145,7 +145,7 @@ library(tidyverse)
 
 ## About this notebook
 
-This notebook teaches **data manipulation with tidyverse** using real agricultural data from Ceará, Brazil (2025). Each exercise mirrors a SQL command — so you can see both approaches side by side.
+This notebook teaches **data manipulation with tidyverse** using agricultural data (2025). Each exercise mirrors a SQL command — so you can see both approaches side by side.
 
 <div class="progress-section">
 <h4>Exercises</h4>
