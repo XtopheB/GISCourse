@@ -1,16 +1,17 @@
 ---
-title: "Data Manipulation in R "
-subtitle: "Tutorial- 2025"
-author: "Christophe Bontemps"
+title: "Data Manipulation for GIS  \n A tutorial"
+author: " ---- \n *Christophe Bontemps*  \n ![](www/SIAP_logo_2020_1800.png){width=30%}  "
+date: "*Version: 1.0 \n (April 2026)*"
 output:
-  learnr::tutorial:
+  learnr::tutorial: 
     progressive: true
     allow_skip: true
-    theme: flatly
-    highlight: kate
     css: css/tutorial.css
 runtime: shiny_prerendered
+description: >
+  Learn how to manipulate data for GIS, in the same logic than with SQL commands. 
 ---
+
 
 ```{r setup, include=FALSE}
 library(learnr)
@@ -889,4 +890,4 @@ tibble::tribble(
 ---
 
 *Dataset: Agricultural production, — 2025.*  
-*Packages: `learnr`, `tidyverse` (dplyr, ggplot2, readr), `DT`.*
+*Packages: `tidyverse` (dplyr, ggplot2, readr), `DT`.*
