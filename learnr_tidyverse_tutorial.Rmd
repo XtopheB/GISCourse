@@ -623,10 +623,10 @@ agriculture %>%
 quiz(
   question(
     "Which district and crop appears in the first row?",
-    answer("IGUATU — Rice", correct = TRUE),
-    answer("QUIXELO — Rice"),
-    answer("TAUA — Maize"),
-    answer("MORADA NOVA — Bean"),
+    answer("D031 — Rice", correct = TRUE),
+    answer("D021 — Rice"),
+    answer("D066 — Maize"),
+    answer("D080 — Bean"),
     allow_retry = TRUE,
     random_answer_order = TRUE
   ),
