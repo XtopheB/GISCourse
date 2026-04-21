@@ -176,7 +176,7 @@ tbody td{padding:6px 11px;color:var(--tx);}
 <div class="ex" id="ex-0">
   <div class="ex-tag">01 . Fitering</div>
   <div class="ex-title">Filter rows with WHERE</div>
-  <div class="ex-desc">Return all rows from <code>Agriculture</code> where <strong>District = &#39;ALTO SANTO&#39;</strong>.</div>
+  <div class="ex-desc"><strong>WHERE</strong>  filters individual rows based on specified conditions.</div>
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
@@ -189,6 +189,9 @@ tbody td{padding:6px 11px;color:var(--tx);}
     <div class="sc"><span class="cn">ValueR_mod</span><span class="ct">decimal</span></div>
   </div>
 </div>
+
+  <div class="ex-desc">Return all rows from <code>Agriculture</code> where <strong>District is &#39;ALTO SANTO&#39;</strong>.</div>
+
   <div class="hint-box" id="hint0">Use WHERE with single quotes around the text value: <code>WHERE District = &#39;ALTO SANTO&#39;</code></div>
   <div class="sol-box" id="sol0"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
@@ -311,7 +314,7 @@ WHERE District = ___"></textarea></div>
 <div class="ex" id="ex-3">
   <div class="ex-tag">04 . New values</div>
   <div class="ex-title">Computing new variables</div>
-  
+
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
@@ -368,7 +371,7 @@ WHERE District = ___"></textarea></div>
   <div class="ex-tag">05 . Group by</div>
   <div class="ex-title">Aggregation with GROUP BY</div>
   <div class="ex-desc"> <code>GROUP_BY</code> operates on each category (modality) of the specified variable. The output contains one row for each category. </div>
-  
+
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
@@ -410,7 +413,7 @@ GROUP BY ___"></textarea></div>
   <div class="ex-tag">06 . Conditions after a group_by</div>
   <div class="ex-title">Filtering groups with HAVING</div>
   <div class="ex-desc"><strong>HAVING</strong> filters aggregated results, allowing you to apply conditions on groups after a <strong>GROUP BY</strong> clause.</div>
-  
+
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
@@ -495,7 +498,7 @@ HAVING SUM(ProdKg_mod) > ___"></textarea></div>
   <div class="sub-label">7b · JOIN + WHERE + GROUP BY — high-poverty districts in 2000</div>
   <div class="ex-desc">Show total production in  <strong>year 2000 </strong>in districts with <strong>poverty > 0.45</strong> </div>
 
-  
+
   <div class="hint-box" id="hint6b">Join first, then filter with WHERE on both year and poverty_rate, then GROUP BY district to sum production.</div>
   <div class="sol-box" id="sol6b"><span class='kw'>SELECT</span> A.District,
        <span class='fn'>SUM</span>(A.ProdKg_mod) <span class='kw'>AS</span> total_production
