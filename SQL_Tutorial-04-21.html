@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SQL for GIS — Ceará Agriculture</title>
+<title>Practice with SQL</title>
 <script src="https://cdn.jsdelivr.net/npm/alasql@4.2.1/dist/alasql.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -131,8 +131,8 @@ tbody td{padding:6px 11px;color:var(--tx);}
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-tag">SIAP</div>
-    <h1>Data Manipulation</h1>
-    <p>A tutorial </p>
+    <h1>Practice with SQL</h1>
+    <p>Interactive exercises</p>
   </div>
   <div class="nav-section">
     <div class="nav-label">Data</div>
@@ -180,7 +180,7 @@ tbody td{padding:6px 11px;color:var(--tx);}
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
-    <div class="sc"><span class="cn ky">district_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">district_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
@@ -215,7 +215,7 @@ WHERE District = ___"></textarea></div>
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
-    <div class="sc"><span class="cn ky">district_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">district_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
@@ -267,7 +267,7 @@ WHERE District = ___"></textarea></div>
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
-    <div class="sc"><span class="cn ky">district_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">district_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
@@ -318,7 +318,7 @@ WHERE District = ___"></textarea></div>
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
-    <div class="sc"><span class="cn ky">district_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">district_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
@@ -375,7 +375,7 @@ WHERE District = ___"></textarea></div>
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
-    <div class="sc"><span class="cn ky">district_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">district_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
@@ -417,7 +417,7 @@ GROUP BY ___"></textarea></div>
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
-    <div class="sc"><span class="cn ky">district_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">district_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
@@ -455,12 +455,12 @@ HAVING SUM(ProdKg_mod) > ___"></textarea></div>
 <div class="ex" id="ex-6">
   <div class="ex-tag">07 . Joining two tables</div>
   <div class="ex-title">Combining tables with JOIN</div>
-  <div class="ex-desc">JOIN links two tables on a shared key. Here <code>Agriculture.district_id</code> matches <code>poverty_rates.distr_id</code>.</div>
+  <div class="ex-desc">JOIN links two tables on a shared key. Here <strong>district_id</strong> from the table <code>Agriculture</code> matches <strong>distr_id</strong> from the <code>poverty_rates</code> table.</div>
 
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
-    <div class="sc"><span class="cn ky">district_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">district_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
@@ -471,7 +471,7 @@ HAVING SUM(ProdKg_mod) > ___"></textarea></div>
   <div class="schema-card">
     <div class="schema-name">poverty_rates</div>
     <div class="sc"><span class="cn">distr_name</span><span class="ct">text</span></div>
-    <div class="sc"><span class="cn ky">distr_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">poverty_rate</span><span class="ct">decimal</span></div>
     <div class="sc"><span class="cn">poverty_cat</span><span class="ct">text</span></div>
   </div>
@@ -525,7 +525,7 @@ HAVING SUM(ProdKg_mod) > ___"></textarea></div>
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
-    <div class="sc"><span class="cn ky">district_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">district_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
@@ -536,7 +536,7 @@ HAVING SUM(ProdKg_mod) > ___"></textarea></div>
   <div class="schema-card">
     <div class="schema-name">poverty_rates</div>
     <div class="sc"><span class="cn">distr_name</span><span class="ct">text</span></div>
-    <div class="sc"><span class="cn ky">distr_id</span><span class="ct">int 🔑</span></div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">poverty_rate</span><span class="ct">decimal</span></div>
     <div class="sc"><span class="cn">poverty_cat</span><span class="ct">text</span></div>
   </div>
