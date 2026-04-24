@@ -22,7 +22,8 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-heigh
 .nav-section{padding:12px 0 4px;}
 .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);padding:0 16px;margin-bottom:5px;font-weight:500;}
 
-/* 
+/* Modifs to have numbers on the left  */
+/*
 .nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0 8px 1px;border-radius:7px;cursor:pointer;font-size:12.5px;color:var(--tx2);transition:all .13s;border:1px solid transparent;line-height:1.3;}
 */
 .nav-item{
@@ -40,7 +41,6 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-heigh
   border:1px solid transparent;
   line-height:1.3;
 }
-
 
 
 /*
@@ -243,16 +243,16 @@ tbody td{padding:6px 11px;color:var(--tx);}
   </div>
 </div>
 
-  <div class="ex-desc">Return all rows from <code>Agriculture</code> where <strong>District is &#39;ALTO SANTO&#39;</strong>.</div>
+  <div class="ex-desc">Return all rows from <code>Agriculture</code> where District is ALTO SANTO.</div>
 
   <div class="hint-box" id="hint0">Use WHERE with single quotes around the text value: <code>WHERE District = &#39;ALTO SANTO&#39;</code></div>
   <div class="sol-box" id="sol0"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> District = <span class='val'>'ALTO SANTO'</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
-  <textarea class="sql-input" id="q0" style="min-height:132px" placeholder="SELECT *
-FROM Agriculture
-WHERE District = ___"></textarea></div>
+  <textarea class="sql-input" id="q0" style="min-height:132px" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('0')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('0')">Hint</button>
@@ -264,7 +264,7 @@ WHERE District = ___"></textarea></div>
 <div class="ex" id="ex-1">
   <div class="ex-tag">02 . Filtering with operators</div>
   <div class="ex-title">Filtering with logical operators — AND / OR</div>
-  <div class="ex-desc">Combine multiple conditions with <code>AND</code> (both must be true) or <code>OR</code> (either can be true).</div>
+  <div class="ex-desc">Combine multiple conditions with <strong>AND</strong> (both must be true) or <strong>OR </strong>(either can be true).</div>
   <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
@@ -278,14 +278,16 @@ WHERE District = ___"></textarea></div>
   </div>
 </div>
  <div class="sub-label">2a · AND — Rice in ALTO SANTO</div>
- <div class="ex-desc">Return all rows from <code>Agriculture</code> where <strong>District = &#39;ALTO SANTO&#39;</strong>.<code>AND</code><strong>Crop = &#39;Rice&#39;</strong>.</div>
+ <div class="ex-desc">Return all rows from <code>Agriculture</code> where the district  is ALTO SANTO and the crop is Rice</div>
   <div class="hint-box" id="hint1a">List both conditions joined by AND. Text values need quotes.</div>
   <div class="sol-box" id="sol1a"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> District = <span class='val'>'ALTO SANTO'</span>
   <span class='kw'>AND</span> Crop = <span class='val'>'Rice'</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_and.sql</span></div>
-  <textarea class="sql-input" id="q1a" placeholder="SELECT *&#10;FROM Agriculture&#10;WHERE District = ___ AND Crop = ___"></textarea></div>
+  <textarea class="sql-input" id="q1a"  placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ AND  ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('1a')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('1a')">Hint</button>
@@ -294,7 +296,7 @@ WHERE District = ___"></textarea></div>
   <div id="res1a"></div>
 
   <div class="sub-label">2b · OR — Rice OR Bean (all districts)</div>
-   <div class="ex-desc">Return all rows (all districts) from <code>Agriculture</code> for <strong>Rice</strong> <code>as well as</code> for <strong>Bean</strong>  (use <code> OR</code>) </div>
+   <div class="ex-desc">Return all rows (all districts) from <code>Agriculture</code> for Rice as well as for Beans </div>
   <div class="sub-label">2a · AND — Rice in ALTO SANTO</div>
   <div class="hint-box" id="hint1b">Use OR between two conditions on the same column: <code>Crop = &#39;Rice&#39; OR Crop = &#39;Bean&#39;</code></div>
   <div class="sol-box" id="sol1b"><span class='kw'>SELECT</span> *
@@ -302,7 +304,9 @@ WHERE District = ___"></textarea></div>
 <span class='kw'>WHERE</span> Crop = <span class='val'>'Rice'</span>
    <span class='kw'>OR</span> Crop = <span class='val'>'Bean'</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_or.sql</span></div>
-  <textarea class="sql-input" id="q1b" placeholder="SELECT *&#10;FROM Agriculture&#10;WHERE Crop = ___ OR Crop = ___"></textarea></div>
+  <textarea class="sql-input" id="q1b" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('1b')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('1b')">Hint</button>
@@ -331,14 +335,16 @@ WHERE District = ___"></textarea></div>
 </div>
 
 <div class="sub-label">3a · Exact year — year 2000</div>
-   <div class="ex-desc">Return all rows from <code>Agriculture</code> for  <strong>year 2000</strong></div>
+   <div class="ex-desc">Return all rows from <code>Agriculture</code> for  the year 2000</div>
 
   <div class="hint-box" id="hint2a">Numbers don't need quotes: <code>WHERE the_year = 2000</code></div>
   <div class="sol-box" id="sol2a"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> the_year = <span class='val'>2000</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_year.sql</span></div>
-  <textarea class="sql-input" id="q2a" placeholder="SELECT *&#10;FROM Agriculture&#10;WHERE the_year = ___"></textarea></div>
+  <textarea class="sql-input" id="q2a" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('2a')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('2a')">Hint</button>
@@ -347,14 +353,16 @@ WHERE District = ___"></textarea></div>
   <div id="res2a"></div>
 
   <div class="sub-label">3b · Year range — 1995 to 2000</div>
-  <div class="ex-desc">Return all rows from <code>Agriculture</code>  <strong>between </strong> 1995 and 2000</div>
+  <div class="ex-desc">Return all rows from <code>Agriculture</code> between 1995 and 2000</div>
 
-  <div class="hint-box" id="hint2b">BETWEEN is inclusive: <code>WHERE the_year BETWEEN 1995 AND 2000</code></div>
+  <div class="hint-box" id="hint2b"> use BETWEEN: <code>WHERE the_year BETWEEN 1995 AND 2000</code></div>
   <div class="sol-box" id="sol2b"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> the_year <span class='kw'>BETWEEN</span> <span class='val'>1995</span> <span class='kw'>AND</span> <span class='val'>2000</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_range.sql</span></div>
-  <textarea class="sql-input" id="q2b" placeholder="SELECT *&#10;FROM Agriculture&#10;WHERE the_year BETWEEN ___ AND ___"></textarea></div>
+  <textarea class="sql-input" id="q2b" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('2b')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('2b')">Hint</button>
@@ -365,7 +373,7 @@ WHERE District = ___"></textarea></div>
   <div id="res2"></div>
 </div>
 <div class="ex" id="ex-3">
-  <div class="ex-tag">04 . New values</div>
+  <div class="ex-tag">04 . New fields</div>
   <div class="ex-title">Computing new variables</div>
 
   <div class="schema-row">
@@ -383,7 +391,7 @@ WHERE District = ___"></textarea></div>
 
 <div class="sub-label">4a · Land productivity — yield (ProdKg_mod / Areaha_mod)</div>
 <div class="ex-desc">Calculate <strong>yields</strong> (defined as  Production /  surface)  in the table <code>Agriculture</code></div>
-<div class="ex-desc"> <i>Hint</i>:  <strong>surface</strong> has to be positive </div>
+<div class="ex-desc"> <i>Hint</i>:  <strong>Areaha_mod</strong> (surface) has to be positive! </div>
 
   <div class="hint-box" id="hint3a">Divide two columns with /: <code>ProdKg_mod / Areaha_mod AS yield</code>. Add a WHERE to skip zero-area rows.</div>
   <div class="sol-box" id="sol3a"><span class='kw'>SELECT</span> District, the_year, Crop,
@@ -391,7 +399,9 @@ WHERE District = ___"></textarea></div>
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> Areaha_mod > <span class='val'>0</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_yield.sql</span></div>
-  <textarea class="sql-input" id="q3a" placeholder="SELECT District, the_year, Crop,&#10;       ___ / ___ AS yield&#10;FROM Agriculture&#10;WHERE Areaha_mod > 0"></textarea></div>
+  <textarea class="sql-input" id="q3a" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('3a')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('3a')">Hint</button>
@@ -401,8 +411,7 @@ WHERE District = ___"></textarea></div>
 
   <div class="sub-label">4b · Economic productivity — value per hectare (ValueR_mod / Areaha_mod)</div>
 <div class="ex-desc">Calculate <strong>Productivity</strong> (defined as  Value /  surface)  in the table <code>Agriculture</code></div>
-<div class="ex-desc"> <i>Hint</i>:  <strong>surface</strong> has to be positive </div>
-
+<div class="ex-desc"> <strong>Areaha_mod</strong> (surface) has to be positive! </div>
 
 
   <div class="hint-box" id="hint3b">Same pattern as 4a but divide ValueR_mod by Areaha_mod.</div>
@@ -411,7 +420,9 @@ WHERE District = ___"></textarea></div>
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> Areaha_mod > <span class='val'>0</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_ec_prod.sql</span></div>
-  <textarea class="sql-input" id="q3b" placeholder="SELECT District, the_year, Crop,&#10;       ___ / ___ AS ec_prod&#10;FROM Agriculture&#10;WHERE Areaha_mod > 0"></textarea></div>
+  <textarea class="sql-input" id="q3b" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('3b')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('3b')">Hint</button>
@@ -438,20 +449,22 @@ WHERE District = ___"></textarea></div>
   </div>
 </div>
 
-<div class="ex-desc">Show <strong>total production </strong> for <strong>each district</strong> for the <strong>year 2000</strong> in the table <code>Agriculture</code>. Filter first with <strong>WHERE,</strong> then group and sum.</div>
+<div class="ex-desc">Compute <strong>total production </strong> for each district for the year 2000 in the table <code>Agriculture</code>. 
+</div>
+<div class="ex-desc"> <i>Hint</i>: Filter first with <strong>WHERE,</strong> then group and sum.</div>
 
-  <div class="hint-box" id="hint4">Use WHERE to filter the year first, then GROUP BY District. Use SUM(ProdKg_mod) AS total_production.</div>
+
+  <div class="hint-box" id="hint4">Use WHERE to filter the year first, then GROUP BY District. In the WHERE, use SUM(ProdKg_mod) AS total_production.</div>
   <div class="sol-box" id="sol4"><span class='kw'>SELECT</span> district_id, District,
        <span class='fn'>SUM</span>(ProdKg_mod) <span class='kw'>AS</span> total_production
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> the_year = <span class='val'>2000</span>
 <span class='kw'>GROUP BY</span> district_id, District;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
-  <textarea class="sql-input" id="q4" style="min-height:132px" placeholder="SELECT district_id, District,
-       SUM(ProdKg_mod) AS total_production
-FROM Agriculture
-WHERE the_year = ___
-GROUP BY ___"></textarea></div>
+  <textarea class="sql-input" id="q4" style="min-height:132px" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ 
+GROUP_BY  ___ "></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('4')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('4')">Hint</button>
@@ -480,7 +493,8 @@ GROUP BY ___"></textarea></div>
   </div>
 </div>
 
-  <div class="ex-desc">Show districts with <strong>total production &gt; 4000 kg in year 2000</strong>. HAVING filters <em>after</em> grouping — WHERE runs before.</div>
+  <div class="ex-desc">Show districts with <strong>total_production</strong>   greater than 4000 kg in year 2000. </div>
+   <div class="ex-desc"><i>Hint:</i> HAVING filters <em>after</em> grouping — WHERE runs before. </div>
 
 
   <div class="hint-box" id="hint5">Add HAVING SUM(ProdKg_mod) > 4000 after GROUP BY. HAVING works on aggregated values; WHERE does not.</div>
@@ -491,12 +505,11 @@ GROUP BY ___"></textarea></div>
 <span class='kw'>GROUP BY</span> District
 <span class='kw'>HAVING</span> <span class='fn'>SUM</span>(ProdKg_mod) > <span class='val'>4000</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
-  <textarea class="sql-input" id="q5" style="min-height:150px" placeholder="SELECT District,
-       SUM(ProdKg_mod) AS total_production
-FROM Agriculture
-WHERE the_year = 2000
-GROUP BY District
-HAVING SUM(ProdKg_mod) > ___"></textarea></div>
+  <textarea class="sql-input" id="q5" style="min-height:150px" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ 
+GROUP_BY  ___
+HAVING ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('5')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('5')">Hint</button>
@@ -540,7 +553,10 @@ HAVING SUM(ProdKg_mod) > ___"></textarea></div>
 <span class='kw'>JOIN</span> poverty_rates <span class='kw'>AS</span> P
   <span class='kw'>ON</span> A.district_id = P.distr_id;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_join.sql</span></div>
-  <textarea class="sql-input" id="q6a" placeholder="SELECT *&#10;FROM Agriculture AS A&#10;JOIN poverty_rates AS P&#10;  ON A.district_id = P.distr_id"></textarea></div>
+  <textarea class="sql-input" id="q6a" placeholder="SELECT  ___ 
+FROM  ___
+JOIN  ___
+ON ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('6a')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('6a')">Hint</button>
@@ -549,7 +565,7 @@ HAVING SUM(ProdKg_mod) > ___"></textarea></div>
   <div id="res6a"></div>
 
   <div class="sub-label">7b · JOIN + WHERE + GROUP BY — high-poverty districts in 2000</div>
-  <div class="ex-desc">Show total production in  <strong>year 2000 </strong>in districts with <strong>poverty > 0.45</strong> </div>
+  <div class="ex-desc">Compute <strong>total_production</strong>  in the year 2000 in districts with poverty > 0.45 </div>
 
 
   <div class="hint-box" id="hint6b">Join first, then filter with WHERE on both year and poverty_rate, then GROUP BY district to sum production.</div>
@@ -562,7 +578,12 @@ HAVING SUM(ProdKg_mod) > ___"></textarea></div>
   <span class='kw'>AND</span> P.poverty_rate > <span class='val'>0.45</span>
 <span class='kw'>GROUP BY</span> A.District;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_join_filter.sql</span></div>
-  <textarea class="sql-input" id="q6b" style="min-height:144px" placeholder="SELECT A.District,&#10;       SUM(A.ProdKg_mod) AS total_production&#10;FROM Agriculture AS A&#10;JOIN poverty_rates AS P ON A.district_id = P.distr_id&#10;WHERE A.the_year = ___ AND P.poverty_rate > ___&#10;GROUP BY A.District"></textarea></div>
+  <textarea class="sql-input" id="q6b" style="min-height:144px" placeholder="SELECT  ___ 
+FROM  ___
+JOIN  ___
+ON ___
+WHERE ___
+GROUP_BY ____"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('6b')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('6b')">Hint</button>
