@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Map Algebra — Raster Analysis Exercises</title>
+<title>Map Algebra — Agricultural Raster Analysis</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -21,9 +21,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-height:100vh;}
-
-/* ── App layout ── */
-.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh;}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
 
 /* ── Sidebar ── */
 .sidebar{background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
@@ -33,11 +31,11 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-heigh
 .logo p{font-size:11px;color:var(--tx3);margin-top:3px;}
 .nav-section{padding:12px 0 4px;}
 .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);padding:0 16px;margin-bottom:5px;font-weight:500;}
-.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0 8px 1px;border-radius:7px;cursor:pointer;font-size:12.5px;color:var(--tx2);transition:all .13s;border:1px solid transparent;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0 8px 1px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--tx2);transition:all .13s;border:1px solid transparent;}
 .nav-item:hover{background:var(--sf2);color:var(--tx);}
 .nav-item.active{background:var(--acd);color:var(--ac);border-color:#2a4a8a;}
-.nav-item .nb{margin-left:auto;font-size:10px;font-family:var(--mono);background:var(--sf2);border:1px solid var(--bd);padding:1px 5px;border-radius:4px;color:var(--tx3);flex-shrink:0;}
-.nav-item.active .nb{background:var(--acd);border-color:var(--ac);color:var(--ac);}
+.nav-nb{font-size:10px;font-family:var(--mono);background:var(--sf2);border:1px solid var(--bd);padding:1px 5px;border-radius:4px;color:var(--tx3);flex-shrink:0;}
+.nav-item.active .nav-nb{background:var(--acd);border-color:var(--ac);color:var(--ac);}
 .nav-dot{width:7px;height:7px;border-radius:50%;background:var(--bd2);flex-shrink:0;margin-left:auto;}
 .nav-item.done .nav-dot{background:var(--gn);}
 .nav-item.active .nav-dot{background:var(--ac);box-shadow:0 0 5px var(--ac);}
@@ -48,45 +46,57 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-heigh
 
 /* ── Main ── */
 .main{padding:32px 36px;overflow-y:auto;}
-.ex{display:none;}
-.ex.visible{display:block;}
+.ex{display:none;}.ex.visible{display:block;}
 
-/* ── Exercise header ── */
-.ex-tag{display:inline-flex;align-items:center;font-size:11px;font-family:var(--mono);color:var(--ac);background:var(--acd);border:1px solid #2a4a8a;padding:3px 10px;border-radius:5px;margin-bottom:10px;}
-.ex-title{font-size:20px;font-weight:600;margin-bottom:10px;line-height:1.3;}
+/* ── Exercise header: number badge LEFT of title ── */
+.ex-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;}
+.ex-num{display:flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:8px;background:var(--acd);border:1px solid #2a4a8a;font-family:var(--mono);font-size:15px;font-weight:500;color:var(--ac);flex-shrink:0;margin-top:2px;}
+.ex-header-text{display:flex;flex-direction:column;gap:4px;}
+.ex-concept{font-size:11px;font-family:var(--mono);color:var(--ac);text-transform:uppercase;letter-spacing:.1em;}
+.ex-title{font-size:20px;font-weight:600;line-height:1.25;color:var(--tx);}
+
+/* ── Question box ── */
 .question-box{background:var(--sf);border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:18px;font-size:14px;color:var(--tx2);line-height:1.7;}
 .question-box strong{color:var(--tx);font-weight:500;}
 .question-box code{font-family:var(--mono);font-size:12px;background:var(--sf2);padding:1px 5px;border-radius:3px;color:var(--tl);}
-.formula-box{background:#0a0d14;border:1px solid var(--bd);border-radius:8px;padding:11px 15px;font-family:var(--mono);font-size:12.5px;color:#c8d3f5;line-height:1.8;margin-bottom:18px;}
-.kw{color:#89ddff;}.val{color:#f78c6c;}.fn{color:var(--gn);}
+.question-box .assumption{margin-top:10px;padding:8px 12px;background:var(--sf2);border-radius:6px;font-size:12.5px;color:var(--tx3);border-left:2px solid var(--bd2);}
 
-/* ── Hint / solution ── */
+/* ── Formula box ── */
+.formula-box{background:#0a0d14;border:1px solid var(--bd);border-radius:8px;padding:11px 15px;font-family:var(--mono);font-size:12.5px;color:#c8d3f5;line-height:1.9;margin-bottom:18px;}
+.kw{color:#89ddff;}.val{color:#f78c6c;}.fn{color:var(--gn);}.cm{color:#4a5570;}
+
+/* ── Hint ── */
 .hint-box{display:none;background:var(--acd);border:1px solid #2a4a8a;border-radius:7px;padding:9px 13px;font-size:13px;color:#a0bff8;margin-bottom:12px;line-height:1.6;}
 .hint-box.show{display:block;}
 
 /* ── Grid layout ── */
 .grids-row{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px;}
-.grid-block{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.grid-block{display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
 .grid-label{font-size:12px;font-weight:500;color:var(--tx);letter-spacing:.04em;}
-.grid-sublabel{font-size:11px;color:var(--tx3);}
-.op-sym{font-size:28px;font-weight:300;color:var(--tx3);padding-top:36px;line-height:1;}
-.side-btns{display:flex;flex-direction:column;gap:8px;justify-content:center;padding-top:36px;}
+.grid-sublabel{font-size:11px;color:var(--tx3);font-family:var(--mono);}
+.op-sym{font-size:28px;font-weight:300;color:var(--tx3);padding-top:34px;line-height:1;}
+.side-btns{display:flex;flex-direction:column;gap:8px;justify-content:center;padding-top:34px;}
 
 /* ── Raster cells ── */
 table.raster{border-collapse:separate;border-spacing:4px;}
-table.raster td{width:64px;height:64px;border-radius:6px;border:1.5px solid var(--bd2);background:var(--sf2);text-align:center;vertical-align:middle;font-family:var(--mono);font-size:18px;font-weight:500;color:var(--tx);transition:border-color .2s,background .2s;}
-table.raster td input{width:100%;height:100%;background:transparent;border:none;outline:none;text-align:center;font-family:var(--mono);font-size:18px;font-weight:500;color:var(--tx);}
+table.raster td{width:64px;height:64px;border-radius:6px;border:1.5px solid var(--bd2);background:var(--sf2);text-align:center;vertical-align:middle;font-family:var(--mono);font-size:16px;font-weight:500;color:var(--tx);transition:border-color .2s,background .2s;}
+table.raster td.sm{font-size:13px;}
+table.raster td input{width:100%;height:100%;background:transparent;border:none;outline:none;text-align:center;font-family:var(--mono);font-size:15px;font-weight:500;color:var(--tx);}
 table.raster td.out-cell{border:1px dashed #444441;background:var(--sf);}
 table.raster td.out-cell input{color:var(--tx);}
-table.raster td.correct{background:var(--gnd);border:1.5px solid var(--gn) !important;color:var(--gn);}
+table.raster td.correct{background:var(--gnd);border:1.5px solid var(--gn)!important;color:var(--gn);}
 table.raster td.correct input{color:var(--gn);}
-table.raster td.wrong{background:var(--rdd);border:1.5px solid var(--rd) !important;color:var(--rd);}
+table.raster td.wrong{background:var(--rdd);border:1.5px solid var(--rd)!important;color:var(--rd);}
 table.raster td.wrong input{color:var(--rd);}
-table.raster td.nodata{background:#1a1a18;color:var(--tx3);border-color:#333330;}
+table.raster td.nodata{background:#14120e;color:#555;border-color:#2a2820;font-size:12px;}
+table.raster td.agri{background:#0d2a18;border-color:#1D9E55;color:#4ecb7a;}
+table.raster td.non-agri{background:#1a1610;border-color:#3a3020;color:var(--tx3);}
 table.raster td.zone-1{background:#0d2a3a;border-color:#1D9E75;color:#5DCAA5;}
 table.raster td.zone-2{background:var(--amd);border-color:var(--am);color:var(--am);}
 table.raster td.zone-3{background:var(--pud);border-color:var(--pu);color:var(--pu);}
-table.raster td.highlight{outline:2.5px solid var(--tx);outline-offset:-2px;}
+table.raster td.gain{background:#0d3326;border-color:var(--gn)!important;color:var(--gn);}
+table.raster td.loss{background:var(--rdd);border-color:var(--rd)!important;color:var(--rd);}
+table.raster td.stable{background:var(--sf2);border-color:var(--bd2);color:var(--tx3);}
 table.raster td:has(input):not(.correct):not(.wrong):hover{border-color:var(--bd2);border-width:1.5px;}
 table.raster td:has(input:focus):not(.correct):not(.wrong){border-color:var(--ac);border-style:dashed;}
 
@@ -115,20 +125,26 @@ table.raster td:has(input:focus):not(.correct):not(.wrong){border-color:var(--ac
 /* ── Weighted overlay ── */
 .weight-wrap{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
 .weight-row{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--tx2);}
-.weight-row label{min-width:90px;}
+.weight-row label{min-width:120px;}
 .weight-row input[type=range]{flex:1;max-width:160px;}
 .weight-val{font-family:var(--mono);font-size:12px;min-width:36px;color:var(--tx);}
 .weight-sum{font-family:var(--mono);font-size:12px;color:var(--tx2);margin-top:2px;}
 .weight-sum.ok-sum{color:var(--gn);}
 .weight-sum.bad-sum{color:var(--rd);}
 
-/* ── Change detection legend ── */
+/* ── Change detection ── */
 .cd-legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;}
 .cd-item{display:flex;align-items:center;gap:5px;color:var(--tx2);}
 .cd-sw{width:12px;height:12px;border-radius:3px;}
-table.raster td.gain{background:#0d3326;border-color:var(--gn) !important;color:var(--gn);}
-table.raster td.loss{background:var(--rdd);border-color:var(--rd) !important;color:var(--rd);}
-table.raster td.stable{background:var(--sf2);border-color:var(--bd2);color:var(--tx3);}
+
+/* ── Zonal summary table ── */
+table.summary{border-collapse:separate;border-spacing:4px;}
+table.summary td{padding:6px 12px;border-radius:6px;border:1.5px solid var(--bd2);background:var(--sf2);font-family:var(--mono);font-size:14px;color:var(--tx);text-align:center;}
+table.summary td.lbl{font-size:12px;color:var(--tx2);background:var(--sf);min-width:80px;}
+table.summary td.out-cell{border:1px dashed #444441;background:var(--sf);}
+table.summary td.correct{background:var(--gnd);border:1.5px solid var(--gn)!important;color:var(--gn);}
+table.summary td.wrong{background:var(--rdd);border:1.5px solid var(--rd)!important;color:var(--rd);}
+table.summary td input{width:80px;background:transparent;border:none;outline:none;text-align:center;font-family:var(--mono);font-size:14px;color:var(--tx);}
 </style>
 </head>
 <body>
@@ -139,20 +155,43 @@ table.raster td.stable{background:var(--sf2);border-color:var(--bd2);color:var(-
   <div class="logo">
     <div class="logo-tag">GIS Training · Raster</div>
     <h1>Map Algebra</h1>
-    <p>7 interactive exercises</p>
+    <p>Agricultural raster analysis · 10 exercises</p>
   </div>
   <div class="nav-section">
     <div class="nav-label">Exercises</div>
-    <div class="nav-item active" id="nav-0" onclick="switchEx(0)"><span>Local — add layers</span><span class="nb">01</span><span class="nav-dot" id="st0"></span></div>
-    <div class="nav-item" id="nav-1" onclick="switchEx(1)"><span>Reclassify</span><span class="nb">02</span><span class="nav-dot" id="st1"></span></div>
-    <div class="nav-item" id="nav-2" onclick="switchEx(2)"><span>Focal — 3×3 mean</span><span class="nb">03</span><span class="nav-dot" id="st2"></span></div>
-    <div class="nav-item" id="nav-3" onclick="switchEx(3)"><span>Zonal statistics</span><span class="nb">04</span><span class="nav-dot" id="st3"></span></div>
-    <div class="nav-item" id="nav-4" onclick="switchEx(4)"><span>Threshold mask</span><span class="nb">05</span><span class="nav-dot" id="st4"></span></div>
-    <div class="nav-item" id="nav-5" onclick="switchEx(5)"><span>Weighted overlay</span><span class="nb">06</span><span class="nav-dot" id="st5"></span></div>
-    <div class="nav-item" id="nav-6" onclick="switchEx(6)"><span>Change detection</span><span class="nb">07</span><span class="nav-dot" id="st6"></span></div>
+    <div class="nav-item active" id="nav-0" onclick="switchEx(0)">
+      <span class="nav-nb">01</span><span>Local — add yields</span><span class="nav-dot" id="st0"></span>
+    </div>
+    <div class="nav-item" id="nav-1" onclick="switchEx(1)">
+      <span class="nav-nb">02</span><span>Reclassify yields</span><span class="nav-dot" id="st1"></span>
+    </div>
+    <div class="nav-item" id="nav-2" onclick="switchEx(2)">
+      <span class="nav-nb">03</span><span>Focal — smooth production</span><span class="nav-dot" id="st2"></span>
+    </div>
+    <div class="nav-item" id="nav-3" onclick="switchEx(3)">
+      <span class="nav-nb">04</span><span>Zonal — total production</span><span class="nav-dot" id="st3"></span>
+    </div>
+    <div class="nav-item" id="nav-4" onclick="switchEx(4)">
+      <span class="nav-nb">05</span><span>Threshold mask</span><span class="nav-dot" id="st4"></span>
+    </div>
+    <div class="nav-item" id="nav-5" onclick="switchEx(5)">
+      <span class="nav-nb">06</span><span>Weighted overlay</span><span class="nav-dot" id="st5"></span>
+    </div>
+    <div class="nav-item" id="nav-6" onclick="switchEx(6)">
+      <span class="nav-nb">07</span><span>Change detection</span><span class="nav-dot" id="st6"></span>
+    </div>
+    <div class="nav-item" id="nav-7" onclick="switchEx(7)">
+      <span class="nav-nb">08</span><span>Production per capita</span><span class="nav-dot" id="st7"></span>
+    </div>
+    <div class="nav-item" id="nav-8" onclick="switchEx(8)">
+      <span class="nav-nb">09</span><span>Normalize &amp; vulnerability</span><span class="nav-dot" id="st8"></span>
+    </div>
+    <div class="nav-item" id="nav-9" onclick="switchEx(9)">
+      <span class="nav-nb">10</span><span>Yield × agriculture mask</span><span class="nav-dot" id="st9"></span>
+    </div>
   </div>
   <div class="prog-section">
-    <div class="prog-label"><span>Progress</span><span id="prog-lbl">0 / 7</span></div>
+    <div class="prog-label"><span>Progress</span><span id="prog-lbl">0 / 10</span></div>
     <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
   </div>
 </aside>
@@ -160,139 +199,237 @@ table.raster td.stable{background:var(--sf2);border-color:var(--bd2);color:var(-
 <!-- ══ MAIN ═════════════════════════════════════════════════════════════════ -->
 <main class="main">
 
-<!-- ── EX 0 · Local operation ─────────────────────────────────────────────── -->
+<!-- ── EX 0 · Local addition ───────────────────────────────────────────────── -->
 <div class="ex visible" id="ex-0">
-  <div class="ex-tag">01 · Local operation</div>
-  <div class="ex-title">Add two raster layers cell by cell</div>
+  <div class="ex-header">
+    <div class="ex-num">01</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Local operation</div>
+      <div class="ex-title">Add two agricultural yield layers</div>
+    </div>
+  </div>
   <div class="question-box">
-    A <strong>local operation</strong> computes a new value for each cell using only values at that same position across layers.<br><br>
-    You have two elevation grids, Layer A and Layer B, representing measurements from two sensors. <strong>Compute Layer C = A + B</strong> for every cell. Fill in your answers in Layer C, then check.
+    A <strong>local operation</strong> computes a new value for each cell using only the values at that same position across input layers. No neighbourhood is involved — each cell is processed independently.<br><br>
+    You have two yield raster layers (kg/ha) collected in different surveys for the same region. <strong>Compute the combined yield Layer C = A + B</strong> for each cell. Fill in Layer C.
   </div>
   <div class="formula-box"><span class="kw">Layer C</span>[i,j]  =  <span class="val">Layer A</span>[i,j]  +  <span class="val">Layer B</span>[i,j]</div>
-  <div class="hint-box" id="hint0">Top-left: A = 3, B = 5 → C = 8. Work row by row, position by position.</div>
+  <div class="hint-box" id="hint0">Top-left cell: A = 3, B = 5 → C = 8. Work row by row, position by position.</div>
   <div class="grids-row" id="g0"></div>
   <div class="verdict" id="v0"></div>
 </div>
 
-<!-- ── EX 1 · Reclassify ──────────────────────────────────────────────────── -->
+<!-- ── EX 1 · Reclassify ───────────────────────────────────────────────────── -->
 <div class="ex" id="ex-1">
-  <div class="ex-tag">02 · Reclassification</div>
-  <div class="ex-title">Reclassify elevation into terrain classes</div>
-  <div class="question-box">
-    <strong>Reclassification</strong> assigns each cell a new value based on a lookup table — converting continuous values into discrete categories.<br><br>
-    Using the thresholds below, classify each elevation value into one of three terrain classes: <strong>1 = Low, 2 = Medium, 3 = High</strong>. Adjust the thresholds and watch how boundaries shift. Fill in the output grid, then check.
+  <div class="ex-header">
+    <div class="ex-num">02</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Reclassification</div>
+      <div class="ex-title">Reclassify crop yields into productivity classes</div>
+    </div>
   </div>
-  <div class="formula-box"><span class="kw">if</span> value &lt; t1  →  <span class="val">class 1</span>  (Low)<br><span class="kw">if</span> value &lt; t2  →  <span class="val">class 2</span>  (Medium)<br><span class="kw">else</span>           →  <span class="val">class 3</span>  (High)</div>
+  <div class="question-box">
+    <strong>Reclassification</strong> converts continuous values into discrete categories using a lookup table. This is commonly used to turn raw yield values into productivity zones for planning.<br><br>
+    Using the thresholds below, classify each yield value (kg/ha) into one of three productivity classes: <strong>1 = Low, 2 = Medium, 3 = High</strong>. Adjust the thresholds and fill in the output grid.
+  </div>
+  <div class="formula-box"><span class="kw">if</span> yield &lt; t1  →  <span class="val">class 1</span>  (Low productivity)<br><span class="kw">if</span> yield &lt; t2  →  <span class="val">class 2</span>  (Medium productivity)<br><span class="kw">else</span>            →  <span class="val">class 3</span>  (High productivity)</div>
   <div class="reclass-wrap">
-    <div class="rc-row"><div class="rc-swatch" style="background:#0d3326;border:1px solid var(--gn);"></div><span>Class 1 — Low &nbsp; if value &lt;</span><input type="number" id="t1" value="30" min="1" max="99" oninput="updateReclass()"></div>
-    <div class="rc-row"><div class="rc-swatch" style="background:var(--amd);border:1px solid var(--am);"></div><span>Class 2 — Medium &nbsp; if value &lt;</span><input type="number" id="t2" value="65" min="1" max="99" oninput="updateReclass()"></div>
-    <div class="rc-row"><div class="rc-swatch" style="background:var(--rdd);border:1px solid var(--rd);"></div><span>Class 3 — High &nbsp; if value ≥ t2</span></div>
+    <div class="rc-row"><div class="rc-swatch" style="background:#0d3326;border:1px solid var(--gn);"></div><span>Class 1 — Low &nbsp;&nbsp;&nbsp; yield &lt;</span><input type="number" id="t1" value="30" min="1" max="99" oninput="updateReclass()"></div>
+    <div class="rc-row"><div class="rc-swatch" style="background:var(--amd);border:1px solid var(--am);"></div><span>Class 2 — Medium &nbsp; yield &lt;</span><input type="number" id="t2" value="65" min="1" max="99" oninput="updateReclass()"></div>
+    <div class="rc-row"><div class="rc-swatch" style="background:var(--rdd);border:1px solid var(--rd);"></div><span>Class 3 — High &nbsp;&nbsp;&nbsp; yield ≥ t2</span></div>
   </div>
   <div class="legend-row">
     <div class="leg-item"><div class="leg-sw" style="background:#0d3326;border:1px solid var(--gn);"></div><span style="color:var(--gn);">1 — Low</span></div>
     <div class="leg-item"><div class="leg-sw" style="background:var(--amd);border:1px solid var(--am);"></div><span style="color:var(--am);">2 — Medium</span></div>
     <div class="leg-item"><div class="leg-sw" style="background:var(--rdd);border:1px solid var(--rd);"></div><span style="color:var(--rd);">3 — High</span></div>
   </div>
-  <div class="hint-box" id="hint1">Top-left value = 12. Is 12 &lt; t1? If yes → class 1. Move row by row.</div>
+  <div class="hint-box" id="hint1">Top-left yield = 12. Is 12 &lt; t1? If yes → class 1. Move row by row through all cells.</div>
   <div class="grids-row" id="g1"></div>
   <div class="verdict" id="v1"></div>
 </div>
 
-<!-- ── EX 2 · Focal ───────────────────────────────────────────────────────── -->
+<!-- ── EX 2 · Focal ─────────────────────────────────────────────────────────── -->
 <div class="ex" id="ex-2">
-  <div class="ex-tag">03 · Focal operation</div>
-  <div class="ex-title">Smooth a grid with a 3×3 mean filter</div>
-  <div class="question-box">
-    A <strong>focal operation</strong> computes each output cell using a neighbourhood of surrounding cells — not just the cell itself.<br><br>
-    Apply a <strong>3×3 mean filter</strong>: for each cell in the output, compute the average of the 3×3 window centred on that cell. Edge cells use only their available neighbours. Fill in <strong>all output cells</strong> and check.
+  <div class="ex-header">
+    <div class="ex-num">03</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Focal operation</div>
+      <div class="ex-title">Smooth the production raster with a 3×3 mean filter</div>
+    </div>
   </div>
-  <div class="formula-box"><span class="kw">Output</span>[i,j]  =  <span class="fn">mean</span>( all cells in <span class="val">3×3 window</span> centred on [i,j] )<br><span style="color:#4a5570;">-- edge cells: use only the neighbours that exist</span></div>
-  <div class="hint-box" id="hint2">Centre cell (row 2, col 2): average all 9 values. Corner cell (row 1, col 1): only 4 neighbours available — average those 4. Round to 1 decimal.</div>
+  <div class="question-box">
+    A <strong>focal operation</strong> computes each output cell value using a neighbourhood of surrounding cells. A 3×3 mean filter is commonly applied to agricultural production rasters to smooth out local noise and produce the <strong>Focal_production</strong> raster.<br><br>
+    Apply the filter: for each cell, compute the mean of all cells in its 3×3 window. Edge cells use only available neighbours. Fill in <strong>all output cells</strong>. Round to 1 decimal place.
+  </div>
+  <div class="formula-box"><span class="kw">Focal_production</span>[i,j]  =  <span class="fn">mean</span>( all cells in <span class="val">3×3 window</span> centred on [i,j] )<br><span class="cm">-- edge cells: use only the neighbours that exist (4 for corners, 6 for edges)</span></div>
+  <div class="hint-box" id="hint2">Centre cell (row 2, col 2): mean of all 9 values. Top-left corner: only 4 cells available — mean those 4. Round to 1 decimal.</div>
   <div class="grids-row" id="g2"></div>
   <div class="verdict" id="v2"></div>
 </div>
 
-<!-- ── EX 3 · Zonal statistics ───────────────────────────────────────────── -->
+<!-- ── EX 3 · Zonal sum ─────────────────────────────────────────────────────── -->
 <div class="ex" id="ex-3">
-  <div class="ex-tag">04 · Zonal statistics</div>
-  <div class="ex-title">Compute the mean value per zone</div>
-  <div class="question-box">
-    <strong>Zonal statistics</strong> summarise a value raster (e.g. NDVI) within zones defined by a separate raster (e.g. land cover).<br><br>
-    The <strong>Zone grid</strong> assigns each cell to a zone (1, 2, or 3). The <strong>Value grid</strong> contains NDVI measurements. For each zone, compute the <strong>mean NDVI</strong>. Round to 1 decimal place and fill in the summary table.
+  <div class="ex-header">
+    <div class="ex-num">04</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Zonal statistics</div>
+      <div class="ex-title">Compute total production per district</div>
+    </div>
   </div>
-  <div class="formula-box"><span class="kw">Zonal mean</span>[z]  =  <span class="fn">mean</span>( Value[i,j]  <span class="kw">where</span>  Zone[i,j] = <span class="val">z</span> )</div>
-  <div class="hint-box" id="hint3">Zone 1 cells are: (0,0)=4, (0,2)=8, (1,1)=6 → mean = (4+8+6)/3. Find all cells for each zone, then average.</div>
+  <div class="question-box">
+    <strong>Zonal statistics</strong> summarise a value raster within zones defined by a separate raster. Here, zones represent districts and values represent agricultural production (kg).<br><br>
+    The <strong>District grid</strong> assigns each cell to a district (1, 2, or 3). The <strong>Production grid</strong> contains production values. For each district, compute the <strong>total production</strong> (sum of all cell values in that district). Fill in the summary table.
+  </div>
+  <div class="formula-box"><span class="kw">Total production</span>[d]  =  <span class="fn">SUM</span>( Production[i,j]  <span class="kw">where</span>  District[i,j] = <span class="val">d</span> )</div>
+  <div class="hint-box" id="hint3">District 1 cells are at positions (0,0), (0,2), (1,1) — find their production values and add them up. Do the same for districts 2 and 3.</div>
   <div class="grids-row" id="g3"></div>
   <div class="verdict" id="v3"></div>
 </div>
 
-<!-- ── EX 4 · Threshold mask ─────────────────────────────────────────────── -->
+<!-- ── EX 4 · Threshold mask ──────────────────────────────────────────────── -->
 <div class="ex" id="ex-4">
-  <div class="ex-tag">05 · Threshold masking</div>
-  <div class="ex-title">Mask out cells below a threshold</div>
-  <div class="question-box">
-    <strong>Masking</strong> sets cells that do not meet a condition to NoData — effectively removing them from analysis. This is essential for excluding water, clouds, urban areas, or low-quality pixels.<br><br>
-    Apply a threshold: cells where <strong>value &lt; 5 → NoData</strong>, all others keep their value. Fill in the output grid. Write <strong>ND</strong> for NoData cells, or the original value for valid cells.
+  <div class="ex-header">
+    <div class="ex-num">05</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Threshold masking</div>
+      <div class="ex-title">Mask out low-production cells</div>
+    </div>
   </div>
-  <div class="formula-box"><span class="kw">if</span> value &lt; <span class="val">5</span>  →  <span class="val">NoData</span>  (masked out)<br><span class="kw">else</span>          →  keep original value</div>
-  <div class="hint-box" id="hint4">Scan each cell. If its value is less than 5, write ND in the output. Otherwise copy the value as-is.</div>
+  <div class="question-box">
+    <strong>Masking</strong> removes cells that do not meet a condition by setting them to NoData. In agriculture, this is used to exclude non-productive land, water bodies, or urban pixels from analysis.<br><br>
+    Apply a production threshold: cells where <strong>production &lt; 5 → NoData</strong>. All other cells keep their original production value. Write <strong>ND</strong> for NoData cells.
+  </div>
+  <div class="formula-box"><span class="kw">if</span> production &lt; <span class="val">5</span>  →  <span class="val">NoData</span>  (cell excluded from analysis)<br><span class="kw">else</span>                  →  keep original production value</div>
+  <div class="hint-box" id="hint4">Scan each cell. If value &lt; 5, write ND. Otherwise copy the value as-is. Check every position — even large values should be copied unchanged.</div>
   <div class="grids-row" id="g4"></div>
   <div class="verdict" id="v4"></div>
 </div>
 
 <!-- ── EX 5 · Weighted overlay ───────────────────────────────────────────── -->
 <div class="ex" id="ex-5">
-  <div class="ex-tag">06 · Weighted overlay</div>
-  <div class="ex-title">Combine three criteria layers with weights</div>
-  <div class="question-box">
-    <strong>Weighted overlay</strong> combines multiple criteria layers into a single suitability score. Each layer is multiplied by its weight, and the results are summed. Weights must sum to <strong>1.0</strong>.<br><br>
-    You have three layers: <strong>Slope</strong>, <strong>Soil quality</strong>, and <strong>Water access</strong>. Adjust the weights using the sliders, then compute the <strong>suitability score</strong> for each cell. Round to 1 decimal.
+  <div class="ex-header">
+    <div class="ex-num">06</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Weighted overlay</div>
+      <div class="ex-title">Compute an agricultural suitability score</div>
+    </div>
   </div>
-  <div class="formula-box"><span class="kw">Suitability</span>[i,j]  =  w1 × <span class="val">Slope</span>[i,j]  +  w2 × <span class="val">Soil</span>[i,j]  +  w3 × <span class="val">Water</span>[i,j]<br><span style="color:#4a5570;">-- constraint: w1 + w2 + w3 = 1.0</span></div>
+  <div class="question-box">
+    <strong>Weighted overlay</strong> combines multiple criteria layers into a single suitability score. Each layer is multiplied by its weight, and results are summed. Weights must sum to <strong>1.0</strong>.<br><br>
+    Combine three agricultural factors — <strong>Soil fertility</strong>, <strong>Rainfall</strong>, and <strong>Market access</strong> — to produce a <strong>suitability score</strong> for each cell. Adjust the weights, compute the output, and fill in your answers. Round to 1 decimal.
+  </div>
+  <div class="formula-box"><span class="kw">Suitability</span>[i,j]  =  w1 × <span class="val">Soil</span>[i,j]  +  w2 × <span class="val">Rainfall</span>[i,j]  +  w3 × <span class="val">Market</span>[i,j]<br><span class="cm">-- constraint: w1 + w2 + w3 = 1.0</span></div>
   <div class="weight-wrap" id="weight-wrap"></div>
-  <div class="hint-box" id="hint5">For top-left cell: Slope=3, Soil=7, Water=5. Multiply each by its weight and sum. E.g. with equal weights (0.33 each): 3×0.33 + 7×0.33 + 5×0.33 = 4.95 ≈ 5.0.</div>
+  <div class="hint-box" id="hint5">Top-left cell: Soil=6, Rainfall=4, Market=7. Multiply each by its weight and sum. With equal weights (0.33): 6×0.33 + 4×0.33 + 7×0.33 ≈ 5.6.</div>
   <div class="grids-row" id="g5"></div>
   <div class="verdict" id="v5"></div>
 </div>
 
 <!-- ── EX 6 · Change detection ───────────────────────────────────────────── -->
 <div class="ex" id="ex-6">
-  <div class="ex-tag">07 · Change detection</div>
-  <div class="ex-title">Detect vegetation change between two dates</div>
+  <div class="ex-header">
+    <div class="ex-num">07</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Change detection</div>
+      <div class="ex-title">Detect changes in agricultural production between two years</div>
+    </div>
+  </div>
   <div class="question-box">
-    <strong>Change detection</strong> subtracts a before-raster from an after-raster to identify where values increased, decreased, or stayed the same.<br><br>
-    Grid T1 shows NDVI in 2010, Grid T2 shows NDVI in 2020. Compute the <strong>difference</strong> (T2 − T1), then classify each cell: <strong>Gain</strong> if difference &gt; 1, <strong>Loss</strong> if difference &lt; −1, <strong>Stable</strong> otherwise. Fill in the difference values and the change class.
+    <strong>Change detection</strong> subtracts a before-raster from an after-raster to identify increases, decreases, or stability in a variable over time.<br><br>
+    Grid <strong>Y2000</strong> shows production (kg/ha) in 2000, and <strong>Y2010</strong> shows the same in 2010. Compute the <strong>difference</strong> (Y2010 − Y2000), then classify each cell: <strong>G</strong> = Gain (diff &gt; 1), <strong>L</strong> = Loss (diff &lt; −1), <strong>S</strong> = Stable (−1 to +1).
   </div>
-  <div class="formula-box"><span class="kw">Difference</span>[i,j]  =  <span class="val">T2</span>[i,j]  −  <span class="val">T1</span>[i,j]<br><span class="kw">if</span> diff &gt; 1   →  <span class="fn">Gain</span><br><span class="kw">if</span> diff &lt; −1  →  <span class="fn">Loss</span><br><span class="kw">else</span>           →  Stable</div>
+  <div class="formula-box"><span class="kw">Difference</span>[i,j]  =  <span class="val">Y2010</span>[i,j]  −  <span class="val">Y2000</span>[i,j]<br><span class="kw">if</span> diff &gt;  1  →  <span class="fn">G</span>  (Gain)<br><span class="kw">if</span> diff &lt; −1  →  <span class="fn">L</span>  (Loss)<br><span class="kw">else</span>           →  S  (Stable)</div>
   <div class="cd-legend">
-    <div class="cd-item"><div class="cd-sw" style="background:#0d3326;border:1px solid var(--gn);"></div><span style="color:var(--gn);">Gain (&gt;+1)</span></div>
-    <div class="cd-item"><div class="cd-sw" style="background:var(--rdd);border:1px solid var(--rd);"></div><span style="color:var(--rd);">Loss (&lt;-1)</span></div>
-    <div class="cd-item"><div class="cd-sw" style="background:var(--sf2);border:1px solid var(--bd2);"></div><span style="color:var(--tx3);">Stable</span></div>
+    <div class="cd-item"><div class="cd-sw" style="background:#0d3326;border:1px solid var(--gn);"></div><span style="color:var(--gn);">G — Gain (&gt;+1)</span></div>
+    <div class="cd-item"><div class="cd-sw" style="background:var(--rdd);border:1px solid var(--rd);"></div><span style="color:var(--rd);">L — Loss (&lt;−1)</span></div>
+    <div class="cd-item"><div class="cd-sw" style="background:var(--sf2);border:1px solid var(--bd2);"></div><span style="color:var(--tx3);">S — Stable</span></div>
   </div>
-  <div class="hint-box" id="hint6">Top-left: T1=3, T2=7 → diff = 7−3 = 4 → Gain. Work cell by cell. Remember: Stable means the difference is between −1 and +1 inclusive.</div>
+  <div class="hint-box" id="hint6">Top-left: Y2000=3, Y2010=7 → diff = 4 → G (Gain). Remember: Stable means the absolute difference is ≤ 1.</div>
   <div class="grids-row" id="g6"></div>
   <div class="verdict" id="v6"></div>
+</div>
+
+<!-- ── EX 7 · Focal production / Population = per capita ──────────────────── -->
+<div class="ex" id="ex-7">
+  <div class="ex-header">
+    <div class="ex-num">08</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Local operation — division</div>
+      <div class="ex-title">Compute agricultural production per capita</div>
+    </div>
+  </div>
+  <div class="question-box">
+    After applying a focal smoothing filter to the production raster (<strong>Focal_production</strong>), we divide by the <strong>Population</strong> raster to obtain production per capita — how many kg of food are produced per person in each cell.<br><br>
+    Divide each cell of the Focal_production raster by the corresponding Population cell. Round your answers to <strong>1 decimal place</strong>.
+    <div class="assumption">Units: Focal_production in kg · Population in persons → result in <strong>kg / person</strong></div>
+  </div>
+  <div class="formula-box"><span class="kw">Prod_per_capita</span>[i,j]  =  <span class="val">Focal_production</span>[i,j]  ÷  <span class="val">Population</span>[i,j]</div>
+  <div class="hint-box" id="hint7">Top-left: Focal_production = 6.0, Population = 3 → 6.0 / 3 = 2.0. Round all results to 1 decimal place.</div>
+  <div class="grids-row" id="g7"></div>
+  <div class="verdict" id="v7"></div>
+</div>
+
+<!-- ── EX 8 · Normalize + vulnerability ─────────────────────────────────── -->
+<div class="ex" id="ex-8">
+  <div class="ex-header">
+    <div class="ex-num">09</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Normalization &amp; derived index</div>
+      <div class="ex-title">Normalize production per capita and compute vulnerability</div>
+    </div>
+  </div>
+  <div class="question-box">
+    <strong>Normalization</strong> rescales values to a 0–1 range so that rasters with different units can be compared. Here we normalize the production per capita raster (2000), then derive a <strong>Vulnerability</strong> index: the less food produced per person, the more vulnerable the cell.<br><br>
+    <strong>Step 1:</strong> Normalize each cell value using min-max scaling.<br>
+    <strong>Step 2:</strong> Compute vulnerability as 1 minus the normalized value. Fill in both output grids.
+    <div class="assumption">The minimum and maximum values of the input raster are shown above the grid.</div>
+  </div>
+  <div class="formula-box"><span class="kw">Normalized</span>[i,j]  =  ( value − <span class="fn">min</span> )  ÷  ( <span class="fn">max</span> − <span class="fn">min</span> )<br><span class="kw">Vulnerability</span>[i,j]  =  1  −  <span class="val">Normalized</span>[i,j]</div>
+  <div class="hint-box" id="hint8">Find min and max from the input grid. For each cell: normalized = (v − min) / (max − min). Then vulnerability = 1 − normalized. Round to 2 decimal places.</div>
+  <div class="grids-row" id="g8"></div>
+  <div class="verdict" id="v8"></div>
+</div>
+
+<!-- ── EX 9 · Yield × agriculture mask → Production ───────────────────────── -->
+<div class="ex" id="ex-9">
+  <div class="ex-header">
+    <div class="ex-num">10</div>
+    <div class="ex-header-text">
+      <div class="ex-concept">Masking + local multiplication</div>
+      <div class="ex-title">Compute production for agricultural cells (2000)</div>
+    </div>
+  </div>
+  <div class="question-box">
+    This exercise chains two operations. First, a <strong>yield raster</strong> (kg/ha) is masked by an <strong>agriculture binary raster</strong> (1 = agricultural cell, 0 = non-agricultural). Non-agricultural cells become zero. Then the <strong>masked yield</strong> is multiplied by the <strong>cell area</strong> (ha) to obtain total production per cell.<br><br>
+    <strong>Step 1:</strong> Multiply Yield × Agriculture mask → Masked yield (0 for non-agri cells).<br>
+    <strong>Step 2:</strong> Multiply Masked yield × Cell area (2 ha per cell) → Production (kg).
+    <div class="assumption">Assumption: within each district, all agricultural cells share the same yield value (uniform yield). In reality, yields vary by soil type, irrigation, and farming practices.</div>
+  </div>
+  <div class="formula-box"><span class="kw">Masked_yield</span>[i,j]  =  <span class="val">Yield</span>[i,j]  ×  <span class="val">Agri_mask</span>[i,j]<br><span class="kw">Production</span>[i,j]  =  <span class="val">Masked_yield</span>[i,j]  ×  <span class="val">Cell_area</span>  <span class="cm">(= 2 ha)</span></div>
+  <div class="hint-box" id="hint9">Step 1: if agri mask = 0, masked yield = 0 regardless of yield value. Step 2: multiply masked yield by 2 (cell area). Non-agri cells produce 0 kg.</div>
+  <div class="grids-row" id="g9"></div>
+  <div class="verdict" id="v9"></div>
 </div>
 
 </main>
 </div>
 
 <script>
+// ── Global state ─────────────────────────────────────────────────────────────
 const solved = new Set();
+const TOTAL = 10;
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
-function makeStaticCell(v, extraClass='') {
+function makeStaticCell(v, cls='') {
   const td = document.createElement('td');
-  if(extraClass) td.className = extraClass;
+  if(cls) td.className = cls;
   td.textContent = v;
   return td;
 }
-function makeInputCell(placeholder='?') {
+function makeInputCell(ph='?', sm=false) {
   const td = document.createElement('td');
-  td.className = 'out-cell';
+  td.className = 'out-cell' + (sm?' sm':'');
   const inp = document.createElement('input');
-  inp.type = 'text'; inp.placeholder = placeholder;
-  inp.autocomplete = 'off';
+  inp.type='text'; inp.placeholder=ph; inp.autocomplete='off';
   td.appendChild(inp);
   return td;
 }
@@ -307,385 +444,494 @@ function makeTable(rows) {
   return tbl;
 }
 function gridBlock(label, sub, tbl) {
-  const d = document.createElement('div'); d.className = 'grid-block';
-  const l = document.createElement('div'); l.className = 'grid-label'; l.textContent = label;
-  const s = document.createElement('div'); s.className = 'grid-sublabel'; s.textContent = sub;
+  const d = document.createElement('div'); d.className='grid-block';
+  const l = document.createElement('div'); l.className='grid-label'; l.textContent=label;
+  const s = document.createElement('div'); s.className='grid-sublabel'; s.textContent=sub;
   d.appendChild(l); d.appendChild(s); d.appendChild(tbl);
   return d;
 }
 function opSym(ch) {
-  const d = document.createElement('div'); d.className = 'op-sym'; d.textContent = ch; return d;
+  const d = document.createElement('div'); d.className='op-sym'; d.textContent=ch; return d;
 }
 function sideBtns(exId, checkFn) {
-  const d = document.createElement('div'); d.className = 'side-btns';
-  const cb = document.createElement('button'); cb.className = 'btn btn-check';
-  cb.innerHTML = '&#9654; Check'; cb.onclick = checkFn;
-  const hb = document.createElement('button'); hb.className = 'btn btn-hint';
-  hb.textContent = 'Hint'; hb.onclick = () => document.getElementById('hint'+exId).classList.toggle('show');
+  const d = document.createElement('div'); d.className='side-btns';
+  const cb = document.createElement('button'); cb.className='btn btn-check';
+  cb.innerHTML='&#9654; Check'; cb.onclick=checkFn;
+  const hb = document.createElement('button'); hb.className='btn btn-hint';
+  hb.textContent='Hint'; hb.onclick=()=>document.getElementById('hint'+exId).classList.toggle('show');
   d.appendChild(cb); d.appendChild(hb);
   return d;
 }
 function setVerdict(exId, ok, msg) {
   const v = document.getElementById('v'+exId);
-  v.className = 'verdict show ' + (ok ? 'ok' : 'no');
-  v.textContent = ok ? '✓ ' + msg : '✗ ' + msg;
+  v.className = 'verdict show ' + (ok?'ok':'no');
+  v.textContent = (ok?'✓ ':'✗ ') + msg;
   if(ok && !solved.has(exId)) { solved.add(exId); markSolved(exId); }
 }
 function markSolved(i) {
   const dot = document.getElementById('st'+i);
-  if(dot) { dot.style.background='var(--gn)'; dot.style.boxShadow='0 0 5px var(--gn)'; }
+  if(dot){dot.style.background='var(--gn)';dot.style.boxShadow='0 0 5px var(--gn)';}
   const nav = document.getElementById('nav-'+i);
   if(nav) nav.classList.add('done');
-  document.getElementById('prog-lbl').textContent = solved.size + ' / 7';
-  document.getElementById('prog-fill').style.width = (solved.size/7*100) + '%';
+  document.getElementById('prog-lbl').textContent = solved.size+' / '+TOTAL;
+  document.getElementById('prog-fill').style.width = (solved.size/TOTAL*100)+'%';
 }
 function switchEx(i) {
-  document.querySelectorAll('.ex').forEach(e => e.classList.remove('visible'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.ex').forEach(e=>e.classList.remove('visible'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('ex-'+i).classList.add('visible');
   document.getElementById('nav-'+i).classList.add('active');
 }
-function numEq(a, b, tol=0.15) { return Math.abs(parseFloat(a) - parseFloat(b)) <= tol; }
-
-// ── EX 0 · Local addition ────────────────────────────────────────────────────
-const A0 = [[3,7,2],[1,4,6],[8,2,5]];
-const B0 = [[5,2,4],[3,6,1],[2,5,3]];
-const C0 = A0.map((r,i) => r.map((v,j) => v + B0[i][j]));
-
-(function() {
-  const tA = makeTable(A0.map(r => r.map(v => makeStaticCell(v))));
-  const tB = makeTable(B0.map(r => r.map(v => makeStaticCell(v))));
-  const cellsC = []; 
-  const tC = makeTable(A0.map((r,i) => r.map((v,j) => { const td=makeInputCell(); cellsC.push({td,i,j}); return td; })));
-  window._c0 = cellsC;
-  const g = document.getElementById('g0');
-  g.appendChild(gridBlock('Layer A','given', tA));
-  g.appendChild(opSym('+'));
-  g.appendChild(gridBlock('Layer B','given', tB));
-  g.appendChild(opSym('='));
-  g.appendChild(gridBlock('Layer C','fill in your answers', tC));
-  g.appendChild(sideBtns(0, checkEx0));
-})();
-
-function checkEx0() {
+function numEq(a, b, tol=0.15) { return Math.abs(parseFloat(a)-parseFloat(b))<=tol; }
+function checkCells(cells, solFn, exId, tol=0.15) {
   let ok=true, allFilled=true;
-  window._c0.forEach(({td,i,j}) => {
+  cells.forEach(({td,i,j})=>{
     const v = td.querySelector('input').value.trim();
     if(!v){allFilled=false;return;}
-    const correct = numEq(v, C0[i][j]);
+    const sol = typeof solFn==='function' ? solFn(i,j) : solFn[i][j];
+    const correct = numEq(v, sol, tol);
     td.classList.remove('correct','wrong','out-cell');
     td.classList.add(correct?'correct':'wrong');
     if(!correct) ok=false;
   });
-  if(!allFilled){setVerdict(0,false,'Fill in all cells before checking.');return;}
-  setVerdict(0, ok, ok ? 'All correct! Each cell = A + B at that position.' : 'Some cells are wrong — recheck your additions.');
+  return {ok, allFilled};
 }
 
-// ── EX 1 · Reclassify ────────────────────────────────────────────────────────
-const ELEV = [[12,45,78],[56,88,23],[9,71,50]];
-let _rclCells = [];
-
-(function() {
-  const tE = makeTable(ELEV.map(r => r.map(v => makeStaticCell(v))));
-  const cells = [];
-  const tO = makeTable(ELEV.map((r,i) => r.map((v,j) => { const td=makeInputCell(); cells.push({td,i,j}); return td; })));
-  _rclCells = cells;
-  const g = document.getElementById('g1');
-  g.appendChild(gridBlock('Elevation','given (m)', tE));
-  g.appendChild(opSym('→'));
-  g.appendChild(gridBlock('Classes','fill in 1, 2 or 3', tO));
-  g.appendChild(sideBtns(1, checkEx1));
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 0 · Local addition
+// ══════════════════════════════════════════════════════════════════════════════
+const A0 = [[3,7,2],[1,4,6],[8,2,5]];
+const B0 = [[5,2,4],[3,6,1],[2,5,3]];
+const C0 = A0.map((r,i)=>r.map((v,j)=>v+B0[i][j]));
+let _c0=[];
+(function(){
+  const cells=[];
+  const tA=makeTable(A0.map(r=>r.map(v=>makeStaticCell(v))));
+  const tB=makeTable(B0.map(r=>r.map(v=>makeStaticCell(v))));
+  const tC=makeTable(A0.map((r,i)=>r.map((_,j)=>{const td=makeInputCell();cells.push({td,i,j});return td;})));
+  _c0=cells;
+  const g=document.getElementById('g0');
+  g.appendChild(gridBlock('Layer A','yield (kg/ha)',tA));
+  g.appendChild(opSym('+'));
+  g.appendChild(gridBlock('Layer B','yield (kg/ha)',tB));
+  g.appendChild(opSym('='));
+  g.appendChild(gridBlock('Layer C','fill in your answers',tC));
+  g.appendChild(sideBtns(0,checkEx0));
 })();
+function checkEx0(){
+  const {ok,allFilled}=checkCells(_c0,(i,j)=>C0[i][j],0);
+  if(!allFilled){setVerdict(0,false,'Fill in all cells before checking.');return;}
+  setVerdict(0,ok,ok?'All correct! Each cell = A + B at that position.':'Some cells are wrong — recheck your additions.');
+}
 
-function getReclassSol() {
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 1 · Reclassify
+// ══════════════════════════════════════════════════════════════════════════════
+const YIELD1 = [[12,45,78],[56,88,23],[9,71,50]];
+let _rc1=[];
+const RC_STYLE={1:{bg:'#0d3326',bd:'var(--gn)',tx:'var(--gn)'},2:{bg:'var(--amd)',bd:'var(--am)',tx:'var(--am)'},3:{bg:'var(--rdd)',bd:'var(--rd)',tx:'var(--rd)'}};
+(function(){
+  const cells=[];
+  const tIn=makeTable(YIELD1.map(r=>r.map(v=>makeStaticCell(v))));
+  const tOut=makeTable(YIELD1.map((r,i)=>r.map((_,j)=>{const td=makeInputCell();cells.push({td,i,j});return td;})));
+  _rc1=cells;
+  const g=document.getElementById('g1');
+  g.appendChild(gridBlock('Yield raster','kg/ha',tIn));
+  g.appendChild(opSym('→'));
+  g.appendChild(gridBlock('Productivity class','fill in 1, 2 or 3',tOut));
+  g.appendChild(sideBtns(1,checkEx1));
+})();
+function getReclassSol(){
   const t1=parseFloat(document.getElementById('t1').value)||30;
   const t2=parseFloat(document.getElementById('t2').value)||65;
-  return ELEV.map(r => r.map(v => v<t1?1:v<t2?2:3));
+  return YIELD1.map(r=>r.map(v=>v<t1?1:v<t2?2:3));
 }
-function updateReclass() {
-  _rclCells.forEach(({td}) => {
+function updateReclass(){
+  _rc1.forEach(({td})=>{
     td.classList.remove('correct','wrong');
     td.style.background=td.style.borderColor=td.style.color='';
-    const inp=td.querySelector('input'); if(inp) inp.style.color='';
+    const inp=td.querySelector('input');if(inp)inp.style.color='';
   });
   document.getElementById('v1').className='verdict';
 }
-const RC_STYLE = {
-  1:{bg:'#0d3326',bd:'var(--gn)',tx:'var(--gn)'},
-  2:{bg:'var(--amd)',bd:'var(--am)',tx:'var(--am)'},
-  3:{bg:'var(--rdd)',bd:'var(--rd)',tx:'var(--rd)'}
-};
-function checkEx1() {
-  const sol = getReclassSol();
-  let ok=true, allFilled=true;
-  _rclCells.forEach(({td,i,j}) => {
-    const v = parseInt(td.querySelector('input').value);
+function checkEx1(){
+  const sol=getReclassSol();
+  let ok=true,allFilled=true;
+  _rc1.forEach(({td,i,j})=>{
+    const v=parseInt(td.querySelector('input').value);
     if(isNaN(v)){allFilled=false;return;}
-    const correct = sol[i][j];
+    const correct=sol[i][j];
     td.classList.remove('correct','wrong','out-cell');
-    if(v===correct){
-      const s=RC_STYLE[correct];
-      td.style.background=s.bg; td.style.borderColor=s.bd;
-      td.querySelector('input').style.color=s.tx;
-    } else { td.classList.add('wrong'); ok=false; }
+    if(v===correct){const s=RC_STYLE[correct];td.style.background=s.bg;td.style.borderColor=s.bd;td.querySelector('input').style.color=s.tx;}
+    else{td.classList.add('wrong');ok=false;}
   });
   if(!allFilled){setVerdict(1,false,'Fill in all cells before checking.');return;}
-  setVerdict(1, ok, ok?'All cells correctly classified!':'Some classes are wrong — recheck your thresholds.');
+  setVerdict(1,ok,ok?'All cells correctly classified!':'Some classes are wrong — recheck your thresholds.');
 }
 
-// ── EX 2 · Focal 3×3 mean ────────────────────────────────────────────────────
-const RAW2 = [[4,8,2],[7,5,9],[3,6,4]];
-function focalMean(grid, r, c) {
-  const n=grid.length, m=grid[0].length;
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 2 · Focal 3×3 mean (full grid)
+// ══════════════════════════════════════════════════════════════════════════════
+const RAW2=[[4,8,2],[7,5,9],[3,6,4]];
+function focalMean(grid,r,c){
+  const n=grid.length,m=grid[0].length;
   let sum=0,cnt=0;
-  for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){
+  for(let di=-1;di<=1;di++)for(let dj=-1;dj<=1;dj++){
     const ni=r+di,nj=c+dj;
     if(ni>=0&&ni<n&&nj>=0&&nj<m){sum+=grid[ni][nj];cnt++;}
   }
   return Math.round(sum/cnt*10)/10;
 }
-const SOL2 = RAW2.map((row,i) => row.map((_,j) => focalMean(RAW2,i,j)));
-let _cells2 = [];
-
-(function() {
+const SOL2=RAW2.map((_,i)=>RAW2[0].map((_,j)=>focalMean(RAW2,i,j)));
+let _c2=[];
+(function(){
   const cells=[];
-  const tIn = makeTable(RAW2.map(r => r.map(v => makeStaticCell(v))));
-  const tOut = makeTable(RAW2.map((r,i) => r.map((v,j) => {
-    const td = makeInputCell(); cells.push({td,i,j}); return td;
-  })));
-  _cells2 = cells;
-  const g = document.getElementById('g2');
-  g.appendChild(gridBlock('Input','raw values', tIn));
+  const tIn=makeTable(RAW2.map(r=>r.map(v=>makeStaticCell(v))));
+  const tOut=makeTable(RAW2.map((_,i)=>RAW2[0].map((_,j)=>{const td=makeInputCell();cells.push({td,i,j});return td;})));
+  _c2=cells;
+  const g=document.getElementById('g2');
+  g.appendChild(gridBlock('Production raster','kg per cell',tIn));
   g.appendChild(opSym('→'));
-  g.appendChild(gridBlock('Smoothed output','fill in all cells', tOut));
-  g.appendChild(sideBtns(2, checkEx2));
+  g.appendChild(gridBlock('Focal_production','fill in all 9 cells',tOut));
+  g.appendChild(sideBtns(2,checkEx2));
 })();
-
-function checkEx2() {
-  let ok=true, allFilled=true;
-  _cells2.forEach(({td,i,j}) => {
-    const v = td.querySelector('input').value.trim();
-    if(!v){allFilled=false;return;}
-    const correct = numEq(v, SOL2[i][j], 0.2);
-    td.classList.remove('correct','wrong','out-cell');
-    td.classList.add(correct?'correct':'wrong');
-    if(!correct) ok=false;
-  });
+function checkEx2(){
+  const {ok,allFilled}=checkCells(_c2,(i,j)=>SOL2[i][j],2,0.2);
   if(!allFilled){setVerdict(2,false,'Fill in all 9 output cells before checking.');return;}
-  setVerdict(2, ok, ok?'All correct! The grid is smoothed — extremes dampened by their neighbours.':'Some values are off — remember edge cells have fewer neighbours.');
+  setVerdict(2,ok,ok?'All correct! Production values are smoothed — extremes dampened by their neighbours.':'Some values are off. Remember edge cells have fewer neighbours.');
 }
 
-// ── EX 3 · Zonal statistics ──────────────────────────────────────────────────
-const ZONES = [[1,2,1],[3,1,2],[2,3,3]];
-const VALUES3 = [[4,7,8],[2,6,5],[9,3,1]];
-const ZONE_CLASS = {1:'zone-1',2:'zone-2',3:'zone-3'};
-const ZONE_COLORS = {1:{bg:'#0d2a3a',tx:'#5DCAA5'},2:{bg:'var(--amd)',tx:'var(--am)'},3:{bg:'var(--pud)',tx:'var(--pu)'}};
-
-function zonalMeans() {
-  const sums={1:0,2:0,3:0}, cnts={1:0,2:0,3:0};
-  ZONES.forEach((row,i)=>row.forEach((z,j)=>{sums[z]+=VALUES3[i][j];cnts[z]++;}));
-  return {1:Math.round(sums[1]/cnts[1]*10)/10, 2:Math.round(sums[2]/cnts[2]*10)/10, 3:Math.round(sums[3]/cnts[3]*10)/10};
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 3 · Zonal SUM
+// ══════════════════════════════════════════════════════════════════════════════
+const ZONES3=[[1,2,1],[3,1,2],[2,3,3]];
+const PROD3=[[4,7,8],[2,6,5],[9,3,1]];
+const ZONE_CLS={1:'zone-1',2:'zone-2',3:'zone-3'};
+const ZONE_COL={1:{bg:'#0d2a3a',tx:'#5DCAA5'},2:{bg:'var(--amd)',tx:'var(--am)'},3:{bg:'var(--pud)',tx:'var(--pu)'}};
+function zonalSums(){
+  const sums={1:0,2:0,3:0};
+  ZONES3.forEach((row,i)=>row.forEach((z,j)=>{sums[z]+=PROD3[i][j];}));
+  return sums;
 }
-let _cells3 = {};
+let _zCells={};
+(function(){
+  const tZ=makeTable(ZONES3.map((r,i)=>r.map((v,j)=>makeStaticCell(v,ZONE_CLS[v]))));
+  const tP=makeTable(PROD3.map(r=>r.map(v=>makeStaticCell(v))));
+  const g=document.getElementById('g3');
+  g.appendChild(gridBlock('District grid','zone IDs (1, 2, 3)',tZ));
+  g.appendChild(gridBlock('Production grid','kg per cell',tP));
 
-(function() {
-  const tZ = makeTable(ZONES.map((r,i)=>r.map((v,j)=>makeStaticCell(v, ZONE_CLASS[v]))));
-  const tV = makeTable(VALUES3.map(r=>r.map(v=>makeStaticCell(v))));
-  const g = document.getElementById('g3');
-  g.appendChild(gridBlock('Zone grid','zone IDs (1, 2, 3)', tZ));
-  g.appendChild(gridBlock('Value grid','NDVI measurements', tV));
-
-  const sumBlock = document.createElement('div'); sumBlock.className='grid-block';
-  const sl = document.createElement('div'); sl.className='grid-label'; sl.textContent='Zonal means';
-  const ss = document.createElement('div'); ss.className='grid-sublabel'; ss.textContent='fill in per zone';
-  sumBlock.appendChild(sl); sumBlock.appendChild(ss);
-
-  const tbl = document.createElement('table'); tbl.className='raster';
+  // summary table
+  const sb=document.createElement('div');sb.className='grid-block';
+  const sl=document.createElement('div');sl.className='grid-label';sl.textContent='Total production';
+  const ss=document.createElement('div');ss.className='grid-sublabel';ss.textContent='fill in per district';
+  sb.appendChild(sl);sb.appendChild(ss);
+  const tSum=document.createElement('table');tSum.className='summary';
   const cells={};
-  [1,2,3].forEach(z => {
+  [1,2,3].forEach(z=>{
     const tr=document.createElement('tr');
-    const lbl=document.createElement('td'); lbl.textContent='Zone '+z;
-    const c=ZONE_COLORS[z]; lbl.style.background=c.bg; lbl.style.color=c.tx; lbl.style.borderColor=c.tx; lbl.style.fontSize='13px';
-    const inp=makeInputCell('?'); cells[z]=inp;
-    tr.appendChild(lbl); tr.appendChild(inp); tbl.appendChild(tr);
+    const lbl=document.createElement('td');lbl.className='lbl';lbl.textContent='District '+z;
+    const c=ZONE_COL[z];lbl.style.background=c.bg;lbl.style.color=c.tx;lbl.style.borderColor=c.tx;
+    const inp=document.createElement('td');inp.className='out-cell';
+    const i=document.createElement('input');i.type='text';i.placeholder='?';i.autocomplete='off';
+    inp.appendChild(i);cells[z]=inp;
+    tr.appendChild(lbl);tr.appendChild(inp);tSum.appendChild(tr);
   });
-  _cells3=cells;
-  sumBlock.appendChild(tbl);
-  g.appendChild(opSym('→'));
-  g.appendChild(sumBlock);
-  g.appendChild(sideBtns(3, checkEx3));
+  _zCells=cells;sb.appendChild(tSum);
+  g.appendChild(opSym('→'));g.appendChild(sb);g.appendChild(sideBtns(3,checkEx3));
 })();
-
-function checkEx3() {
-  const sol = zonalMeans();
-  let ok=true, allFilled=true;
-  [1,2,3].forEach(z => {
-    const td=_cells3[z], v=td.querySelector('input').value.trim();
+function checkEx3(){
+  const sol=zonalSums();let ok=true,allFilled=true;
+  [1,2,3].forEach(z=>{
+    const td=_zCells[z],v=td.querySelector('input').value.trim();
     if(!v){allFilled=false;return;}
-    const correct=numEq(v,sol[z],0.2);
+    const correct=numEq(v,sol[z],0.5);
     td.classList.remove('correct','wrong','out-cell');
     td.classList.add(correct?'correct':'wrong');
-    if(!correct) ok=false;
+    if(!correct)ok=false;
   });
-  if(!allFilled){setVerdict(3,false,'Fill in all three zone means before checking.');return;}
-  const s=zonalMeans();
-  setVerdict(3,ok,ok?`All correct! Zone means: Z1=${s[1]}, Z2=${s[2]}, Z3=${s[3]}.`:'Some means are wrong — find all cells in each zone and average their values.');
+  if(!allFilled){setVerdict(3,false,'Fill in all three district totals before checking.');return;}
+  const s=zonalSums();
+  setVerdict(3,ok,ok?`All correct! District totals: D1=${s[1]} kg, D2=${s[2]} kg, D3=${s[3]} kg.`:'Some totals are wrong — add up all production cells in each district.');
 }
 
-// ── EX 4 · Threshold mask ────────────────────────────────────────────────────
-const RAW4 = [[7,2,9],[1,5,3],[8,4,6]];
-const THRESH = 5;
-const SOL4 = RAW4.map(r=>r.map(v=>v<THRESH?'ND':String(v)));
-let _cells4=[];
-
-(function() {
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 4 · Threshold mask
+// ══════════════════════════════════════════════════════════════════════════════
+const RAW4=[[7,2,9],[1,5,3],[8,4,6]];
+const SOL4=RAW4.map(r=>r.map(v=>v<5?'ND':String(v)));
+let _c4=[];
+(function(){
   const cells=[];
-  const tIn = makeTable(RAW4.map(r=>r.map(v=>makeStaticCell(v))));
-  const tOut = makeTable(RAW4.map((r,i)=>r.map((v,j)=>{const td=makeInputCell(); cells.push({td,i,j}); return td;})));
-  _cells4=cells;
+  const tIn=makeTable(RAW4.map(r=>r.map(v=>makeStaticCell(v))));
+  const tOut=makeTable(RAW4.map((_,i)=>RAW4[0].map((_,j)=>{const td=makeInputCell();cells.push({td,i,j});return td;})));
+  _c4=cells;
   const g=document.getElementById('g4');
-  g.appendChild(gridBlock('Input','raw values', tIn));
+  g.appendChild(gridBlock('Production raster','kg per cell',tIn));
   g.appendChild(opSym('→'));
-  g.appendChild(gridBlock('Masked output','value or ND', tOut));
+  g.appendChild(gridBlock('Masked output','value or ND',tOut));
   g.appendChild(sideBtns(4,checkEx4));
 })();
-
-function checkEx4() {
-  let ok=true, allFilled=true;
-  _cells4.forEach(({td,i,j}) => {
+function checkEx4(){
+  let ok=true,allFilled=true;
+  _c4.forEach(({td,i,j})=>{
     const v=td.querySelector('input').value.trim().toUpperCase();
     if(!v){allFilled=false;return;}
     const correct=(v===SOL4[i][j]);
     td.classList.remove('correct','wrong','out-cell');
     if(correct){
-      td.classList.add('correct');
-      if(v==='ND'){td.classList.remove('correct');td.classList.add('nodata');td.style.border='1.5px solid #444441';}
-    } else { td.classList.add('wrong'); ok=false; }
+      if(v==='ND'){td.classList.add('nodata');td.style.border='1px solid #333330';}
+      else td.classList.add('correct');
+    }else{td.classList.add('wrong');ok=false;}
   });
-  if(!allFilled){setVerdict(4,false,'Fill in all cells (use ND for masked cells).');return;}
-  setVerdict(4,ok,ok?'All correct! Low-value cells are masked, others retain their values.':'Some cells are wrong — check your threshold comparisons.');
+  if(!allFilled){setVerdict(4,false,'Fill in all cells. Use ND for masked cells.');return;}
+  setVerdict(4,ok,ok?'All correct! Low-production cells are masked out.':'Some cells are wrong — check your threshold condition (< 5).');
 }
 
-// ── EX 5 · Weighted overlay ──────────────────────────────────────────────────
-const SLOPE = [[3,6,2],[7,4,8],[1,5,3]];
-const SOIL  = [[7,5,8],[3,9,4],[6,2,7]];
-const WATER = [[5,7,3],[8,2,6],[4,9,5]];
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 5 · Weighted overlay
+// ══════════════════════════════════════════════════════════════════════════════
+const SOIL5 =[[6,3,8],[2,7,4],[5,9,3]];
+const RAIN5 =[[4,7,5],[8,3,6],[2,5,7]];
+const MKTX5 =[[7,5,3],[4,8,2],[9,6,4]];
 let W={w1:0.33,w2:0.33,w3:0.34};
-let _cells5=[];
-
-function computeWO() {
-  return SLOPE.map((r,i)=>r.map((_,j)=>
-    Math.round((W.w1*SLOPE[i][j]+W.w2*SOIL[i][j]+W.w3*WATER[i][j])*10)/10
-  ));
+let _c5=[];
+function computeWO(){
+  return SOIL5.map((r,i)=>r.map((_,j)=>Math.round((W.w1*SOIL5[i][j]+W.w2*RAIN5[i][j]+W.w3*MKTX5[i][j])*10)/10));
 }
-
-(function() {
+(function(){
   const wrap=document.getElementById('weight-wrap');
-  ['w1','w2','w3'].forEach((k,idx) => {
-    const lbl=['Slope','Soil quality','Water access'][idx];
-    const row=document.createElement('div'); row.className='weight-row';
-    const lab=document.createElement('label'); lab.textContent=lbl;
-    const sl=document.createElement('input'); sl.type='range'; sl.min=0; sl.max=100; sl.step=1; sl.value=idx<2?33:34;
-    const vspan=document.createElement('span'); vspan.className='weight-val'; vspan.id='wv'+k;
-    vspan.textContent=(sl.value/100).toFixed(2);
-    sl.oninput=()=>{W[k]=sl.value/100;vspan.textContent=W[k].toFixed(2);updateWeightSum();updateWOOutput();};
-    row.appendChild(lab); row.appendChild(sl); row.appendChild(vspan);
-    wrap.appendChild(row);
+  [{k:'w1',lbl:'Soil fertility',v:33},{k:'w2',lbl:'Rainfall',v:33},{k:'w3',lbl:'Market access',v:34}].forEach(({k,lbl,v})=>{
+    const row=document.createElement('div');row.className='weight-row';
+    const lab=document.createElement('label');lab.textContent=lbl;
+    const sl=document.createElement('input');sl.type='range';sl.min=0;sl.max=100;sl.step=1;sl.value=v;
+    const vs=document.createElement('span');vs.className='weight-val';vs.id='wv'+k;vs.textContent=(v/100).toFixed(2);
+    sl.oninput=()=>{W[k]=sl.value/100;vs.textContent=W[k].toFixed(2);updateWeightSum();resetWO();};
+    row.appendChild(lab);row.appendChild(sl);row.appendChild(vs);wrap.appendChild(row);
   });
-  const srow=document.createElement('div'); srow.style.fontSize='12px'; srow.style.color='var(--tx3)';
-  srow.innerHTML='Sum of weights: <span id="wsum" class="weight-sum ok-sum">1.00</span>';
-  wrap.appendChild(srow);
-
+  const sr=document.createElement('div');sr.style.cssText='font-size:12px;color:var(--tx3);';
+  sr.innerHTML='Sum of weights: <span id="wsum" class="weight-sum ok-sum">1.00</span>';
+  wrap.appendChild(sr);
   const cells=[];
-  const tSlope=makeTable(SLOPE.map(r=>r.map(v=>makeStaticCell(v))));
-  const tSoil =makeTable(SOIL.map(r=>r.map(v=>makeStaticCell(v))));
-  const tWater=makeTable(WATER.map(r=>r.map(v=>makeStaticCell(v))));
-  const tOut  =makeTable(SLOPE.map((r,i)=>r.map((_,j)=>{const td=makeInputCell(); cells.push({td,i,j}); return td;})));
-  _cells5=cells;
   const g=document.getElementById('g5');
-  g.appendChild(gridBlock('Slope','(1–10)', tSlope));
-  g.appendChild(gridBlock('Soil quality','(1–10)', tSoil));
-  g.appendChild(gridBlock('Water access','(1–10)', tWater));
+  g.appendChild(gridBlock('Soil fertility','score 1–10',makeTable(SOIL5.map(r=>r.map(v=>makeStaticCell(v))))));
+  g.appendChild(gridBlock('Rainfall','score 1–10',makeTable(RAIN5.map(r=>r.map(v=>makeStaticCell(v))))));
+  g.appendChild(gridBlock('Market access','score 1–10',makeTable(MKTX5.map(r=>r.map(v=>makeStaticCell(v))))));
   g.appendChild(opSym('→'));
-  g.appendChild(gridBlock('Suitability','fill in your answers', tOut));
+  const tOut=makeTable(SOIL5.map((_,i)=>SOIL5[0].map((_,j)=>{const td=makeInputCell();cells.push({td,i,j});return td;})));
+  _c5=cells;
+  g.appendChild(gridBlock('Suitability','fill in your answers',tOut));
   g.appendChild(sideBtns(5,checkEx5));
 })();
-
 function updateWeightSum(){
   const s=Math.round((W.w1+W.w2+W.w3)*100)/100;
   const el=document.getElementById('wsum');
   el.textContent=s.toFixed(2);
   el.className='weight-sum '+(Math.abs(s-1)<0.02?'ok-sum':'bad-sum');
 }
-function updateWOOutput(){
-  _cells5.forEach(({td,i,j})=>{
-    td.classList.remove('correct','wrong');
-    td.style.background=td.style.borderColor=td.style.color='';
-  });
+function resetWO(){
+  _c5.forEach(({td})=>{td.classList.remove('correct','wrong');td.style.cssText='';});
   document.getElementById('v5').className='verdict';
 }
-function checkEx5() {
-  const sum=W.w1+W.w2+W.w3;
-  if(Math.abs(sum-1)>0.02){setVerdict(5,false,'Weights must sum to 1.0 before checking.');return;}
+function checkEx5(){
+  if(Math.abs(W.w1+W.w2+W.w3-1)>0.02){setVerdict(5,false,'Weights must sum to 1.0 before checking.');return;}
   const sol=computeWO();
-  let ok=true, allFilled=true;
-  _cells5.forEach(({td,i,j})=>{
-    const v=td.querySelector('input').value.trim();
-    if(!v){allFilled=false;return;}
-    const correct=numEq(v,sol[i][j],0.2);
-    td.classList.remove('correct','wrong','out-cell');
-    td.classList.add(correct?'correct':'wrong');
-    if(!correct) ok=false;
-  });
+  const {ok,allFilled}=checkCells(_c5,(i,j)=>sol[i][j],5,0.2);
   if(!allFilled){setVerdict(5,false,'Fill in all cells before checking.');return;}
-  setVerdict(5,ok,ok?'All correct! Weighted sum computed properly.':'Some values are off — multiply each layer by its weight and sum the three results.');
+  setVerdict(5,ok,ok?'All correct! Weighted suitability scores computed.':'Some values are off — multiply each layer by its weight and sum the three.');
 }
 
-// ── EX 6 · Change detection ──────────────────────────────────────────────────
-const T1 = [[3,7,5],[8,2,6],[4,9,3]];
-const T2 = [[7,5,9],[4,8,2],[6,3,7]];
-const DIFF = T1.map((r,i)=>r.map((_,j)=>T2[i][j]-T1[i][j]));
-const CHG  = DIFF.map(r=>r.map(v=>v>1?'G':v<-1?'L':'S'));
-let _diffCells=[], _chgCells=[];
-
-(function() {
-  const diffCells=[], chgCells=[];
-  const tT1=makeTable(T1.map(r=>r.map(v=>makeStaticCell(v))));
-  const tT2=makeTable(T2.map(r=>r.map(v=>makeStaticCell(v))));
-  const tDiff=makeTable(T1.map((r,i)=>r.map((_,j)=>{const td=makeInputCell(); diffCells.push({td,i,j}); return td;})));
-  const tChg=makeTable(T1.map((r,i)=>r.map((_,j)=>{const td=makeInputCell('G/L/S'); chgCells.push({td,i,j}); return td;})));
-  _diffCells=diffCells; _chgCells=chgCells;
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 6 · Change detection
+// ══════════════════════════════════════════════════════════════════════════════
+const Y2000=[[3,7,5],[8,2,6],[4,9,3]];
+const Y2010=[[7,5,9],[4,8,2],[6,3,7]];
+const DIFF6=Y2000.map((r,i)=>r.map((_,j)=>Y2010[i][j]-Y2000[i][j]));
+const CHG6=DIFF6.map(r=>r.map(v=>v>1?'G':v<-1?'L':'S'));
+let _dc6=[],_cc6=[];
+(function(){
+  const dCells=[],cCells=[];
+  const tA=makeTable(Y2000.map(r=>r.map(v=>makeStaticCell(v))));
+  const tB=makeTable(Y2010.map(r=>r.map(v=>makeStaticCell(v))));
+  const tD=makeTable(Y2000.map((_,i)=>Y2000[0].map((_,j)=>{const td=makeInputCell();dCells.push({td,i,j});return td;})));
+  const tC=makeTable(Y2000.map((_,i)=>Y2000[0].map((_,j)=>{const td=makeInputCell('G/L/S');cCells.push({td,i,j});return td;})));
+  _dc6=dCells;_cc6=cCells;
   const g=document.getElementById('g6');
-  g.appendChild(gridBlock('T1 — 2010','NDVI', tT1));
+  g.appendChild(gridBlock('Y2000','production kg/ha',tA));
   g.appendChild(opSym('−'));
-  g.appendChild(gridBlock('T2 — 2020','NDVI', tT2));
+  g.appendChild(gridBlock('Y2010','production kg/ha',tB));
   g.appendChild(opSym('='));
-  g.appendChild(gridBlock('Difference','fill in T2 − T1', tDiff));
-  g.appendChild(gridBlock('Change class','G=Gain L=Loss S=Stable', tChg));
+  g.appendChild(gridBlock('Difference','fill in Y2010 − Y2000',tD));
+  g.appendChild(gridBlock('Change class','G / L / S',tC));
   g.appendChild(sideBtns(6,checkEx6));
 })();
-
-function checkEx6() {
-  let ok=true, allFilled=true;
-  _diffCells.forEach(({td,i,j})=>{
+function checkEx6(){
+  let ok=true,allFilled=true;
+  _dc6.forEach(({td,i,j})=>{
     const v=td.querySelector('input').value.trim();
     if(!v){allFilled=false;return;}
-    const correct=numEq(v,DIFF[i][j],0.01);
+    const correct=numEq(v,DIFF6[i][j],0.01);
     td.classList.remove('correct','wrong','out-cell');
     td.classList.add(correct?'correct':'wrong');
-    if(!correct) ok=false;
+    if(!correct)ok=false;
   });
-  _chgCells.forEach(({td,i,j})=>{
+  _cc6.forEach(({td,i,j})=>{
     const v=td.querySelector('input').value.trim().toUpperCase();
     if(!v){allFilled=false;return;}
-    const correct=(v===CHG[i][j]);
+    const correct=(v===CHG6[i][j]);
     td.classList.remove('correct','wrong','out-cell');
-    if(correct){
-      td.classList.add(v==='G'?'gain':v==='L'?'loss':'stable');
-    } else { td.classList.add('wrong'); ok=false; }
+    if(correct){td.classList.add(v==='G'?'gain':v==='L'?'loss':'stable');}
+    else{td.classList.add('wrong');ok=false;}
   });
   if(!allFilled){setVerdict(6,false,'Fill in both the difference values and the change classes.');return;}
-  setVerdict(6,ok,ok?'All correct! Change detection complete — differences classified as Gain, Loss, or Stable.':'Some values or classes are wrong — recheck your subtractions and threshold conditions.');
+  setVerdict(6,ok,ok?'All correct! Production changes classified as Gain, Loss, or Stable.':'Some values or classes are wrong — recheck subtractions and threshold conditions.');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 7 · Focal_production / Population = per capita
+// ══════════════════════════════════════════════════════════════════════════════
+const FOCALPROD=[[6,4,8],[3,9,5],[7,2,6]];  // smoothed production raster
+const POPUL=    [[3,2,4],[1,3,2],[2,1,3]];  // population per cell
+const SOL7=FOCALPROD.map((r,i)=>r.map((v,j)=>Math.round(v/POPUL[i][j]*10)/10));
+let _c7=[];
+(function(){
+  const cells=[];
+  const tF=makeTable(FOCALPROD.map(r=>r.map(v=>makeStaticCell(v))));
+  const tP=makeTable(POPUL.map(r=>r.map(v=>makeStaticCell(v))));
+  const tOut=makeTable(FOCALPROD.map((_,i)=>FOCALPROD[0].map((_,j)=>{const td=makeInputCell();cells.push({td,i,j});return td;})));
+  _c7=cells;
+  const g=document.getElementById('g7');
+  g.appendChild(gridBlock('Focal_production','kg per cell',tF));
+  g.appendChild(opSym('÷'));
+  g.appendChild(gridBlock('Population','persons per cell',tP));
+  g.appendChild(opSym('='));
+  g.appendChild(gridBlock('Prod_per_capita','kg/person — fill in',tOut));
+  g.appendChild(sideBtns(7,checkEx7));
+})();
+function checkEx7(){
+  const {ok,allFilled}=checkCells(_c7,(i,j)=>SOL7[i][j],7,0.15);
+  if(!allFilled){setVerdict(7,false,'Fill in all cells before checking.');return;}
+  setVerdict(7,ok,ok?'All correct! Production per capita computed — each cell shows kg of food per person.':'Some values are off — divide Focal_production by Population for each cell.');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 8 · Normalize + vulnerability
+// ══════════════════════════════════════════════════════════════════════════════
+// Input: production per capita (same as SOL7, rescaled for clarity)
+const PPC8=[[2.0,2.0,2.0],[3.0,3.0,2.5],[3.5,2.0,2.0]];
+const flat8=PPC8.flat();
+const min8=Math.min(...flat8), max8=Math.max(...flat8);
+const NORM8=PPC8.map(r=>r.map(v=>Math.round((v-min8)/(max8-min8)*100)/100));
+const VULN8=NORM8.map(r=>r.map(v=>Math.round((1-v)*100)/100));
+let _cn8=[],_cv8=[];
+(function(){
+  const nCells=[],vCells=[];
+  const tIn=makeTable(PPC8.map(r=>r.map(v=>makeStaticCell(v.toFixed(1)))));
+  const tN=makeTable(PPC8.map((_,i)=>PPC8[0].map((_,j)=>{const td=makeInputCell('0.??');nCells.push({td,i,j});return td;})));
+  const tV=makeTable(PPC8.map((_,i)=>PPC8[0].map((_,j)=>{const td=makeInputCell('0.??');vCells.push({td,i,j});return td;})));
+  _cn8=nCells;_cv8=vCells;
+
+  // min/max label
+  const g=document.getElementById('g8');
+  const info=document.createElement('div');
+  info.style.cssText='font-family:var(--mono);font-size:12px;color:var(--tx3);margin-bottom:14px;';
+  info.innerHTML=`min = <span style="color:var(--am)">${min8.toFixed(1)}</span> &nbsp;|&nbsp; max = <span style="color:var(--am)">${max8.toFixed(1)}</span> &nbsp;|&nbsp; range = <span style="color:var(--am)">${(max8-min8).toFixed(1)}</span>`;
+  g.before(info);
+
+  g.appendChild(gridBlock('Prod_per_capita','kg/person (2000)',tIn));
+  g.appendChild(opSym('→'));
+  g.appendChild(gridBlock('Normalized','0 to 1 — fill in',tN));
+  g.appendChild(opSym('→'));
+  g.appendChild(gridBlock('Vulnerability','1 − normalized — fill in',tV));
+  g.appendChild(sideBtns(8,checkEx8));
+})();
+function checkEx8(){
+  let ok=true,allFilled=true;
+  _cn8.forEach(({td,i,j})=>{
+    const v=td.querySelector('input').value.trim();
+    if(!v){allFilled=false;return;}
+    const correct=numEq(v,NORM8[i][j],0.02);
+    td.classList.remove('correct','wrong','out-cell');
+    td.classList.add(correct?'correct':'wrong');
+    if(!correct)ok=false;
+  });
+  _cv8.forEach(({td,i,j})=>{
+    const v=td.querySelector('input').value.trim();
+    if(!v){allFilled=false;return;}
+    const correct=numEq(v,VULN8[i][j],0.02);
+    td.classList.remove('correct','wrong','out-cell');
+    td.classList.add(correct?'correct':'wrong');
+    if(!correct)ok=false;
+  });
+  if(!allFilled){setVerdict(8,false,'Fill in all cells in both grids before checking.');return;}
+  setVerdict(8,ok,ok?'All correct! Cells with low production per capita show high vulnerability.':'Some values are off — use (v − min) / (max − min) for normalization, then 1 − normalized.');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EX 9 · Yield × Agri mask → Production
+// ══════════════════════════════════════════════════════════════════════════════
+const YIELD9= [[8,5,3],[6,0,7],[2,9,4]];   // yield kg/ha (all cells)
+const AGRI9=  [[1,0,1],[1,0,1],[0,1,1]];   // 1=agricultural, 0=non-agri
+const CELL_AREA=2;                           // ha per cell
+const MASKED9=YIELD9.map((r,i)=>r.map((v,j)=>v*AGRI9[i][j]));
+const PROD9=MASKED9.map(r=>r.map(v=>v*CELL_AREA));
+let _cm9=[],_cp9=[];
+(function(){
+  const mCells=[],pCells=[];
+  // colour agri vs non-agri cells in mask display
+  const tY=makeTable(YIELD9.map(r=>r.map(v=>makeStaticCell(v))));
+  const tA=makeTable(AGRI9.map((r,i)=>r.map((v,j)=>makeStaticCell(v,v===1?'agri':'non-agri'))));
+  const tM=makeTable(AGRI9.map((_,i)=>AGRI9[0].map((_,j)=>{const td=makeInputCell();mCells.push({td,i,j});return td;})));
+  const tP=makeTable(AGRI9.map((_,i)=>AGRI9[0].map((_,j)=>{const td=makeInputCell();pCells.push({td,i,j});return td;})));
+  _cm9=mCells;_cp9=pCells;
+
+  const g=document.getElementById('g9');
+  g.appendChild(gridBlock('Yield raster','kg/ha (2000)',tY));
+  g.appendChild(opSym('×'));
+  g.appendChild(gridBlock('Agri mask','1=agri 0=non-agri',tA));
+  g.appendChild(opSym('='));
+  g.appendChild(gridBlock('Masked yield','kg/ha — fill in',tM));
+  g.appendChild(opSym('×'));
+
+  // cell area — static single cell
+  const caBlock=document.createElement('div');caBlock.className='grid-block';
+  const cal=document.createElement('div');cal.className='grid-label';cal.textContent='Cell area';
+  const cas=document.createElement('div');cas.className='grid-sublabel';cas.textContent='constant: 2 ha';
+  const caT=document.createElement('table');caT.className='raster';
+  const caR=document.createElement('tr');const caTd=document.createElement('td');caTd.textContent='2';
+  caR.appendChild(caTd);caT.appendChild(caR);caBlock.appendChild(cal);caBlock.appendChild(cas);caBlock.appendChild(caT);
+  g.appendChild(caBlock);
+
+  g.appendChild(opSym('='));
+  g.appendChild(gridBlock('Production','kg per cell — fill in',tP));
+  g.appendChild(sideBtns(9,checkEx9));
+
+  // legend
+  const leg=document.createElement('div');leg.className='legend-row';leg.style.marginTop='12px';
+  leg.innerHTML='<div class="leg-item"><div class="leg-sw" style="background:#0d2a18;border:1px solid #1D9E55;"></div><span style="color:#4ecb7a;">Agricultural cell</span></div>'+
+                '<div class="leg-item"><div class="leg-sw" style="background:#1a1610;border:1px solid #3a3020;"></div><span style="color:var(--tx3);">Non-agricultural cell</span></div>';
+  g.after(leg);
+})();
+function checkEx9(){
+  let ok=true,allFilled=true;
+  _cm9.forEach(({td,i,j})=>{
+    const v=td.querySelector('input').value.trim();
+    if(!v){allFilled=false;return;}
+    const correct=numEq(v,MASKED9[i][j],0.01);
+    td.classList.remove('correct','wrong','out-cell');
+    td.classList.add(correct?'correct':'wrong');
+    if(!correct)ok=false;
+  });
+  _cp9.forEach(({td,i,j})=>{
+    const v=td.querySelector('input').value.trim();
+    if(!v){allFilled=false;return;}
+    const correct=numEq(v,PROD9[i][j],0.01);
+    td.classList.remove('correct','wrong','out-cell');
+    td.classList.add(correct?'correct':'wrong');
+    if(!correct)ok=false;
+  });
+  if(!allFilled){setVerdict(9,false,'Fill in both the masked yield and production grids before checking.');return;}
+  setVerdict(9,ok,ok?'All correct! Non-agricultural cells produce 0 kg; agricultural cells show yield × cell area.':'Some values are wrong — remember non-agri mask cells force the yield to zero.');
 }
 </script>
 </body>
