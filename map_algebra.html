@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map Algebra — Raster Analysis Exercises</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1117;--sf:#181c27;--sf2:#1e2333;
+  --bd:#2a3050;--bd2:#3a4570;
+  --tx:#e8ecf5;--tx2:#8b93b0;--tx3:#555f80;
+  --ac:#4f8ef7;--acd:#1a2d5a;
+  --gn:#3ecf8e;--gnd:#0d3326;
+  --rd:#f7614f;--rdd:#3d150e;
+  --am:#f5a623;--amd:#3a2a08;
+  --pu:#a78bfa;--pud:#2d2050;
+  --tl:#2dd4bf;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-height:100vh;}
+
+/* ── App layout ── */
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh;}
+
+/* ── Sidebar ── */
+.sidebar{background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.logo{padding:20px 18px 18px;border-bottom:1px solid var(--bd);}
+.logo-tag{font-size:10px;letter-spacing:.16em;color:var(--ac);text-transform:uppercase;font-weight:500;margin-bottom:4px;}
+.logo h1{font-size:14px;font-weight:600;line-height:1.35;}
+.logo p{font-size:11px;color:var(--tx3);margin-top:3px;}
+.nav-section{padding:12px 0 4px;}
+.nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);padding:0 16px;margin-bottom:5px;font-weight:500;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0 8px 1px;border-radius:7px;cursor:pointer;font-size:12.5px;color:var(--tx2);transition:all .13s;border:1px solid transparent;}
+.nav-item:hover{background:var(--sf2);color:var(--tx);}
+.nav-item.active{background:var(--acd);color:var(--ac);border-color:#2a4a8a;}
+.nav-item .nb{margin-left:auto;font-size:10px;font-family:var(--mono);background:var(--sf2);border:1px solid var(--bd);padding:1px 5px;border-radius:4px;color:var(--tx3);flex-shrink:0;}
+.nav-item.active .nb{background:var(--acd);border-color:var(--ac);color:var(--ac);}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--bd2);flex-shrink:0;margin-left:auto;}
+.nav-item.done .nav-dot{background:var(--gn);}
+.nav-item.active .nav-dot{background:var(--ac);box-shadow:0 0 5px var(--ac);}
+.prog-section{margin-top:auto;padding:14px 16px;border-top:1px solid var(--bd);}
+.prog-label{font-size:11px;color:var(--tx3);margin-bottom:6px;display:flex;justify-content:space-between;}
+.prog-bar{height:4px;background:var(--sf2);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--gn);border-radius:99px;transition:width .4s;}
+
+/* ── Main ── */
+.main{padding:32px 36px;overflow-y:auto;}
+.ex{display:none;}
+.ex.visible{display:block;}
+
+/* ── Exercise header ── */
+.ex-tag{display:inline-flex;align-items:center;font-size:11px;font-family:var(--mono);color:var(--ac);background:var(--acd);border:1px solid #2a4a8a;padding:3px 10px;border-radius:5px;margin-bottom:10px;}
+.ex-title{font-size:20px;font-weight:600;margin-bottom:10px;line-height:1.3;}
+.question-box{background:var(--sf);border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:18px;font-size:14px;color:var(--tx2);line-height:1.7;}
+.question-box strong{color:var(--tx);font-weight:500;}
+.question-box code{font-family:var(--mono);font-size:12px;background:var(--sf2);padding:1px 5px;border-radius:3px;color:var(--tl);}
+.formula-box{background:#0a0d14;border:1px solid var(--bd);border-radius:8px;padding:11px 15px;font-family:var(--mono);font-size:12.5px;color:#c8d3f5;line-height:1.8;margin-bottom:18px;}
+.kw{color:#89ddff;}.val{color:#f78c6c;}.fn{color:var(--gn);}
+
+/* ── Hint / solution ── */
+.hint-box{display:none;background:var(--acd);border:1px solid #2a4a8a;border-radius:7px;padding:9px 13px;font-size:13px;color:#a0bff8;margin-bottom:12px;line-height:1.6;}
+.hint-box.show{display:block;}
+
+/* ── Grid layout ── */
+.grids-row{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px;}
+.grid-block{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.grid-label{font-size:12px;font-weight:500;color:var(--tx);letter-spacing:.04em;}
+.grid-sublabel{font-size:11px;color:var(--tx3);}
+.op-sym{font-size:28px;font-weight:300;color:var(--tx3);padding-top:36px;line-height:1;}
+.side-btns{display:flex;flex-direction:column;gap:8px;justify-content:center;padding-top:36px;}
+
+/* ── Raster cells ── */
+table.raster{border-collapse:separate;border-spacing:4px;}
+table.raster td{width:64px;height:64px;border-radius:6px;border:1.5px solid var(--bd2);background:var(--sf2);text-align:center;vertical-align:middle;font-family:var(--mono);font-size:18px;font-weight:500;color:var(--tx);transition:border-color .2s,background .2s;}
+table.raster td input{width:100%;height:100%;background:transparent;border:none;outline:none;text-align:center;font-family:var(--mono);font-size:18px;font-weight:500;color:var(--tx);}
+table.raster td.out-cell{border:1px dashed #444441;background:var(--sf);}
+table.raster td.out-cell input{color:var(--tx);}
+table.raster td.correct{background:var(--gnd);border:1.5px solid var(--gn) !important;color:var(--gn);}
+table.raster td.correct input{color:var(--gn);}
+table.raster td.wrong{background:var(--rdd);border:1.5px solid var(--rd) !important;color:var(--rd);}
+table.raster td.wrong input{color:var(--rd);}
+table.raster td.nodata{background:#1a1a18;color:var(--tx3);border-color:#333330;}
+table.raster td.zone-1{background:#0d2a3a;border-color:#1D9E75;color:#5DCAA5;}
+table.raster td.zone-2{background:var(--amd);border-color:var(--am);color:var(--am);}
+table.raster td.zone-3{background:var(--pud);border-color:var(--pu);color:var(--pu);}
+table.raster td.highlight{outline:2.5px solid var(--tx);outline-offset:-2px;}
+table.raster td:has(input):not(.correct):not(.wrong):hover{border-color:var(--bd2);border-width:1.5px;}
+table.raster td:has(input:focus):not(.correct):not(.wrong){border-color:var(--ac);border-style:dashed;}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .13s;font-family:var(--sans);}
+.btn-check{background:var(--ac);color:#fff;border-color:var(--ac);}
+.btn-check:hover{background:#3a7be0;}
+.btn-hint{background:transparent;color:var(--tx2);border-color:var(--bd2);}
+.btn-hint:hover{background:var(--sf2);color:var(--tx);}
+
+/* ── Verdict ── */
+.verdict{font-size:13px;font-weight:500;margin-top:10px;display:none;padding:6px 12px;border-radius:6px;}
+.verdict.show{display:inline-block;}
+.verdict.ok{background:var(--gnd);color:var(--gn);border:1px solid #1a6040;}
+.verdict.no{background:var(--rdd);color:var(--rd);border:1px solid #5a2010;}
+
+/* ── Reclass controls ── */
+.reclass-wrap{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.rc-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--tx2);}
+.rc-swatch{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+.rc-row input[type=number]{width:60px;padding:4px 8px;border:1px solid var(--bd2);border-radius:6px;font-family:var(--mono);font-size:13px;background:var(--sf2);color:var(--tx);text-align:center;}
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;color:var(--tx2);}
+.leg-item{display:flex;align-items:center;gap:5px;}
+.leg-sw{width:12px;height:12px;border-radius:3px;}
+
+/* ── Weighted overlay ── */
+.weight-wrap{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+.weight-row{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--tx2);}
+.weight-row label{min-width:90px;}
+.weight-row input[type=range]{flex:1;max-width:160px;}
+.weight-val{font-family:var(--mono);font-size:12px;min-width:36px;color:var(--tx);}
+.weight-sum{font-family:var(--mono);font-size:12px;color:var(--tx2);margin-top:2px;}
+.weight-sum.ok-sum{color:var(--gn);}
+.weight-sum.bad-sum{color:var(--rd);}
+
+/* ── Change detection legend ── */
+.cd-legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;}
+.cd-item{display:flex;align-items:center;gap:5px;color:var(--tx2);}
+.cd-sw{width:12px;height:12px;border-radius:3px;}
+table.raster td.gain{background:#0d3326;border-color:var(--gn) !important;color:var(--gn);}
+table.raster td.loss{background:var(--rdd);border-color:var(--rd) !important;color:var(--rd);}
+table.raster td.stable{background:var(--sf2);border-color:var(--bd2);color:var(--tx3);}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-tag">GIS Training · Raster</div>
+    <h1>Map Algebra</h1>
+    <p>7 interactive exercises</p>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Exercises</div>
+    <div class="nav-item active" id="nav-0" onclick="switchEx(0)"><span>Local — add layers</span><span class="nb">01</span><span class="nav-dot" id="st0"></span></div>
+    <div class="nav-item" id="nav-1" onclick="switchEx(1)"><span>Reclassify</span><span class="nb">02</span><span class="nav-dot" id="st1"></span></div>
+    <div class="nav-item" id="nav-2" onclick="switchEx(2)"><span>Focal — 3×3 mean</span><span class="nb">03</span><span class="nav-dot" id="st2"></span></div>
+    <div class="nav-item" id="nav-3" onclick="switchEx(3)"><span>Zonal statistics</span><span class="nb">04</span><span class="nav-dot" id="st3"></span></div>
+    <div class="nav-item" id="nav-4" onclick="switchEx(4)"><span>Threshold mask</span><span class="nb">05</span><span class="nav-dot" id="st4"></span></div>
+    <div class="nav-item" id="nav-5" onclick="switchEx(5)"><span>Weighted overlay</span><span class="nb">06</span><span class="nav-dot" id="st5"></span></div>
+    <div class="nav-item" id="nav-6" onclick="switchEx(6)"><span>Change detection</span><span class="nb">07</span><span class="nav-dot" id="st6"></span></div>
+  </div>
+  <div class="prog-section">
+    <div class="prog-label"><span>Progress</span><span id="prog-lbl">0 / 7</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ═════════════════════════════════════════════════════════════════ -->
+<main class="main">
+
+<!-- ── EX 0 · Local operation ─────────────────────────────────────────────── -->
+<div class="ex visible" id="ex-0">
+  <div class="ex-tag">01 · Local operation</div>
+  <div class="ex-title">Add two raster layers cell by cell</div>
+  <div class="question-box">
+    A <strong>local operation</strong> computes a new value for each cell using only values at that same position across layers.<br><br>
+    You have two elevation grids, Layer A and Layer B, representing measurements from two sensors. <strong>Compute Layer C = A + B</strong> for every cell. Fill in your answers in Layer C, then check.
+  </div>
+  <div class="formula-box"><span class="kw">Layer C</span>[i,j]  =  <span class="val">Layer A</span>[i,j]  +  <span class="val">Layer B</span>[i,j]</div>
+  <div class="hint-box" id="hint0">Top-left: A = 3, B = 5 → C = 8. Work row by row, position by position.</div>
+  <div class="grids-row" id="g0"></div>
+  <div class="verdict" id="v0"></div>
+</div>
+
+<!-- ── EX 1 · Reclassify ──────────────────────────────────────────────────── -->
+<div class="ex" id="ex-1">
+  <div class="ex-tag">02 · Reclassification</div>
+  <div class="ex-title">Reclassify elevation into terrain classes</div>
+  <div class="question-box">
+    <strong>Reclassification</strong> assigns each cell a new value based on a lookup table — converting continuous values into discrete categories.<br><br>
+    Using the thresholds below, classify each elevation value into one of three terrain classes: <strong>1 = Low, 2 = Medium, 3 = High</strong>. Adjust the thresholds and watch how boundaries shift. Fill in the output grid, then check.
+  </div>
+  <div class="formula-box"><span class="kw">if</span> value &lt; t1  →  <span class="val">class 1</span>  (Low)<br><span class="kw">if</span> value &lt; t2  →  <span class="val">class 2</span>  (Medium)<br><span class="kw">else</span>           →  <span class="val">class 3</span>  (High)</div>
+  <div class="reclass-wrap">
+    <div class="rc-row"><div class="rc-swatch" style="background:#0d3326;border:1px solid var(--gn);"></div><span>Class 1 — Low &nbsp; if value &lt;</span><input type="number" id="t1" value="30" min="1" max="99" oninput="updateReclass()"></div>
+    <div class="rc-row"><div class="rc-swatch" style="background:var(--amd);border:1px solid var(--am);"></div><span>Class 2 — Medium &nbsp; if value &lt;</span><input type="number" id="t2" value="65" min="1" max="99" oninput="updateReclass()"></div>
+    <div class="rc-row"><div class="rc-swatch" style="background:var(--rdd);border:1px solid var(--rd);"></div><span>Class 3 — High &nbsp; if value ≥ t2</span></div>
+  </div>
+  <div class="legend-row">
+    <div class="leg-item"><div class="leg-sw" style="background:#0d3326;border:1px solid var(--gn);"></div><span style="color:var(--gn);">1 — Low</span></div>
+    <div class="leg-item"><div class="leg-sw" style="background:var(--amd);border:1px solid var(--am);"></div><span style="color:var(--am);">2 — Medium</span></div>
+    <div class="leg-item"><div class="leg-sw" style="background:var(--rdd);border:1px solid var(--rd);"></div><span style="color:var(--rd);">3 — High</span></div>
+  </div>
+  <div class="hint-box" id="hint1">Top-left value = 12. Is 12 &lt; t1? If yes → class 1. Move row by row.</div>
+  <div class="grids-row" id="g1"></div>
+  <div class="verdict" id="v1"></div>
+</div>
+
+<!-- ── EX 2 · Focal ───────────────────────────────────────────────────────── -->
+<div class="ex" id="ex-2">
+  <div class="ex-tag">03 · Focal operation</div>
+  <div class="ex-title">Smooth a grid with a 3×3 mean filter</div>
+  <div class="question-box">
+    A <strong>focal operation</strong> computes each output cell using a neighbourhood of surrounding cells — not just the cell itself.<br><br>
+    Apply a <strong>3×3 mean filter</strong>: for each cell in the output, compute the average of the 3×3 window centred on that cell. Edge cells use only their available neighbours. Fill in <strong>all output cells</strong> and check.
+  </div>
+  <div class="formula-box"><span class="kw">Output</span>[i,j]  =  <span class="fn">mean</span>( all cells in <span class="val">3×3 window</span> centred on [i,j] )<br><span style="color:#4a5570;">-- edge cells: use only the neighbours that exist</span></div>
+  <div class="hint-box" id="hint2">Centre cell (row 2, col 2): average all 9 values. Corner cell (row 1, col 1): only 4 neighbours available — average those 4. Round to 1 decimal.</div>
+  <div class="grids-row" id="g2"></div>
+  <div class="verdict" id="v2"></div>
+</div>
+
+<!-- ── EX 3 · Zonal statistics ───────────────────────────────────────────── -->
+<div class="ex" id="ex-3">
+  <div class="ex-tag">04 · Zonal statistics</div>
+  <div class="ex-title">Compute the mean value per zone</div>
+  <div class="question-box">
+    <strong>Zonal statistics</strong> summarise a value raster (e.g. NDVI) within zones defined by a separate raster (e.g. land cover).<br><br>
+    The <strong>Zone grid</strong> assigns each cell to a zone (1, 2, or 3). The <strong>Value grid</strong> contains NDVI measurements. For each zone, compute the <strong>mean NDVI</strong>. Round to 1 decimal place and fill in the summary table.
+  </div>
+  <div class="formula-box"><span class="kw">Zonal mean</span>[z]  =  <span class="fn">mean</span>( Value[i,j]  <span class="kw">where</span>  Zone[i,j] = <span class="val">z</span> )</div>
+  <div class="hint-box" id="hint3">Zone 1 cells are: (0,0)=4, (0,2)=8, (1,1)=6 → mean = (4+8+6)/3. Find all cells for each zone, then average.</div>
+  <div class="grids-row" id="g3"></div>
+  <div class="verdict" id="v3"></div>
+</div>
+
+<!-- ── EX 4 · Threshold mask ─────────────────────────────────────────────── -->
+<div class="ex" id="ex-4">
+  <div class="ex-tag">05 · Threshold masking</div>
+  <div class="ex-title">Mask out cells below a threshold</div>
+  <div class="question-box">
+    <strong>Masking</strong> sets cells that do not meet a condition to NoData — effectively removing them from analysis. This is essential for excluding water, clouds, urban areas, or low-quality pixels.<br><br>
+    Apply a threshold: cells where <strong>value &lt; 5 → NoData</strong>, all others keep their value. Fill in the output grid. Write <strong>ND</strong> for NoData cells, or the original value for valid cells.
+  </div>
+  <div class="formula-box"><span class="kw">if</span> value &lt; <span class="val">5</span>  →  <span class="val">NoData</span>  (masked out)<br><span class="kw">else</span>          →  keep original value</div>
+  <div class="hint-box" id="hint4">Scan each cell. If its value is less than 5, write ND in the output. Otherwise copy the value as-is.</div>
+  <div class="grids-row" id="g4"></div>
+  <div class="verdict" id="v4"></div>
+</div>
+
+<!-- ── EX 5 · Weighted overlay ───────────────────────────────────────────── -->
+<div class="ex" id="ex-5">
+  <div class="ex-tag">06 · Weighted overlay</div>
+  <div class="ex-title">Combine three criteria layers with weights</div>
+  <div class="question-box">
+    <strong>Weighted overlay</strong> combines multiple criteria layers into a single suitability score. Each layer is multiplied by its weight, and the results are summed. Weights must sum to <strong>1.0</strong>.<br><br>
+    You have three layers: <strong>Slope</strong>, <strong>Soil quality</strong>, and <strong>Water access</strong>. Adjust the weights using the sliders, then compute the <strong>suitability score</strong> for each cell. Round to 1 decimal.
+  </div>
+  <div class="formula-box"><span class="kw">Suitability</span>[i,j]  =  w1 × <span class="val">Slope</span>[i,j]  +  w2 × <span class="val">Soil</span>[i,j]  +  w3 × <span class="val">Water</span>[i,j]<br><span style="color:#4a5570;">-- constraint: w1 + w2 + w3 = 1.0</span></div>
+  <div class="weight-wrap" id="weight-wrap"></div>
+  <div class="hint-box" id="hint5">For top-left cell: Slope=3, Soil=7, Water=5. Multiply each by its weight and sum. E.g. with equal weights (0.33 each): 3×0.33 + 7×0.33 + 5×0.33 = 4.95 ≈ 5.0.</div>
+  <div class="grids-row" id="g5"></div>
+  <div class="verdict" id="v5"></div>
+</div>
+
+<!-- ── EX 6 · Change detection ───────────────────────────────────────────── -->
+<div class="ex" id="ex-6">
+  <div class="ex-tag">07 · Change detection</div>
+  <div class="ex-title">Detect vegetation change between two dates</div>
+  <div class="question-box">
+    <strong>Change detection</strong> subtracts a before-raster from an after-raster to identify where values increased, decreased, or stayed the same.<br><br>
+    Grid T1 shows NDVI in 2010, Grid T2 shows NDVI in 2020. Compute the <strong>difference</strong> (T2 − T1), then classify each cell: <strong>Gain</strong> if difference &gt; 1, <strong>Loss</strong> if difference &lt; −1, <strong>Stable</strong> otherwise. Fill in the difference values and the change class.
+  </div>
+  <div class="formula-box"><span class="kw">Difference</span>[i,j]  =  <span class="val">T2</span>[i,j]  −  <span class="val">T1</span>[i,j]<br><span class="kw">if</span> diff &gt; 1   →  <span class="fn">Gain</span><br><span class="kw">if</span> diff &lt; −1  →  <span class="fn">Loss</span><br><span class="kw">else</span>           →  Stable</div>
+  <div class="cd-legend">
+    <div class="cd-item"><div class="cd-sw" style="background:#0d3326;border:1px solid var(--gn);"></div><span style="color:var(--gn);">Gain (&gt;+1)</span></div>
+    <div class="cd-item"><div class="cd-sw" style="background:var(--rdd);border:1px solid var(--rd);"></div><span style="color:var(--rd);">Loss (&lt;-1)</span></div>
+    <div class="cd-item"><div class="cd-sw" style="background:var(--sf2);border:1px solid var(--bd2);"></div><span style="color:var(--tx3);">Stable</span></div>
+  </div>
+  <div class="hint-box" id="hint6">Top-left: T1=3, T2=7 → diff = 7−3 = 4 → Gain. Work cell by cell. Remember: Stable means the difference is between −1 and +1 inclusive.</div>
+  <div class="grids-row" id="g6"></div>
+  <div class="verdict" id="v6"></div>
+</div>
+
+</main>
+</div>
+
+<script>
+const solved = new Set();
+
+// ── Shared helpers ────────────────────────────────────────────────────────────
+function makeStaticCell(v, extraClass='') {
+  const td = document.createElement('td');
+  if(extraClass) td.className = extraClass;
+  td.textContent = v;
+  return td;
+}
+function makeInputCell(placeholder='?') {
+  const td = document.createElement('td');
+  td.className = 'out-cell';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.placeholder = placeholder;
+  inp.autocomplete = 'off';
+  td.appendChild(inp);
+  return td;
+}
+function makeTable(rows) {
+  const tbl = document.createElement('table');
+  tbl.className = 'raster';
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    row.forEach(td => tr.appendChild(td));
+    tbl.appendChild(tr);
+  });
+  return tbl;
+}
+function gridBlock(label, sub, tbl) {
+  const d = document.createElement('div'); d.className = 'grid-block';
+  const l = document.createElement('div'); l.className = 'grid-label'; l.textContent = label;
+  const s = document.createElement('div'); s.className = 'grid-sublabel'; s.textContent = sub;
+  d.appendChild(l); d.appendChild(s); d.appendChild(tbl);
+  return d;
+}
+function opSym(ch) {
+  const d = document.createElement('div'); d.className = 'op-sym'; d.textContent = ch; return d;
+}
+function sideBtns(exId, checkFn) {
+  const d = document.createElement('div'); d.className = 'side-btns';
+  const cb = document.createElement('button'); cb.className = 'btn btn-check';
+  cb.innerHTML = '&#9654; Check'; cb.onclick = checkFn;
+  const hb = document.createElement('button'); hb.className = 'btn btn-hint';
+  hb.textContent = 'Hint'; hb.onclick = () => document.getElementById('hint'+exId).classList.toggle('show');
+  d.appendChild(cb); d.appendChild(hb);
+  return d;
+}
+function setVerdict(exId, ok, msg) {
+  const v = document.getElementById('v'+exId);
+  v.className = 'verdict show ' + (ok ? 'ok' : 'no');
+  v.textContent = ok ? '✓ ' + msg : '✗ ' + msg;
+  if(ok && !solved.has(exId)) { solved.add(exId); markSolved(exId); }
+}
+function markSolved(i) {
+  const dot = document.getElementById('st'+i);
+  if(dot) { dot.style.background='var(--gn)'; dot.style.boxShadow='0 0 5px var(--gn)'; }
+  const nav = document.getElementById('nav-'+i);
+  if(nav) nav.classList.add('done');
+  document.getElementById('prog-lbl').textContent = solved.size + ' / 7';
+  document.getElementById('prog-fill').style.width = (solved.size/7*100) + '%';
+}
+function switchEx(i) {
+  document.querySelectorAll('.ex').forEach(e => e.classList.remove('visible'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('ex-'+i).classList.add('visible');
+  document.getElementById('nav-'+i).classList.add('active');
+}
+function numEq(a, b, tol=0.15) { return Math.abs(parseFloat(a) - parseFloat(b)) <= tol; }
+
+// ── EX 0 · Local addition ────────────────────────────────────────────────────
+const A0 = [[3,7,2],[1,4,6],[8,2,5]];
+const B0 = [[5,2,4],[3,6,1],[2,5,3]];
+const C0 = A0.map((r,i) => r.map((v,j) => v + B0[i][j]));
+
+(function() {
+  const tA = makeTable(A0.map(r => r.map(v => makeStaticCell(v))));
+  const tB = makeTable(B0.map(r => r.map(v => makeStaticCell(v))));
+  const cellsC = []; 
+  const tC = makeTable(A0.map((r,i) => r.map((v,j) => { const td=makeInputCell(); cellsC.push({td,i,j}); return td; })));
+  window._c0 = cellsC;
+  const g = document.getElementById('g0');
+  g.appendChild(gridBlock('Layer A','given', tA));
+  g.appendChild(opSym('+'));
+  g.appendChild(gridBlock('Layer B','given', tB));
+  g.appendChild(opSym('='));
+  g.appendChild(gridBlock('Layer C','fill in your answers', tC));
+  g.appendChild(sideBtns(0, checkEx0));
+})();
+
+function checkEx0() {
+  let ok=true, allFilled=true;
+  window._c0.forEach(({td,i,j}) => {
+    const v = td.querySelector('input').value.trim();
+    if(!v){allFilled=false;return;}
+    const correct = numEq(v, C0[i][j]);
+    td.classList.remove('correct','wrong','out-cell');
+    td.classList.add(correct?'correct':'wrong');
+    if(!correct) ok=false;
+  });
+  if(!allFilled){setVerdict(0,false,'Fill in all cells before checking.');return;}
+  setVerdict(0, ok, ok ? 'All correct! Each cell = A + B at that position.' : 'Some cells are wrong — recheck your additions.');
+}
+
+// ── EX 1 · Reclassify ────────────────────────────────────────────────────────
+const ELEV = [[12,45,78],[56,88,23],[9,71,50]];
+let _rclCells = [];
+
+(function() {
+  const tE = makeTable(ELEV.map(r => r.map(v => makeStaticCell(v))));
+  const cells = [];
+  const tO = makeTable(ELEV.map((r,i) => r.map((v,j) => { const td=makeInputCell(); cells.push({td,i,j}); return td; })));
+  _rclCells = cells;
+  const g = document.getElementById('g1');
+  g.appendChild(gridBlock('Elevation','given (m)', tE));
+  g.appendChild(opSym('→'));
+  g.appendChild(gridBlock('Classes','fill in 1, 2 or 3', tO));
+  g.appendChild(sideBtns(1, checkEx1));
+})();
+
+function getReclassSol() {
+  const t1=parseFloat(document.getElementById('t1').value)||30;
+  const t2=parseFloat(document.getElementById('t2').value)||65;
+  return ELEV.map(r => r.map(v => v<t1?1:v<t2?2:3));
+}
+function updateReclass() {
+  _rclCells.forEach(({td}) => {
+    td.classList.remove('correct','wrong');
+    td.style.background=td.style.borderColor=td.style.color='';
+    const inp=td.querySelector('input'); if(inp) inp.style.color='';
+  });
+  document.getElementById('v1').className='verdict';
+}
+const RC_STYLE = {
+  1:{bg:'#0d3326',bd:'var(--gn)',tx:'var(--gn)'},
+  2:{bg:'var(--amd)',bd:'var(--am)',tx:'var(--am)'},
+  3:{bg:'var(--rdd)',bd:'var(--rd)',tx:'var(--rd)'}
+};
+function checkEx1() {
+  const sol = getReclassSol();
+  let ok=true, allFilled=true;
+  _rclCells.forEach(({td,i,j}) => {
+    const v = parseInt(td.querySelector('input').value);
+    if(isNaN(v)){allFilled=false;return;}
+    const correct = sol[i][j];
+    td.classList.remove('correct','wrong','out-cell');
+    if(v===correct){
+      const s=RC_STYLE[correct];
+      td.style.background=s.bg; td.style.borderColor=s.bd;
+      td.querySelector('input').style.color=s.tx;
+    } else { td.classList.add('wrong'); ok=false; }
+  });
+  if(!allFilled){setVerdict(1,false,'Fill in all cells before checking.');return;}
+  setVerdict(1, ok, ok?'All cells correctly classified!':'Some classes are wrong — recheck your thresholds.');
+}
+
+// ── EX 2 · Focal 3×3 mean ────────────────────────────────────────────────────
+const RAW2 = [[4,8,2],[7,5,9],[3,6,4]];
+function focalMean(grid, r, c) {
+  const n=grid.length, m=grid[0].length;
+  let sum=0,cnt=0;
+  for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){
+    const ni=r+di,nj=c+dj;
+    if(ni>=0&&ni<n&&nj>=0&&nj<m){sum+=grid[ni][nj];cnt++;}
+  }
+  return Math.round(sum/cnt*10)/10;
+}
+const SOL2 = RAW2.map((row,i) => row.map((_,j) => focalMean(RAW2,i,j)));
+let _cells2 = [];
+
+(function() {
+  const cells=[];
+  const tIn = makeTable(RAW2.map(r => r.map(v => makeStaticCell(v))));
+  const tOut = makeTable(RAW2.map((r,i) => r.map((v,j) => {
+    const td = makeInputCell(); cells.push({td,i,j}); return td;
+  })));
+  _cells2 = cells;
+  const g = document.getElementById('g2');
+  g.appendChild(gridBlock('Input','raw values', tIn));
+  g.appendChild(opSym('→'));
+  g.appendChild(gridBlock('Smoothed output','fill in all cells', tOut));
+  g.appendChild(sideBtns(2, checkEx2));
+})();
+
+function checkEx2() {
+  let ok=true, allFilled=true;
+  _cells2.forEach(({td,i,j}) => {
+    const v = td.querySelector('input').value.trim();
+    if(!v){allFilled=false;return;}
+    const correct = numEq(v, SOL2[i][j], 0.2);
+    td.classList.remove('correct','wrong','out-cell');
+    td.classList.add(correct?'correct':'wrong');
+    if(!correct) ok=false;
+  });
+  if(!allFilled){setVerdict(2,false,'Fill in all 9 output cells before checking.');return;}
+  setVerdict(2, ok, ok?'All correct! The grid is smoothed — extremes dampened by their neighbours.':'Some values are off — remember edge cells have fewer neighbours.');
+}
+
+// ── EX 3 · Zonal statistics ──────────────────────────────────────────────────
+const ZONES = [[1,2,1],[3,1,2],[2,3,3]];
+const VALUES3 = [[4,7,8],[2,6,5],[9,3,1]];
+const ZONE_CLASS = {1:'zone-1',2:'zone-2',3:'zone-3'};
+const ZONE_COLORS = {1:{bg:'#0d2a3a',tx:'#5DCAA5'},2:{bg:'var(--amd)',tx:'var(--am)'},3:{bg:'var(--pud)',tx:'var(--pu)'}};
+
+function zonalMeans() {
+  const sums={1:0,2:0,3:0}, cnts={1:0,2:0,3:0};
+  ZONES.forEach((row,i)=>row.forEach((z,j)=>{sums[z]+=VALUES3[i][j];cnts[z]++;}));
+  return {1:Math.round(sums[1]/cnts[1]*10)/10, 2:Math.round(sums[2]/cnts[2]*10)/10, 3:Math.round(sums[3]/cnts[3]*10)/10};
+}
+let _cells3 = {};
+
+(function() {
+  const tZ = makeTable(ZONES.map((r,i)=>r.map((v,j)=>makeStaticCell(v, ZONE_CLASS[v]))));
+  const tV = makeTable(VALUES3.map(r=>r.map(v=>makeStaticCell(v))));
+  const g = document.getElementById('g3');
+  g.appendChild(gridBlock('Zone grid','zone IDs (1, 2, 3)', tZ));
+  g.appendChild(gridBlock('Value grid','NDVI measurements', tV));
+
+  const sumBlock = document.createElement('div'); sumBlock.className='grid-block';
+  const sl = document.createElement('div'); sl.className='grid-label'; sl.textContent='Zonal means';
+  const ss = document.createElement('div'); ss.className='grid-sublabel'; ss.textContent='fill in per zone';
+  sumBlock.appendChild(sl); sumBlock.appendChild(ss);
+
+  const tbl = document.createElement('table'); tbl.className='raster';
+  const cells={};
+  [1,2,3].forEach(z => {
+    const tr=document.createElement('tr');
+    const lbl=document.createElement('td'); lbl.textContent='Zone '+z;
+    const c=ZONE_COLORS[z]; lbl.style.background=c.bg; lbl.style.color=c.tx; lbl.style.borderColor=c.tx; lbl.style.fontSize='13px';
+    const inp=makeInputCell('?'); cells[z]=inp;
+    tr.appendChild(lbl); tr.appendChild(inp); tbl.appendChild(tr);
+  });
+  _cells3=cells;
+  sumBlock.appendChild(tbl);
+  g.appendChild(opSym('→'));
+  g.appendChild(sumBlock);
+  g.appendChild(sideBtns(3, checkEx3));
+})();
+
+function checkEx3() {
+  const sol = zonalMeans();
+  let ok=true, allFilled=true;
+  [1,2,3].forEach(z => {
+    const td=_cells3[z], v=td.querySelector('input').value.trim();
+    if(!v){allFilled=false;return;}
+    const correct=numEq(v,sol[z],0.2);
+    td.classList.remove('correct','wrong','out-cell');
+    td.classList.add(correct?'correct':'wrong');
+    if(!correct) ok=false;
+  });
+  if(!allFilled){setVerdict(3,false,'Fill in all three zone means before checking.');return;}
+  const s=zonalMeans();
+  setVerdict(3,ok,ok?`All correct! Zone means: Z1=${s[1]}, Z2=${s[2]}, Z3=${s[3]}.`:'Some means are wrong — find all cells in each zone and average their values.');
+}
+
+// ── EX 4 · Threshold mask ────────────────────────────────────────────────────
+const RAW4 = [[7,2,9],[1,5,3],[8,4,6]];
+const THRESH = 5;
+const SOL4 = RAW4.map(r=>r.map(v=>v<THRESH?'ND':String(v)));
+let _cells4=[];
+
+(function() {
+  const cells=[];
+  const tIn = makeTable(RAW4.map(r=>r.map(v=>makeStaticCell(v))));
+  const tOut = makeTable(RAW4.map((r,i)=>r.map((v,j)=>{const td=makeInputCell(); cells.push({td,i,j}); return td;})));
+  _cells4=cells;
+  const g=document.getElementById('g4');
+  g.appendChild(gridBlock('Input','raw values', tIn));
+  g.appendChild(opSym('→'));
+  g.appendChild(gridBlock('Masked output','value or ND', tOut));
+  g.appendChild(sideBtns(4,checkEx4));
+})();
+
+function checkEx4() {
+  let ok=true, allFilled=true;
+  _cells4.forEach(({td,i,j}) => {
+    const v=td.querySelector('input').value.trim().toUpperCase();
+    if(!v){allFilled=false;return;}
+    const correct=(v===SOL4[i][j]);
+    td.classList.remove('correct','wrong','out-cell');
+    if(correct){
+      td.classList.add('correct');
+      if(v==='ND'){td.classList.remove('correct');td.classList.add('nodata');td.style.border='1.5px solid #444441';}
+    } else { td.classList.add('wrong'); ok=false; }
+  });
+  if(!allFilled){setVerdict(4,false,'Fill in all cells (use ND for masked cells).');return;}
+  setVerdict(4,ok,ok?'All correct! Low-value cells are masked, others retain their values.':'Some cells are wrong — check your threshold comparisons.');
+}
+
+// ── EX 5 · Weighted overlay ──────────────────────────────────────────────────
+const SLOPE = [[3,6,2],[7,4,8],[1,5,3]];
+const SOIL  = [[7,5,8],[3,9,4],[6,2,7]];
+const WATER = [[5,7,3],[8,2,6],[4,9,5]];
+let W={w1:0.33,w2:0.33,w3:0.34};
+let _cells5=[];
+
+function computeWO() {
+  return SLOPE.map((r,i)=>r.map((_,j)=>
+    Math.round((W.w1*SLOPE[i][j]+W.w2*SOIL[i][j]+W.w3*WATER[i][j])*10)/10
+  ));
+}
+
+(function() {
+  const wrap=document.getElementById('weight-wrap');
+  ['w1','w2','w3'].forEach((k,idx) => {
+    const lbl=['Slope','Soil quality','Water access'][idx];
+    const row=document.createElement('div'); row.className='weight-row';
+    const lab=document.createElement('label'); lab.textContent=lbl;
+    const sl=document.createElement('input'); sl.type='range'; sl.min=0; sl.max=100; sl.step=1; sl.value=idx<2?33:34;
+    const vspan=document.createElement('span'); vspan.className='weight-val'; vspan.id='wv'+k;
+    vspan.textContent=(sl.value/100).toFixed(2);
+    sl.oninput=()=>{W[k]=sl.value/100;vspan.textContent=W[k].toFixed(2);updateWeightSum();updateWOOutput();};
+    row.appendChild(lab); row.appendChild(sl); row.appendChild(vspan);
+    wrap.appendChild(row);
+  });
+  const srow=document.createElement('div'); srow.style.fontSize='12px'; srow.style.color='var(--tx3)';
+  srow.innerHTML='Sum of weights: <span id="wsum" class="weight-sum ok-sum">1.00</span>';
+  wrap.appendChild(srow);
+
+  const cells=[];
+  const tSlope=makeTable(SLOPE.map(r=>r.map(v=>makeStaticCell(v))));
+  const tSoil =makeTable(SOIL.map(r=>r.map(v=>makeStaticCell(v))));
+  const tWater=makeTable(WATER.map(r=>r.map(v=>makeStaticCell(v))));
+  const tOut  =makeTable(SLOPE.map((r,i)=>r.map((_,j)=>{const td=makeInputCell(); cells.push({td,i,j}); return td;})));
+  _cells5=cells;
+  const g=document.getElementById('g5');
+  g.appendChild(gridBlock('Slope','(1–10)', tSlope));
+  g.appendChild(gridBlock('Soil quality','(1–10)', tSoil));
+  g.appendChild(gridBlock('Water access','(1–10)', tWater));
+  g.appendChild(opSym('→'));
+  g.appendChild(gridBlock('Suitability','fill in your answers', tOut));
+  g.appendChild(sideBtns(5,checkEx5));
+})();
+
+function updateWeightSum(){
+  const s=Math.round((W.w1+W.w2+W.w3)*100)/100;
+  const el=document.getElementById('wsum');
+  el.textContent=s.toFixed(2);
+  el.className='weight-sum '+(Math.abs(s-1)<0.02?'ok-sum':'bad-sum');
+}
+function updateWOOutput(){
+  _cells5.forEach(({td,i,j})=>{
+    td.classList.remove('correct','wrong');
+    td.style.background=td.style.borderColor=td.style.color='';
+  });
+  document.getElementById('v5').className='verdict';
+}
+function checkEx5() {
+  const sum=W.w1+W.w2+W.w3;
+  if(Math.abs(sum-1)>0.02){setVerdict(5,false,'Weights must sum to 1.0 before checking.');return;}
+  const sol=computeWO();
+  let ok=true, allFilled=true;
+  _cells5.forEach(({td,i,j})=>{
+    const v=td.querySelector('input').value.trim();
+    if(!v){allFilled=false;return;}
+    const correct=numEq(v,sol[i][j],0.2);
+    td.classList.remove('correct','wrong','out-cell');
+    td.classList.add(correct?'correct':'wrong');
+    if(!correct) ok=false;
+  });
+  if(!allFilled){setVerdict(5,false,'Fill in all cells before checking.');return;}
+  setVerdict(5,ok,ok?'All correct! Weighted sum computed properly.':'Some values are off — multiply each layer by its weight and sum the three results.');
+}
+
+// ── EX 6 · Change detection ──────────────────────────────────────────────────
+const T1 = [[3,7,5],[8,2,6],[4,9,3]];
+const T2 = [[7,5,9],[4,8,2],[6,3,7]];
+const DIFF = T1.map((r,i)=>r.map((_,j)=>T2[i][j]-T1[i][j]));
+const CHG  = DIFF.map(r=>r.map(v=>v>1?'G':v<-1?'L':'S'));
+let _diffCells=[], _chgCells=[];
+
+(function() {
+  const diffCells=[], chgCells=[];
+  const tT1=makeTable(T1.map(r=>r.map(v=>makeStaticCell(v))));
+  const tT2=makeTable(T2.map(r=>r.map(v=>makeStaticCell(v))));
+  const tDiff=makeTable(T1.map((r,i)=>r.map((_,j)=>{const td=makeInputCell(); diffCells.push({td,i,j}); return td;})));
+  const tChg=makeTable(T1.map((r,i)=>r.map((_,j)=>{const td=makeInputCell('G/L/S'); chgCells.push({td,i,j}); return td;})));
+  _diffCells=diffCells; _chgCells=chgCells;
+  const g=document.getElementById('g6');
+  g.appendChild(gridBlock('T1 — 2010','NDVI', tT1));
+  g.appendChild(opSym('−'));
+  g.appendChild(gridBlock('T2 — 2020','NDVI', tT2));
+  g.appendChild(opSym('='));
+  g.appendChild(gridBlock('Difference','fill in T2 − T1', tDiff));
+  g.appendChild(gridBlock('Change class','G=Gain L=Loss S=Stable', tChg));
+  g.appendChild(sideBtns(6,checkEx6));
+})();
+
+function checkEx6() {
+  let ok=true, allFilled=true;
+  _diffCells.forEach(({td,i,j})=>{
+    const v=td.querySelector('input').value.trim();
+    if(!v){allFilled=false;return;}
+    const correct=numEq(v,DIFF[i][j],0.01);
+    td.classList.remove('correct','wrong','out-cell');
+    td.classList.add(correct?'correct':'wrong');
+    if(!correct) ok=false;
+  });
+  _chgCells.forEach(({td,i,j})=>{
+    const v=td.querySelector('input').value.trim().toUpperCase();
+    if(!v){allFilled=false;return;}
+    const correct=(v===CHG[i][j]);
+    td.classList.remove('correct','wrong','out-cell');
+    if(correct){
+      td.classList.add(v==='G'?'gain':v==='L'?'loss':'stable');
+    } else { td.classList.add('wrong'); ok=false; }
+  });
+  if(!allFilled){setVerdict(6,false,'Fill in both the difference values and the change classes.');return;}
+  setVerdict(6,ok,ok?'All correct! Change detection complete — differences classified as Gain, Loss, or Stable.':'Some values or classes are wrong — recheck your subtractions and threshold conditions.');
+}
+</script>
+</body>
+</html>
