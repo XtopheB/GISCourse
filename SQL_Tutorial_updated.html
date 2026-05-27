@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice with SQL</title>
+<script src="https://cdn.jsdelivr.net/npm/alasql@4.2.1/dist/alasql.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--sf:#181c27;--sf2:#1e2333;--bd:#2a3050;--bd2:#3a4570;--tx:#e8ecf5;--tx2:#8b93b0;--tx3:#555f80;--ac:#4f8ef7;--acd:#1a2d5a;--gn:#3ecf8e;--gnd:#0d3326;--rd:#f7614f;--rdd:#3d150e;--am:#f5a623;--amd:#3a2a08;--pu:#a78bfa;--pud:#2d2050;--tl:#2dd4bf;--mono:'IBM Plex Mono',monospace;--sans:'DM Sans',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-height:100vh;}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh;}
+
+/* sidebar */
+.sidebar{background:var(--sf);border-right:1px solid var(--bd);padding:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.logo{padding:20px 18px 18px;border-bottom:1px solid var(--bd);}
+.logo-tag{font-size:10px;letter-spacing:.16em;color:var(--ac);text-transform:uppercase;font-weight:500;margin-bottom:4px;}
+.logo h1{font-size:14px;font-weight:600;line-height:1.35;color:var(--tx);}
+.logo p{font-size:11px;color:var(--tx3);margin-top:3px;}
+.nav-section{padding:12px 0 4px;}
+.nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);padding:0 16px;margin-bottom:5px;font-weight:500;}
+
+/* Modifs to have numbers on the left  */
+/*
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0 8px 1px;border-radius:7px;cursor:pointer;font-size:12.5px;color:var(--tx2);transition:all .13s;border:1px solid transparent;line-height:1.3;}
+*/
+.nav-item{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start; /* ensure left alignment */
+  gap:8px;
+  padding:7px 10px;
+  margin:0 8px 1px;
+  border-radius:7px;
+  cursor:pointer;
+  font-size:12.5px;
+  color:var(--tx2);
+  transition:all .13s;
+  border:1px solid transparent;
+  line-height:1.3;
+}
+
+
+/*
+.nav-item .nb{margin-left:auto;font-size:10px;font-family:var(--mono);background:var(--sf2);border:1px solid var(--bd);padding:1px 5px;border-radius:4px;color:var(--tx3);flex-shrink:0;}
+*/
+.nav-item .nb{
+  order:1;
+  font-size:10px;
+  font-family:var(--mono);
+  background:var(--sf2);
+  border:1px solid var(--bd);
+  padding:1px 5px;
+  border-radius:4px;
+  color:var(--tx3);
+  flex-shrink:0;
+}
+
+/* text in the middle */
+.nav-item span:first-child{
+  order:2;
+}
+
+/*
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--bd2);flex-shrink:0;margin-left:auto;}
+*/
+
+/* dot stays on the RIGHT */
+.nav-dot{
+  order:3;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--bd2);
+  flex-shrink:0;
+  margin-left:auto; /* only the dot gets pushed right */
+}
+.nav-item:hover{background:var(--sf2);color:var(--tx);}
+.nav-item.active{background:var(--acd);color:var(--ac);border-color:#2a4a8a;}
+.nav-item.active .nb{background:var(--acd);border-color:var(--ac);color:var(--ac);}
+.nav-item.done .nav-dot{background:var(--gn);}
+.nav-item.active .nav-dot{background:var(--ac);box-shadow:0 0 5px var(--ac);}
+.prog-section{margin-top:auto;padding:14px 16px;border-top:1px solid var(--bd);}
+.prog-label{font-size:11px;color:var(--tx3);margin-bottom:6px;display:flex;justify-content:space-between;}
+.prog-bar{height:4px;background:var(--sf2);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--gn);border-radius:99px;transition:width .4s;}
+
+/* main */
+.main{padding:28px 34px;overflow-y:auto;}
+.ex{display:none;}
+.ex.visible{display:block;}
+
+/* header */
+.ex-tag{display:inline-flex;align-items:center;font-size:11px;font-family:var(--mono);color:var(--ac);background:var(--acd);border:1px solid #2a4a8a;padding:3px 10px;border-radius:5px;margin-bottom:10px;}
+.ex-title{font-size:20px;font-weight:600;margin-bottom:7px;line-height:1.3;}
+.ex-desc{font-size:13.5px;color:var(--tx2);line-height:1.7;max-width:720px;margin-bottom:18px;}
+.ex-desc strong{color:var(--am);font-weight:500;}
+.ex-desc code{font-family:var(--mono);font-size:12px;background:var(--sf2);padding:1px 5px;border-radius:3px;color:var(--tl);}
+
+/* sub-exercises */
+.sub-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--bd);}
+
+/* schema */
+.schema-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.schema-card{background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:11px 14px;min-width:180px;}
+.schema-name{font-size:11px;font-family:var(--mono);color:var(--tl);margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+.schema-name::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--tl);}
+.sc{font-family:var(--mono);font-size:11px;color:var(--tx2);display:flex;gap:6px;padding:2px 0;}
+.sc .cn{color:var(--tx);}
+.sc .ct{color:var(--tx3);}
+.sc .ky{color:var(--am);}
+
+/* hint / solution */
+.hint-box{display:none;background:var(--acd);border:1px solid #2a4a8a;border-radius:7px;padding:9px 13px;font-size:13px;color:#a0bff8;margin-bottom:10px;line-height:1.6;}
+.hint-box.show{display:block;}
+.sol-box{display:none;background:#0a0d14;border:1px solid var(--bd);border-radius:7px;padding:12px 15px;font-family:var(--mono);font-size:12.5px;color:#c8d3f5;line-height:1.8;margin-bottom:10px;}
+.sol-box.show{display:block;}
+.kw{color:#89ddff;}.val{color:#f78c6c;}.fn{color:var(--gn);}.cm{color:#4a5570;}
+
+/* editor */
+.editor-wrap{background:#0a0d14;border:1px solid var(--bd);border-radius:9px;overflow:hidden;margin-bottom:10px;}
+.editor-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 13px;background:var(--sf);border-bottom:1px solid var(--bd);}
+.editor-dots{display:flex;gap:5px;}
+.editor-dots span{width:10px;height:10px;border-radius:50%;}
+.editor-dots span:nth-child(1){background:#ff5f56;}
+.editor-dots span:nth-child(2){background:#ffbd2e;}
+.editor-dots span:nth-child(3){background:#27c93f;}
+.editor-lbl{font-size:11px;font-family:var(--mono);color:var(--tx3);}
+textarea.sql-input{width:100%;background:transparent;color:#c8d3f5;font-family:var(--mono);font-size:13px;line-height:1.7;padding:13px 15px;border:none;outline:none;resize:vertical;min-height:90px;}
+textarea.sql-input::placeholder{color:var(--tx3);}
+
+/* buttons */
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .13s;font-family:var(--sans);}
+.btn-run{background:var(--ac);color:#fff;border-color:var(--ac);}
+.btn-run:hover{background:#3a7be0;}
+.btn-hint{background:transparent;color:var(--tx2);border-color:var(--bd2);}
+.btn-hint:hover{background:var(--sf2);color:var(--tx);}
+.btn-sol{background:transparent;color:var(--am);border-color:#4a3510;}
+.btn-sol:hover{background:var(--amd);}
+
+/* results */
+.result-meta{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:var(--tx2);}
+.verdict{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:5px;font-size:12px;font-weight:500;}
+.verdict.ok{background:var(--gnd);color:var(--gn);border:1px solid #1a6040;}
+.verdict.no{background:var(--rdd);color:var(--rd);border:1px solid #5a2010;}
+.error-box{background:var(--rdd);border:1px solid #5a2010;border-radius:7px;padding:9px 13px;font-family:var(--mono);font-size:12px;color:var(--rd);line-height:1.6;}
+.table-wrap{overflow-x:auto;border-radius:9px;border:1px solid var(--bd);margin-bottom:4px;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+thead th{background:var(--sf);color:var(--tx3);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;padding:7px 11px;border-bottom:1px solid var(--bd);text-align:left;font-family:var(--mono);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--bd);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--sf2);}
+tbody td{padding:6px 11px;color:var(--tx);}
+.num{font-family:var(--mono);color:var(--tl);}
+.did{font-family:var(--mono);font-size:11px;color:var(--tx3);}
+.no-rows{text-align:center;padding:2rem;color:var(--tx3);font-size:13px;}
+.crop-Rice{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500;background:var(--gnd);color:var(--gn);}
+.crop-Maize{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500;background:var(--amd);color:var(--am);}
+.crop-Bean{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500;background:var(--pud);color:var(--pu);}
+.pov-Low{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;background:var(--gnd);color:var(--gn);}
+.pov-Medium{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;background:var(--amd);color:var(--am);}
+.pov-High{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;background:var(--rdd);color:var(--rd);}
+
+/* chart */
+.chart-wrap{background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:16px;margin-top:16px;}
+.chart-ttl{font-size:11px;color:var(--tx2);font-weight:500;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
+.chart-container{position:relative;height:200px;}
+
+/* data viewer */
+.dv-tabs{display:flex;gap:6px;margin-bottom:14px;}
+.dv-tab{padding:5px 13px;border-radius:6px;border:1px solid var(--bd);background:var(--sf);color:var(--tx2);font-size:12px;cursor:pointer;transition:all .13s;}
+.dv-tab.active{background:var(--tl);color:#061a18;border-color:var(--tl);font-weight:500;}
+.dv-search{display:flex;gap:8px;margin-bottom:10px;align-items:center;}
+.dv-search input{flex:1;background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:6px 11px;color:var(--tx);font-size:13px;outline:none;}
+.dv-search input:focus{border-color:var(--ac);}
+.dv-cnt{font-size:11px;color:var(--tx3);font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-tag">SIAP</div>
+    <h1>Practice with SQL</h1>
+    <p>Interactive exercises</p>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Data</div>
+    <div class="nav-item" id="nav-dv" onclick="switchEx('dv')"><span>View datasets</span></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Exercises</div>
+    <div class="nav-item active" id="nav-0" onclick="switchEx(0)"><span>Filtering</span><span class="nb">01</span><span class="nav-dot" id="st0"></span></div>
+    <div class="nav-item" id="nav-1" onclick="switchEx(1)"><span>Filtering  + AND/OR</span><span class="nb">02</span><span class="nav-dot" id="st1"></span></div>
+    <div class="nav-item" id="nav-2" onclick="switchEx(2)"><span>Range Operators</span><span class="nb">03</span><span class="nav-dot" id="st2"></span></div>
+    <div class="nav-item" id="nav-3" onclick="switchEx(3)"><span>Creating new fields</span><span class="nb">04</span><span class="nav-dot" id="st3"></span></div>
+    <div class="nav-item" id="nav-4" onclick="switchEx(4)"><span>GROUP BY</span><span class="nb">05</span><span class="nav-dot" id="st4"></span></div>
+    <div class="nav-item" id="nav-5" onclick="switchEx(5)"><span>HAVING</span><span class="nb">06</span><span class="nav-dot" id="st5"></span></div>
+    <div class="nav-item" id="nav-6" onclick="switchEx(6)"><span>JOIN</span><span class="nb">07</span><span class="nav-dot" id="st6"></span></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Tools</div>
+    <div class="nav-item" id="nav-pg" onclick="switchEx('pg')"><span>Free playground</span></div>
+  </div>
+  <div class="prog-section">
+    <div class="prog-label"><span>Progress</span><span id="prog-lbl">0 / 7</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+</aside>
+<main class="main">
+
+<div class="ex" id="ex-dv">
+  <div class="ex-tag">Dataset viewer</div>
+  <div class="ex-title">Explore the tables</div>
+  <div class="ex-desc">Browse both tables before writing queries. Use the search box to filter rows.</div>
+  <div class="dv-tabs">
+    <button class="dv-tab active" onclick="dvSwitch(0)">Agriculture <span style="opacity:.5;font-size:10px">(3840 rows)</span></button>
+    <button class="dv-tab" onclick="dvSwitch(1)">poverty_rates <span style="opacity:.5;font-size:10px">(80 rows)</span></button>
+  </div>
+  <div class="dv-search">
+    <input type="text" id="dv-search" placeholder="Search…" oninput="dvRender()">
+    <span class="dv-cnt" id="dv-cnt"></span>
+  </div>
+  <div id="dv-table"></div>
+</div>
+<div class="ex" id="ex-0">
+  <div class="ex-tag">01 . Fitering</div>
+  <div class="ex-title">Filter rows with WHERE</div>
+  <div class="ex-desc"><strong>WHERE</strong>  filters individual rows based on specified conditions.</div>
+  <div class="schema-row">
+  <div class="schema-card">
+    <div class="schema-name">Agriculture</div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">Area_ha</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Prod_t</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
+  </div>
+</div>
+
+  <div class="ex-desc">Return all rows from <code>Agriculture</code> where District is ARACATI.</div>
+
+  <div class="hint-box" id="hint0">Use WHERE with single quotes around the text value: <code>WHERE District = &#39;ARACATI&#39;</code></div>
+  <div class="sol-box" id="sol0"><span class='kw'>SELECT</span> *
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> District = <span class='val'>'ARACATI'</span>;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q0" style="min-height:132px" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___"></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('0')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('0')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('0')">Solution</button>
+  </div>
+
+  <div id="res0"></div>
+</div>
+<div class="ex" id="ex-1">
+  <div class="ex-tag">02 . Filtering with operators</div>
+  <div class="ex-title">Filtering with logical operators — AND / OR</div>
+  <div class="ex-desc">Combine multiple conditions with <strong>AND</strong> (both must be true) or <strong>OR </strong>(either can be true).</div>
+  <div class="schema-row">
+  <div class="schema-card">
+    <div class="schema-name">Agriculture</div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">Area_ha</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Prod_t</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
+  </div>
+</div>
+ <div class="sub-label">2a · AND — Rice in ARACATI</div>
+ <div class="ex-desc">Return all rows from <code>Agriculture</code> where the district  is ARACATI and the crop is Rice</div>
+  <div class="hint-box" id="hint1a">List both conditions joined by AND. Text values need quotes.</div>
+  <div class="sol-box" id="sol1a"><span class='kw'>SELECT</span> *
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> District = <span class='val'>'ARACATI'</span>
+  <span class='kw'>AND</span> Crop = <span class='val'>'Rice'</span>;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_and.sql</span></div>
+  <textarea class="sql-input" id="q1a"  placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ AND  ___"></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('1a')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('1a')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('1a')">Solution</button>
+  </div>
+  <div id="res1a"></div>
+
+  <div class="sub-label">2b · OR — Rice OR Bean (all districts)</div>
+   <div class="ex-desc">Return all rows (all districts) from <code>Agriculture</code> for Rice as well as for Beans </div>
+  <div class="sub-label">2a · AND — Rice in ARACATI</div>
+  <div class="hint-box" id="hint1b">Use OR between two conditions on the same column: <code>Crop = &#39;Rice&#39; OR Crop = &#39;Bean&#39;</code></div>
+  <div class="sol-box" id="sol1b"><span class='kw'>SELECT</span> *
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> Crop = <span class='val'>'Rice'</span>
+   <span class='kw'>OR</span> Crop = <span class='val'>'Bean'</span>;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_or.sql</span></div>
+  <textarea class="sql-input" id="q1b" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('1b')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('1b')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('1b')">Solution</button>
+  </div>
+  <div id="res1b"></div>
+
+  <div id="res1"></div>
+</div>
+<div class="ex" id="ex-2">
+  <div class="ex-tag">03 . Tuto</div>
+  <div class="ex-title">Range operators — = and BETWEEN</div>
+  <div class="ex-desc">Filter rows by numeric values using equality <code>=</code> or a range with <code>BETWEEN … AND …</code>.</div>
+
+  <div class="schema-row">
+  <div class="schema-card">
+    <div class="schema-name">Agriculture</div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">Area_ha</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Prod_t</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
+  </div>
+</div>
+
+<div class="sub-label">3a · Exact year — year 2000</div>
+   <div class="ex-desc">Return all rows from <code>Agriculture</code> for  the year 2000</div>
+
+  <div class="hint-box" id="hint2a">Numbers don't need quotes: <code>WHERE the_year = 2000</code></div>
+  <div class="sol-box" id="sol2a"><span class='kw'>SELECT</span> *
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> the_year = <span class='val'>2000</span>;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_year.sql</span></div>
+  <textarea class="sql-input" id="q2a" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('2a')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('2a')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('2a')">Solution</button>
+  </div>
+  <div id="res2a"></div>
+
+  <div class="sub-label">3b · Year range — 1995 to 2000</div>
+  <div class="ex-desc">Return all rows from <code>Agriculture</code> between 1995 and 2000</div>
+
+  <div class="hint-box" id="hint2b"> use BETWEEN: <code>WHERE the_year BETWEEN 1995 AND 2000</code></div>
+  <div class="sol-box" id="sol2b"><span class='kw'>SELECT</span> *
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> the_year <span class='kw'>BETWEEN</span> <span class='val'>1995</span> <span class='kw'>AND</span> <span class='val'>2000</span>;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_range.sql</span></div>
+  <textarea class="sql-input" id="q2b" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('2b')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('2b')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('2b')">Solution</button>
+  </div>
+  <div id="res2b"></div>
+
+  <div id="res2"></div>
+</div>
+<div class="ex" id="ex-3">
+  <div class="ex-tag">04 . New fields</div>
+  <div class="ex-title">Computing new variables</div>
+
+  <div class="schema-row">
+  <div class="schema-card">
+    <div class="schema-name">Agriculture</div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">Area_ha</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Prod_t</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
+  </div>
+</div>
+
+<div class="sub-label">4a · Land productivity — yield (Prod_t / Area_ha)</div>
+<div class="ex-desc">Calculate <strong>yields</strong> (defined as  Production /  surface)  in the table <code>Agriculture</code></div>
+<div class="ex-desc"> <i>Hint</i>:  <strong>Area_ha</strong> (surface) has to be positive! </div>
+
+  <div class="hint-box" id="hint3a">Divide two columns with /: <code>Prod_t / Area_ha AS yield</code>. Add a WHERE to skip zero-area rows.</div>
+  <div class="sol-box" id="sol3a"><span class='kw'>SELECT</span> District, the_year, Crop,
+       Prod_t / Area_ha <span class='kw'>AS</span> yield
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> Area_ha > <span class='val'>0</span>;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_yield.sql</span></div>
+  <textarea class="sql-input" id="q3a" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('3a')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('3a')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('3a')">Solution</button>
+  </div>
+  <div id="res3a"></div>
+
+  <div class="sub-label">4b · Economic productivity — value per hectare (Value_R / Area_ha)</div>
+<div class="ex-desc">Calculate <strong>Productivity</strong> (defined as  Value /  surface)  in the table <code>Agriculture</code></div>
+<div class="ex-desc"> <strong>Area_ha</strong> (surface) has to be positive! </div>
+
+
+  <div class="hint-box" id="hint3b">Same pattern as 4a but divide Value_R by Area_ha.</div>
+  <div class="sol-box" id="sol3b"><span class='kw'>SELECT</span> District, the_year, Crop,
+       Value_R / Area_ha <span class='kw'>AS</span> ec_prod
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> Area_ha > <span class='val'>0</span>;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_ec_prod.sql</span></div>
+  <textarea class="sql-input" id="q3b" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ "></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('3b')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('3b')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('3b')">Solution</button>
+  </div>
+  <div id="res3b"></div>
+  <div id="res3"></div>
+</div>
+<div class="ex" id="ex-4">
+  <div class="ex-tag">05 . Group by</div>
+  <div class="ex-title">Aggregation with GROUP BY</div>
+  <div class="ex-desc"> <code>GROUP_BY</code> operates on each category (modality) of the specified variable. The output contains one row for each category. </div>
+
+  <div class="schema-row">
+  <div class="schema-card">
+    <div class="schema-name">Agriculture</div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">Area_ha</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Prod_t</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
+  </div>
+</div>
+
+<div class="ex-desc">Compute <strong>total production </strong> for each district for the year 2000 in the table <code>Agriculture</code>. 
+</div>
+<div class="ex-desc"> <i>Hint</i>: Filter first with <strong>WHERE,</strong> then group and sum.</div>
+
+
+  <div class="hint-box" id="hint4">Use WHERE to filter the year first, then GROUP BY District. In the WHERE, use SUM(Prod_t) AS total_production.</div>
+  <div class="sol-box" id="sol4"><span class='kw'>SELECT</span> distr_id, District,
+       <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_production
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> the_year = <span class='val'>2000</span>
+<span class='kw'>GROUP BY</span> distr_id, District;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q4" style="min-height:132px" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ 
+GROUP_BY  ___ "></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('4')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('4')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('4')">Solution</button>
+  </div>
+  <div id="chart4-wrap" style="display:none">
+  <div class="chart-wrap"><div class="chart-ttl">Total production by district — year 2000</div>
+  <div class="chart-container"><canvas id="chart4"></canvas></div></div></div>
+  <div id="res4"></div>
+</div>
+<div class="ex" id="ex-5">
+  <div class="ex-tag">06 . Conditions after a group_by</div>
+  <div class="ex-title">Filtering groups with HAVING</div>
+  <div class="ex-desc"><strong>HAVING</strong> filters aggregated results, allowing you to apply conditions on groups after a <strong>GROUP BY</strong> clause.</div>
+
+  <div class="schema-row">
+  <div class="schema-card">
+    <div class="schema-name">Agriculture</div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">Area_ha</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Prod_t</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
+  </div>
+</div>
+
+  <div class="ex-desc">Show districts with <strong>total_production</strong>   greater than 2000 t in year 2000. </div>
+   <div class="ex-desc"><i>Hint:</i> HAVING filters <em>after</em> grouping — WHERE runs before. </div>
+
+
+  <div class="hint-box" id="hint5">Add HAVING SUM(Prod_t) > 2000 after GROUP BY. HAVING works on aggregated values; WHERE does not.</div>
+  <div class="sol-box" id="sol5"><span class='kw'>SELECT</span> District,
+       <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_production
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> the_year = <span class='val'>2000</span>
+<span class='kw'>GROUP BY</span> District
+<span class='kw'>HAVING</span> <span class='fn'>SUM</span>(Prod_t) > <span class='val'>4000</span>;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q5" style="min-height:150px" placeholder="SELECT  ___ 
+FROM  ___
+WHERE  ___ 
+GROUP_BY  ___
+HAVING ___"></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('5')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('5')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('5')">Solution</button>
+  </div>
+
+  <div id="res5"></div>
+</div>
+<div class="ex" id="ex-6">
+  <div class="ex-tag">07 . Joining two tables</div>
+  <div class="ex-title">Combining tables with JOIN</div>
+  <div class="ex-desc">JOIN links two tables on a shared key. Here <strong>distr_id</strong> from the table <code>Agriculture</code> matches <strong>distr_id</strong> from the <code>poverty_rates</code> table.</div>
+
+  <div class="schema-row">
+  <div class="schema-card">
+    <div class="schema-name">Agriculture</div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">Area_ha</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Prod_t</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
+  </div>
+  <div class="schema-card">
+    <div class="schema-name">poverty_rates</div>
+    <div class="sc"><span class="cn">distr_name</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">pov_rate</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">pov_cat</span><span class="ct">text</span></div>
+  </div>
+</div>
+
+  <div class="sub-label">7a · Full join — all production data with poverty rates</div>
+  <div class="ex-desc">Show all production data together from <code>Agriculture</code>  with poverty rates from table <code>poverty rate</code> </div>
+  <div class="ex-desc"><i>Hint</i>: Use the key variable  <strong>distr_id</strong>  from the table <code>Agriculture</code>  and  <strong>distr_id</strong> from the table <code>poverty rate</code> </div>
+
+  <div class="hint-box" id="hint6a">Use JOIN … ON to specify the key: <code>A.distr_id = P.distr_id</code>. Use aliases A and P for readability.</div>
+  <div class="sol-box" id="sol6a"><span class='kw'>SELECT</span> *
+<span class='kw'>FROM</span> Agriculture <span class='kw'>AS</span> A
+<span class='kw'>JOIN</span> poverty_rates <span class='kw'>AS</span> P
+  <span class='kw'>ON</span> A.distr_id = P.distr_id;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_join.sql</span></div>
+  <textarea class="sql-input" id="q6a" placeholder="SELECT  ___ 
+FROM  ___
+JOIN  ___
+ON ___"></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('6a')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('6a')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('6a')">Solution</button>
+  </div>
+  <div id="res6a"></div>
+
+  <div class="sub-label">7b · JOIN + WHERE + GROUP BY — high-poverty districts in 2000</div>
+  <div class="ex-desc">Compute <strong>total_production</strong>  in the year 2000 in districts with pov_rate &lt; 0.33 </div>
+
+
+  <div class="hint-box" id="hint6b">Join first, then filter with WHERE on both year and pov_rate, then GROUP BY district to sum production.</div>
+  <div class="sol-box" id="sol6b"><span class='kw'>SELECT</span> A.District,
+       <span class='fn'>SUM</span>(A.Prod_t) <span class='kw'>AS</span> total_production
+<span class='kw'>FROM</span> Agriculture <span class='kw'>AS</span> A
+<span class='kw'>JOIN</span> poverty_rates <span class='kw'>AS</span> P
+  <span class='kw'>ON</span> A.distr_id = P.distr_id
+<span class='kw'>WHERE</span> A.the_year = <span class='val'>2000</span>
+  <span class='kw'>AND</span> P.pov_rate > <span class='val'>0.45</span>
+<span class='kw'>GROUP BY</span> A.District;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_join_filter.sql</span></div>
+  <textarea class="sql-input" id="q6b" style="min-height:144px" placeholder="SELECT  ___ 
+FROM  ___
+JOIN  ___
+ON ___
+WHERE ___
+GROUP_BY ____"></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('6b')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('6b')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('6b')">Solution</button>
+  </div>
+  <div id="res6b"></div>
+  <div id="res6"></div>
+</div>
+<div class="ex" id="ex-pg">
+  <div class="ex-tag">Free playground</div>
+  <div class="ex-title">Write any query</div>
+  <div class="ex-desc">Both tables are loaded. Click an example to prefill, or write your own.</div>
+  <div class="schema-row">
+  <div class="schema-card">
+    <div class="schema-name">Agriculture</div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">Area_ha</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Prod_t</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
+  </div>
+  <div class="schema-card">
+    <div class="schema-name">poverty_rates</div>
+    <div class="sc"><span class="cn">distr_name</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">pov_rate</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">pov_cat</span><span class="ct">text</span></div>
+  </div>
+</div>
+  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT District, Crop, the_year,\n       Prod_t / Area_ha AS yield\nFROM Agriculture\nWHERE Area_ha > 0\nORDER BY yield DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Top yields</div>SELECT District, Crop, the_year, Prod_t/Area_ha AS yield FROM Agriculture WHERE Area_ha > 0 ORDER BY yield DESC;</div>
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT A.District, P.pov_cat,\n       SUM(A.Prod_t) AS total_prod\nFROM Agriculture AS A\nJOIN poverty_rates AS P ON A.distr_id = P.distr_id\nWHERE A.the_year BETWEEN 1995 AND 2000\nGROUP BY A.District, P.pov_cat\nORDER BY total_prod DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Production by poverty category (1995–2000)</div>SELECT A.District, P.pov_cat, SUM(A.Prod_t) AS total_prod FROM Agriculture AS A JOIN poverty_rates ...</div>
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT Crop, SUM(Prod_t) AS total_prod\nFROM Agriculture\nGROUP BY Crop\nORDER BY total_prod DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Total production by crop (all years)</div>SELECT Crop, SUM(Prod_t) AS total_prod FROM Agriculture GROUP BY Crop ORDER BY total_prod DESC;</div>
+  </div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q-pg" style="min-height:130px;" placeholder="SELECT ..."></textarea></div>
+  <div class="btn-row"><button class="btn btn-run" onclick="runQ('pg')">&#9654; Run</button></div>
+  <div id="res-pg"></div>
+  <div id="chart-pg-wrap" style="display:none">
+    <div class="chart-wrap"><div class="chart-ttl" id="chart-pg-ttl">Result chart</div>
+    <div class="chart-container"><canvas id="chart-pg"></canvas></div></div>
+  </div>
+</div>
+</main>
+</div>
+
+<script>
+const _D = {"agriculture":[{"distr_id":7,"District":"ARACATI","the_year":1990,"Crop":"Bean","Area_ha":3958.002,"Prod_t":266.186,"Value_R":208701.195},{"distr_id":7,"District":"ARACATI","the_year":1991,"Crop":"Bean","Area_ha":1304.836,"Prod_t":391.451,"Value_R":306913.522},{"distr_id":7,"District":"ARACATI","the_year":1992,"Crop":"Bean","Area_ha":1739.781,"Prod_t":226.172,"Value_R":177327.813},{"distr_id":7,"District":"ARACATI","the_year":1993,"Crop":"Bean","Area_ha":217.473,"Prod_t":50.85,"Value_R":39868.5},{"distr_id":7,"District":"ARACATI","the_year":1994,"Crop":"Bean","Area_ha":1739.781,"Prod_t":695.912,"Value_R":545624.039},{"distr_id":7,"District":"ARACATI","the_year":1995,"Crop":"Bean","Area_ha":1913.759,"Prod_t":478.44,"Value_R":375116.527},{"distr_id":7,"District":"ARACATI","the_year":1996,"Crop":"Bean","Area_ha":2000.748,"Prod_t":214.863,"Value_R":168461.422},{"distr_id":7,"District":"ARACATI","the_year":1997,"Crop":"Bean","Area_ha":1304.836,"Prod_t":223.562,"Value_R":175281.723},{"distr_id":7,"District":"ARACATI","the_year":1998,"Crop":"Bean","Area_ha":817.697,"Prod_t":51.324,"Value_R":40239.773},{"distr_id":7,"District":"ARACATI","the_year":1999,"Crop":"Bean","Area_ha":2366.102,"Prod_t":584.566,"Value_R":458324.192},{"distr_id":7,"District":"ARACATI","the_year":2000,"Crop":"Bean","Area_ha":1782.72,"Prod_t":835.095,"Value_R":654748.847},{"distr_id":7,"District":"ARACATI","the_year":2001,"Crop":"Bean","Area_ha":1187.4,"Prod_t":144.402,"Value_R":113216.988},{"distr_id":7,"District":"ARACATI","the_year":2002,"Crop":"Bean","Area_ha":1896.361,"Prod_t":850.753,"Value_R":667025.387},{"distr_id":7,"District":"ARACATI","the_year":2003,"Crop":"Bean","Area_ha":1791.974,"Prod_t":704.611,"Value_R":552444.339},{"distr_id":7,"District":"ARACATI","the_year":2004,"Crop":"Bean","Area_ha":2070.339,"Prod_t":288.804,"Value_R":226433.977},{"distr_id":7,"District":"ARACATI","the_year":2005,"Crop":"Bean","Area_ha":1687.587,"Prod_t":493.228,"Value_R":386711.038},{"distr_id":7,"District":"ARACATI","the_year":1990,"Crop":"Maize","Area_ha":2174.726,"Prod_t":58.283,"Value_R":14287.854},{"distr_id":7,"District":"ARACATI","the_year":1991,"Crop":"Maize","Area_ha":278.365,"Prod_t":83.509,"Value_R":20472.149},{"distr_id":7,"District":"ARACATI","the_year":1992,"Crop":"Maize","Area_ha":695.912,"Prod_t":73.071,"Value_R":17913.131},{"distr_id":7,"District":"ARACATI","the_year":1993,"Crop":"Maize","Area_ha":173.978,"Prod_t":57.17,"Value_R":14015.09},{"distr_id":7,"District":"ARACATI","the_year":1994,"Crop":"Maize","Area_ha":1304.836,"Prod_t":391.451,"Value_R":95963.199},{"distr_id":7,"District":"ARACATI","the_year":1995,"Crop":"Maize","Area_ha":1043.869,"Prod_t":234.87,"Value_R":57577.92},{"distr_id":7,"District":"ARACATI","the_year":1996,"Crop":"Maize","Area_ha":1043.869,"Prod_t":354.915,"Value_R":87006.634},{"distr_id":7,"District":"ARACATI","the_year":1997,"Crop":"Maize","Area_ha":913.385,"Prod_t":127.874,"Value_R":31347.979},{"distr_id":7,"District":"ARACATI","the_year":1998,"Crop":"Maize","Area_ha":669.816,"Prod_t":45.234,"Value_R":11089.081},{"distr_id":7,"District":"ARACATI","the_year":1999,"Crop":"Maize","Area_ha":1739.781,"Prod_t":556.73,"Value_R":136480.996},{"distr_id":7,"District":"ARACATI","the_year":2000,"Crop":"Maize","Area_ha":1304.28,"Prod_t":1391.825,"Value_R":341202.488},{"distr_id":7,"District":"ARACATI","the_year":2001,"Crop":"Maize","Area_ha":517.585,"Prod_t":6.959,"Value_R":1706.013},{"distr_id":7,"District":"ARACATI","the_year":2002,"Crop":"Maize","Area_ha":869.89,"Prod_t":869.89,"Value_R":213251.555},{"distr_id":7,"District":"ARACATI","the_year":2003,"Crop":"Maize","Area_ha":1235.244,"Prod_t":926.433,"Value_R":227112.906},{"distr_id":7,"District":"ARACATI","the_year":2004,"Crop":"Maize","Area_ha":1322.233,"Prod_t":205.294,"Value_R":50327.367},{"distr_id":7,"District":"ARACATI","the_year":2005,"Crop":"Maize","Area_ha":1452.717,"Prod_t":561.079,"Value_R":137547.253},{"distr_id":7,"District":"ARACATI","the_year":1990,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":1991,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":1992,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":1993,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":1994,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":1995,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":1996,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":1997,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":1998,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":1999,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":2000,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":2001,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":2002,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":2003,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":2004,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":7,"District":"ARACATI","the_year":2005,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1990,"Crop":"Bean","Area_ha":201.497,"Prod_t":33.851,"Value_R":26540.973},{"distr_id":29,"District":"ICAPUI","the_year":1991,"Crop":"Bean","Area_ha":120.898,"Prod_t":36.269,"Value_R":28436.757},{"distr_id":29,"District":"ICAPUI","the_year":1992,"Crop":"Bean","Area_ha":161.198,"Prod_t":24.18,"Value_R":18957.838},{"distr_id":29,"District":"ICAPUI","the_year":1993,"Crop":"Bean","Area_ha":8.06,"Prod_t":1.78,"Value_R":1395.59},{"distr_id":29,"District":"ICAPUI","the_year":1994,"Crop":"Bean","Area_ha":402.994,"Prod_t":157.168,"Value_R":123225.946},{"distr_id":29,"District":"ICAPUI","the_year":1995,"Crop":"Bean","Area_ha":402.994,"Prod_t":108.808,"Value_R":85310.27},{"distr_id":29,"District":"ICAPUI","the_year":1996,"Crop":"Bean","Area_ha":64.479,"Prod_t":12.896,"Value_R":10110.847},{"distr_id":29,"District":"ICAPUI","the_year":1997,"Crop":"Bean","Area_ha":402.994,"Prod_t":90.271,"Value_R":70775.928},{"distr_id":29,"District":"ICAPUI","the_year":1998,"Crop":"Bean","Area_ha":322.395,"Prod_t":4.03,"Value_R":3159.64},{"distr_id":29,"District":"ICAPUI","the_year":1999,"Crop":"Bean","Area_ha":725.389,"Prod_t":130.57,"Value_R":102372.324},{"distr_id":29,"District":"ICAPUI","the_year":2000,"Crop":"Bean","Area_ha":685.09,"Prod_t":246.632,"Value_R":193369.946},{"distr_id":29,"District":"ICAPUI","the_year":2001,"Crop":"Bean","Area_ha":282.096,"Prod_t":3.224,"Value_R":2527.712},{"distr_id":29,"District":"ICAPUI","the_year":2002,"Crop":"Bean","Area_ha":548.072,"Prod_t":230.513,"Value_R":180731.388},{"distr_id":29,"District":"ICAPUI","the_year":2003,"Crop":"Bean","Area_ha":604.491,"Prod_t":174.093,"Value_R":136496.432},{"distr_id":29,"District":"ICAPUI","the_year":2004,"Crop":"Bean","Area_ha":624.641,"Prod_t":90.271,"Value_R":70775.928},{"distr_id":29,"District":"ICAPUI","the_year":2005,"Crop":"Bean","Area_ha":483.593,"Prod_t":92.689,"Value_R":72671.712},{"distr_id":29,"District":"ICAPUI","the_year":1990,"Crop":"Maize","Area_ha":201.497,"Prod_t":24.18,"Value_R":5927.581},{"distr_id":29,"District":"ICAPUI","the_year":1991,"Crop":"Maize","Area_ha":72.539,"Prod_t":21.762,"Value_R":5334.823},{"distr_id":29,"District":"ICAPUI","the_year":1992,"Crop":"Maize","Area_ha":120.898,"Prod_t":19.344,"Value_R":4742.065},{"distr_id":29,"District":"ICAPUI","the_year":1993,"Crop":"Maize","Area_ha":2.418,"Prod_t":0.76,"Value_R":186.31},{"distr_id":29,"District":"ICAPUI","the_year":1994,"Crop":"Maize","Area_ha":241.796,"Prod_t":79.793,"Value_R":19561.017},{"distr_id":29,"District":"ICAPUI","the_year":1995,"Crop":"Maize","Area_ha":282.096,"Prod_t":67.703,"Value_R":16597.227},{"distr_id":29,"District":"ICAPUI","the_year":1996,"Crop":"Maize","Area_ha":96.719,"Prod_t":70.121,"Value_R":17189.985},{"distr_id":29,"District":"ICAPUI","the_year":1997,"Crop":"Maize","Area_ha":201.497,"Prod_t":26.598,"Value_R":6520.339},{"distr_id":29,"District":"ICAPUI","the_year":1998,"Crop":"Maize","Area_ha":346.575,"Prod_t":154.75,"Value_R":37936.518},{"distr_id":29,"District":"ICAPUI","the_year":1999,"Crop":"Maize","Area_ha":483.593,"Prod_t":116.062,"Value_R":28452.389},{"distr_id":29,"District":"ICAPUI","the_year":2000,"Crop":"Maize","Area_ha":523.892,"Prod_t":393.322,"Value_R":96421.985},{"distr_id":29,"District":"ICAPUI","the_year":2001,"Crop":"Maize","Area_ha":146.69,"Prod_t":0.806,"Value_R":197.586},{"distr_id":29,"District":"ICAPUI","the_year":2002,"Crop":"Maize","Area_ha":370.755,"Prod_t":129.764,"Value_R":31811.352},{"distr_id":29,"District":"ICAPUI","the_year":2003,"Crop":"Maize","Area_ha":564.192,"Prod_t":243.408,"Value_R":59670.983},{"distr_id":29,"District":"ICAPUI","the_year":2004,"Crop":"Maize","Area_ha":523.892,"Prod_t":64.479,"Value_R":15806.883},{"distr_id":29,"District":"ICAPUI","the_year":2005,"Crop":"Maize","Area_ha":362.695,"Prod_t":135.406,"Value_R":33194.454},{"distr_id":29,"District":"ICAPUI","the_year":1990,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1991,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1992,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1993,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1994,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1995,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1996,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1997,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1998,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":1999,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":2000,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":2001,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":2002,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":2003,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":2004,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":29,"District":"ICAPUI","the_year":2005,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1990,"Crop":"Bean","Area_ha":228.676,"Prod_t":97.873,"Value_R":76736.703},{"distr_id":34,"District":"ITAICABA","the_year":1991,"Crop":"Bean","Area_ha":228.676,"Prod_t":164.647,"Value_R":129089.781},{"distr_id":34,"District":"ITAICABA","the_year":1992,"Crop":"Bean","Area_ha":320.146,"Prod_t":120.741,"Value_R":94665.839},{"distr_id":34,"District":"ITAICABA","the_year":1993,"Crop":"Bean","Area_ha":192.088,"Prod_t":109.764,"Value_R":86059.854},{"distr_id":34,"District":"ITAICABA","the_year":1994,"Crop":"Bean","Area_ha":457.352,"Prod_t":230.505,"Value_R":180725.693},{"distr_id":34,"District":"ITAICABA","the_year":1995,"Crop":"Bean","Area_ha":512.234,"Prod_t":173.794,"Value_R":136261.436},{"distr_id":34,"District":"ITAICABA","the_year":1996,"Crop":"Bean","Area_ha":365.881,"Prod_t":179.282,"Value_R":140564.428},{"distr_id":34,"District":"ITAICABA","the_year":1997,"Crop":"Bean","Area_ha":375.029,"Prod_t":125.314,"Value_R":98251.666},{"distr_id":34,"District":"ITAICABA","the_year":1998,"Crop":"Bean","Area_ha":338.44,"Prod_t":30.185,"Value_R":23666.46},{"distr_id":34,"District":"ITAICABA","the_year":1999,"Crop":"Bean","Area_ha":411.617,"Prod_t":203.064,"Value_R":159210.73},{"distr_id":34,"District":"ITAICABA","the_year":2000,"Crop":"Bean","Area_ha":411.617,"Prod_t":206.723,"Value_R":162079.391},{"distr_id":34,"District":"ITAICABA","the_year":2001,"Crop":"Bean","Area_ha":228.676,"Prod_t":66.773,"Value_R":52353.078},{"distr_id":34,"District":"ITAICABA","the_year":2002,"Crop":"Bean","Area_ha":393.323,"Prod_t":219.529,"Value_R":172119.708},{"distr_id":34,"District":"ITAICABA","the_year":2003,"Crop":"Bean","Area_ha":393.323,"Prod_t":226.847,"Value_R":177857.032},{"distr_id":34,"District":"ITAICABA","the_year":2004,"Crop":"Bean","Area_ha":439.058,"Prod_t":132.632,"Value_R":103988.99},{"distr_id":34,"District":"ITAICABA","the_year":2005,"Crop":"Bean","Area_ha":397.896,"Prod_t":194.832,"Value_R":152756.24},{"distr_id":34,"District":"ITAICABA","the_year":1990,"Crop":"Maize","Area_ha":91.47,"Prod_t":5.488,"Value_R":1345.425},{"distr_id":34,"District":"ITAICABA","the_year":1991,"Crop":"Maize","Area_ha":45.735,"Prod_t":13.721,"Value_R":3363.561},{"distr_id":34,"District":"ITAICABA","the_year":1992,"Crop":"Maize","Area_ha":73.176,"Prod_t":10.976,"Value_R":2690.849},{"distr_id":34,"District":"ITAICABA","the_year":1993,"Crop":"Maize","Area_ha":109.764,"Prod_t":39.66,"Value_R":9722.55},{"distr_id":34,"District":"ITAICABA","the_year":1994,"Crop":"Maize","Area_ha":182.941,"Prod_t":73.176,"Value_R":17938.993},{"distr_id":34,"District":"ITAICABA","the_year":1995,"Crop":"Maize","Area_ha":228.676,"Prod_t":45.735,"Value_R":11211.87},{"distr_id":34,"District":"ITAICABA","the_year":1996,"Crop":"Maize","Area_ha":274.411,"Prod_t":153.67,"Value_R":37671.884},{"distr_id":34,"District":"ITAICABA","the_year":1997,"Crop":"Maize","Area_ha":274.411,"Prod_t":43.906,"Value_R":10763.396},{"distr_id":34,"District":"ITAICABA","the_year":1998,"Crop":"Maize","Area_ha":274.411,"Prod_t":6.403,"Value_R":1569.662},{"distr_id":34,"District":"ITAICABA","the_year":1999,"Crop":"Maize","Area_ha":274.411,"Prod_t":150.926,"Value_R":36999.171},{"distr_id":34,"District":"ITAICABA","the_year":2000,"Crop":"Maize","Area_ha":274.411,"Prod_t":164.647,"Value_R":40362.732},{"distr_id":34,"District":"ITAICABA","the_year":2001,"Crop":"Maize","Area_ha":128.059,"Prod_t":1.829,"Value_R":448.475},{"distr_id":34,"District":"ITAICABA","the_year":2002,"Crop":"Maize","Area_ha":246.97,"Prod_t":185.685,"Value_R":45520.193},{"distr_id":34,"District":"ITAICABA","the_year":2003,"Crop":"Maize","Area_ha":256.117,"Prod_t":217.699,"Value_R":53368.502},{"distr_id":34,"District":"ITAICABA","the_year":2004,"Crop":"Maize","Area_ha":274.411,"Prod_t":54.882,"Value_R":13454.244},{"distr_id":34,"District":"ITAICABA","the_year":2005,"Crop":"Maize","Area_ha":292.705,"Prod_t":175.623,"Value_R":43053.581},{"distr_id":34,"District":"ITAICABA","the_year":1990,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1991,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1992,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1993,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1994,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1995,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1996,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1997,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1998,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":1999,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":2000,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":2001,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":2002,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":2003,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":2004,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":34,"District":"ITAICABA","the_year":2005,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":39,"District":"JAGUARUANA","the_year":1990,"Crop":"Bean","Area_ha":1066.074,"Prod_t":249.035,"Value_R":195253.616},{"distr_id":39,"District":"JAGUARUANA","the_year":1991,"Crop":"Bean","Area_ha":469.073,"Prod_t":289.972,"Value_R":227350.102},{"distr_id":39,"District":"JAGUARUANA","the_year":1992,"Crop":"Bean","Area_ha":528.773,"Prod_t":222.596,"Value_R":174524.637},{"distr_id":39,"District":"JAGUARUANA","the_year":1993,"Crop":"Bean","Area_ha":341.144,"Prod_t":255.858,"Value_R":200603.031},{"distr_id":39,"District":"JAGUARUANA","the_year":1994,"Crop":"Bean","Area_ha":1791.004,"Prod_t":803.393,"Value_R":629893.517},{"distr_id":39,"District":"JAGUARUANA","the_year":1995,"Crop":"Bean","Area_ha":1535.146,"Prod_t":511.715,"Value_R":401206.062},{"distr_id":39,"District":"JAGUARUANA","the_year":1996,"Crop":"Bean","Area_ha":2341.098,"Prod_t":1147.096,"Value_R":899370.255},{"distr_id":39,"District":"JAGUARUANA","the_year":1997,"Crop":"Bean","Area_ha":2388.006,"Prod_t":449.457,"Value_R":352392.658},{"distr_id":39,"District":"JAGUARUANA","the_year":1998,"Crop":"Bean","Area_ha":767.573,"Prod_t":322.381,"Value_R":252759.819},{"distr_id":39,"District":"JAGUARUANA","the_year":1999,"Crop":"Bean","Area_ha":1522.354,"Prod_t":849.448,"Value_R":666002.063},{"distr_id":39,"District":"JAGUARUANA","the_year":2000,"Crop":"Bean","Area_ha":1965.738,"Prod_t":590.179,"Value_R":462724.325},{"distr_id":39,"District":"JAGUARUANA","the_year":2001,"Crop":"Bean","Area_ha":948.379,"Prod_t":206.392,"Value_R":161819.778},{"distr_id":39,"District":"JAGUARUANA","the_year":2002,"Crop":"Bean","Area_ha":1134.303,"Prod_t":576.533,"Value_R":452025.497},{"distr_id":39,"District":"JAGUARUANA","the_year":2003,"Crop":"Bean","Area_ha":1023.431,"Prod_t":463.955,"Value_R":363760.163},{"distr_id":39,"District":"JAGUARUANA","the_year":2004,"Crop":"Bean","Area_ha":1236.646,"Prod_t":359.907,"Value_R":282181.597},{"distr_id":39,"District":"JAGUARUANA","the_year":2005,"Crop":"Bean","Area_ha":1194.003,"Prod_t":487.835,"Value_R":382483.112},{"distr_id":39,"District":"JAGUARUANA","the_year":1990,"Crop":"Maize","Area_ha":2132.148,"Prod_t":119.4,"Value_R":29270.69},{"distr_id":39,"District":"JAGUARUANA","the_year":1991,"Crop":"Maize","Area_ha":170.572,"Prod_t":51.172,"Value_R":12544.582},{"distr_id":39,"District":"JAGUARUANA","the_year":1992,"Crop":"Maize","Area_ha":255.858,"Prod_t":25.586,"Value_R":6272.291},{"distr_id":39,"District":"JAGUARUANA","the_year":1993,"Crop":"Maize","Area_ha":102.343,"Prod_t":10.234,"Value_R":2508.916},{"distr_id":39,"District":"JAGUARUANA","the_year":1994,"Crop":"Maize","Area_ha":1535.146,"Prod_t":690.816,"Value_R":169351.853},{"distr_id":39,"District":"JAGUARUANA","the_year":1995,"Crop":"Maize","Area_ha":1279.289,"Prod_t":281.444,"Value_R":68995.199},{"distr_id":39,"District":"JAGUARUANA","the_year":1996,"Crop":"Maize","Area_ha":2473.291,"Prod_t":1607.639,"Value_R":394108.941},{"distr_id":39,"District":"JAGUARUANA","the_year":1997,"Crop":"Maize","Area_ha":2558.577,"Prod_t":307.029,"Value_R":75267.49},{"distr_id":39,"District":"JAGUARUANA","the_year":1998,"Crop":"Maize","Area_ha":639.644,"Prod_t":16.204,"Value_R":3972.451},{"distr_id":39,"District":"JAGUARUANA","the_year":1999,"Crop":"Maize","Area_ha":2729.149,"Prod_t":2319.777,"Value_R":568687.703},{"distr_id":39,"District":"JAGUARUANA","the_year":2000,"Crop":"Maize","Area_ha":3415.598,"Prod_t":2302.72,"Value_R":564506.176},{"distr_id":39,"District":"JAGUARUANA","the_year":2001,"Crop":"Maize","Area_ha":1276.73,"Prod_t":104.049,"Value_R":25507.316},{"distr_id":39,"District":"JAGUARUANA","the_year":2002,"Crop":"Maize","Area_ha":1782.476,"Prod_t":1604.228,"Value_R":393272.636},{"distr_id":39,"District":"JAGUARUANA","the_year":2003,"Crop":"Maize","Area_ha":2046.862,"Prod_t":2478.409,"Value_R":607575.906},{"distr_id":39,"District":"JAGUARUANA","the_year":2004,"Crop":"Maize","Area_ha":2217.434,"Prod_t":1098.483,"Value_R":269290.353},{"distr_id":39,"District":"JAGUARUANA","the_year":2005,"Crop":"Maize","Area_ha":2132.148,"Prod_t":1592.288,"Value_R":390345.567},{"distr_id":39,"District":"JAGUARUANA","the_year":1990,"Crop":"Rice","Area_ha":59.7,"Prod_t":298.501,"Value_R":106114.539},{"distr_id":39,"District":"JAGUARUANA","the_year":1991,"Crop":"Rice","Area_ha":59.7,"Prod_t":298.501,"Value_R":106114.539},{"distr_id":39,"District":"JAGUARUANA","the_year":1992,"Crop":"Rice","Area_ha":59.7,"Prod_t":298.501,"Value_R":106114.539},{"distr_id":39,"District":"JAGUARUANA","the_year":1993,"Crop":"Rice","Area_ha":597.001,"Prod_t":2985.007,"Value_R":1061145.388},{"distr_id":39,"District":"JAGUARUANA","the_year":1994,"Crop":"Rice","Area_ha":682.287,"Prod_t":4093.724,"Value_R":1455285.103},{"distr_id":39,"District":"JAGUARUANA","the_year":1995,"Crop":"Rice","Area_ha":852.859,"Prod_t":5117.155,"Value_R":1819106.378},{"distr_id":39,"District":"JAGUARUANA","the_year":1996,"Crop":"Rice","Area_ha":639.644,"Prod_t":3837.866,"Value_R":1364329.784},{"distr_id":39,"District":"JAGUARUANA","the_year":1997,"Crop":"Rice","Area_ha":852.859,"Prod_t":5117.155,"Value_R":1819106.378},{"distr_id":39,"District":"JAGUARUANA","the_year":1998,"Crop":"Rice","Area_ha":682.287,"Prod_t":4093.724,"Value_R":1455285.103},{"distr_id":39,"District":"JAGUARUANA","the_year":1999,"Crop":"Rice","Area_ha":656.702,"Prod_t":3611.858,"Value_R":1283985.918},{"distr_id":39,"District":"JAGUARUANA","the_year":2000,"Crop":"Rice","Area_ha":1496.665,"Prod_t":3518.044,"Value_R":1250635.635},{"distr_id":39,"District":"JAGUARUANA","the_year":2001,"Crop":"Rice","Area_ha":150.956,"Prod_t":830.685,"Value_R":295301.602},{"distr_id":39,"District":"JAGUARUANA","the_year":2002,"Crop":"Rice","Area_ha":42.643,"Prod_t":234.536,"Value_R":83375.709},{"distr_id":39,"District":"JAGUARUANA","the_year":2003,"Crop":"Rice","Area_ha":426.43,"Prod_t":2345.363,"Value_R":833757.09},{"distr_id":39,"District":"JAGUARUANA","the_year":2004,"Crop":"Rice","Area_ha":767.573,"Prod_t":4605.439,"Value_R":1637195.741},{"distr_id":39,"District":"JAGUARUANA","the_year":2005,"Crop":"Rice","Area_ha":810.216,"Prod_t":4861.297,"Value_R":1728151.059},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1990,"Crop":"Bean","Area_ha":3323.043,"Prod_t":1474.406,"Value_R":1155995.419},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1991,"Crop":"Bean","Area_ha":3711.249,"Prod_t":2803.624,"Value_R":2198156.639},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1992,"Crop":"Bean","Area_ha":3262.483,"Prod_t":2458.12,"Value_R":1927267.771},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1993,"Crop":"Bean","Area_ha":2215.103,"Prod_t":3216.675,"Value_R":2522005.803},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1994,"Crop":"Bean","Area_ha":6456.642,"Prod_t":7740.827,"Value_R":6069128.134},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1995,"Crop":"Bean","Area_ha":4021.814,"Prod_t":4982.235,"Value_R":3906278.359},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1996,"Crop":"Bean","Area_ha":2196.469,"Prod_t":1361.827,"Value_R":1067728.26},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1997,"Crop":"Bean","Area_ha":2158.425,"Prod_t":1981.403,"Value_R":1553502.006},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1998,"Crop":"Bean","Area_ha":2965.894,"Prod_t":2880.488,"Value_R":2258421.803},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1999,"Crop":"Bean","Area_ha":3237.638,"Prod_t":2783.437,"Value_R":2182329.424},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2000,"Crop":"Bean","Area_ha":4382.99,"Prod_t":683.243,"Value_R":535690.347},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2001,"Crop":"Bean","Area_ha":1475.183,"Prod_t":925.483,"Value_R":725616.924},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2002,"Crop":"Bean","Area_ha":1785.747,"Prod_t":1305.925,"Value_R":1023899.049},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2003,"Crop":"Bean","Area_ha":1436.362,"Prod_t":1038.839,"Value_R":814492.823},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2004,"Crop":"Bean","Area_ha":1019.429,"Prod_t":800.481,"Value_R":627609.94},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2005,"Crop":"Bean","Area_ha":1424.716,"Prod_t":1052.815,"Value_R":825450.126},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1990,"Crop":"Maize","Area_ha":2562.159,"Prod_t":10.87,"Value_R":2664.697},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1991,"Crop":"Maize","Area_ha":1941.03,"Prod_t":1358.721,"Value_R":333087.163},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1992,"Crop":"Maize","Area_ha":1630.465,"Prod_t":660.727,"Value_R":161975.528},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1993,"Crop":"Maize","Area_ha":1226.731,"Prod_t":5088.604,"Value_R":1247459.007},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1994,"Crop":"Maize","Area_ha":776.412,"Prod_t":931.694,"Value_R":228402.626},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1995,"Crop":"Maize","Area_ha":310.565,"Prod_t":310.565,"Value_R":76134.209},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1996,"Crop":"Maize","Area_ha":1045.05,"Prod_t":700.324,"Value_R":171682.64},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1997,"Crop":"Maize","Area_ha":1048.156,"Prod_t":3752.399,"Value_R":919891.575},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1998,"Crop":"Maize","Area_ha":1863.389,"Prod_t":9316.943,"Value_R":2284026.256},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1999,"Crop":"Maize","Area_ha":3105.648,"Prod_t":12267.309,"Value_R":3007301.237},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2000,"Crop":"Maize","Area_ha":5547.608,"Prod_t":6987.707,"Value_R":1713019.692},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2001,"Crop":"Maize","Area_ha":1482.947,"Prod_t":5846.382,"Value_R":1433226.476},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2002,"Crop":"Maize","Area_ha":791.94,"Prod_t":2739.181,"Value_R":671503.719},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2003,"Crop":"Maize","Area_ha":931.694,"Prod_t":2074.573,"Value_R":508576.513},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2004,"Crop":"Maize","Area_ha":900.638,"Prod_t":2161.531,"Value_R":529894.091},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2005,"Crop":"Maize","Area_ha":822.997,"Prod_t":2281.875,"Value_R":559396.098},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1990,"Crop":"Rice","Area_ha":652.186,"Prod_t":3118.07,"Value_R":1108448.354},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1991,"Crop":"Rice","Area_ha":993.807,"Prod_t":4782.698,"Value_R":1700209.627},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1992,"Crop":"Rice","Area_ha":1024.864,"Prod_t":5597.93,"Value_R":1990018.086},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1993,"Crop":"Rice","Area_ha":1863.389,"Prod_t":11180.332,"Value_R":3974516.011},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1994,"Crop":"Rice","Area_ha":1591.644,"Prod_t":9394.584,"Value_R":3339697.481},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1995,"Crop":"Rice","Area_ha":1591.644,"Prod_t":9487.754,"Value_R":3372818.448},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1996,"Crop":"Rice","Area_ha":1302.819,"Prod_t":6614.253,"Value_R":2351312.632},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1997,"Crop":"Rice","Area_ha":1356.392,"Prod_t":8114.281,"Value_R":2884560.197},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1998,"Crop":"Rice","Area_ha":1941.03,"Prod_t":11646.179,"Value_R":4140120.845},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":1999,"Crop":"Rice","Area_ha":1902.209,"Prod_t":11831.742,"Value_R":4206086.771},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2000,"Crop":"Rice","Area_ha":5159.402,"Prod_t":7764.119,"Value_R":2760080.563},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2001,"Crop":"Rice","Area_ha":388.206,"Prod_t":2329.236,"Value_R":828024.169},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2002,"Crop":"Rice","Area_ha":388.206,"Prod_t":2329.236,"Value_R":828024.169},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2003,"Crop":"Rice","Area_ha":621.13,"Prod_t":3726.777,"Value_R":1324838.67},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2004,"Crop":"Rice","Area_ha":1164.618,"Prod_t":6987.707,"Value_R":2484072.507},{"distr_id":45,"District":"LIMOEIRO DO NORTE","the_year":2005,"Crop":"Rice","Area_ha":776.412,"Prod_t":4658.472,"Value_R":1656048.338},{"distr_id":56,"District":"PALHANO","the_year":1990,"Crop":"Bean","Area_ha":1109.745,"Prod_t":80.148,"Value_R":62839.525},{"distr_id":56,"District":"PALHANO","the_year":1991,"Crop":"Bean","Area_ha":1233.05,"Prod_t":493.22,"Value_R":386704.766},{"distr_id":56,"District":"PALHANO","the_year":1992,"Crop":"Bean","Area_ha":1109.745,"Prod_t":221.949,"Value_R":174017.144},{"distr_id":56,"District":"PALHANO","the_year":1993,"Crop":"Bean","Area_ha":1233.05,"Prod_t":347.66,"Value_R":272579.8},{"distr_id":56,"District":"PALHANO","the_year":1994,"Crop":"Bean","Area_ha":1849.575,"Prod_t":832.309,"Value_R":652564.292},{"distr_id":56,"District":"PALHANO","the_year":1995,"Crop":"Bean","Area_ha":1541.312,"Prod_t":538.843,"Value_R":422474.956},{"distr_id":56,"District":"PALHANO","the_year":1996,"Crop":"Bean","Area_ha":345.254,"Prod_t":108.508,"Value_R":85075.049},{"distr_id":56,"District":"PALHANO","the_year":1997,"Crop":"Bean","Area_ha":369.915,"Prod_t":110.974,"Value_R":87008.572},{"distr_id":56,"District":"PALHANO","the_year":1998,"Crop":"Bean","Area_ha":1233.05,"Prod_t":40.691,"Value_R":31903.143},{"distr_id":56,"District":"PALHANO","the_year":1999,"Crop":"Bean","Area_ha":1664.617,"Prod_t":699.139,"Value_R":548154.006},{"distr_id":56,"District":"PALHANO","the_year":2000,"Crop":"Bean","Area_ha":1109.745,"Prod_t":466.093,"Value_R":365436.003},{"distr_id":56,"District":"PALHANO","the_year":2001,"Crop":"Bean","Area_ha":776.821,"Prod_t":46.856,"Value_R":36736.953},{"distr_id":56,"District":"PALHANO","the_year":2002,"Crop":"Bean","Area_ha":2737.37,"Prod_t":1094.948,"Value_R":858484.58},{"distr_id":56,"District":"PALHANO","the_year":2003,"Crop":"Bean","Area_ha":875.465,"Prod_t":257.707,"Value_R":202053.24},{"distr_id":56,"District":"PALHANO","the_year":2004,"Crop":"Bean","Area_ha":1331.694,"Prod_t":183.724,"Value_R":144047.525},{"distr_id":56,"District":"PALHANO","the_year":2005,"Crop":"Bean","Area_ha":1424.172,"Prod_t":537.61,"Value_R":421508.195},{"distr_id":56,"District":"PALHANO","the_year":1990,"Crop":"Maize","Area_ha":493.22,"Prod_t":30.826,"Value_R":7556.98},{"distr_id":56,"District":"PALHANO","the_year":1991,"Crop":"Maize","Area_ha":616.525,"Prod_t":431.567,"Value_R":105797.712},{"distr_id":56,"District":"PALHANO","the_year":1992,"Crop":"Maize","Area_ha":554.872,"Prod_t":155.364,"Value_R":38087.176},{"distr_id":56,"District":"PALHANO","the_year":1993,"Crop":"Maize","Area_ha":616.525,"Prod_t":280.52,"Value_R":68768.8},{"distr_id":56,"District":"PALHANO","the_year":1994,"Crop":"Maize","Area_ha":616.525,"Prod_t":400.741,"Value_R":98240.733},{"distr_id":56,"District":"PALHANO","the_year":1995,"Crop":"Maize","Area_ha":653.516,"Prod_t":457.461,"Value_R":112145.574},{"distr_id":56,"District":"PALHANO","the_year":1996,"Crop":"Maize","Area_ha":369.915,"Prod_t":160.296,"Value_R":39296.294},{"distr_id":56,"District":"PALHANO","the_year":1997,"Crop":"Maize","Area_ha":308.262,"Prod_t":64.119,"Value_R":15718.517},{"distr_id":56,"District":"PALHANO","the_year":1998,"Crop":"Maize","Area_ha":554.872,"Prod_t":252.47,"Value_R":61892.41},{"distr_id":56,"District":"PALHANO","the_year":1999,"Crop":"Maize","Area_ha":924.787,"Prod_t":462.394,"Value_R":113354.692},{"distr_id":56,"District":"PALHANO","the_year":2000,"Crop":"Maize","Area_ha":739.83,"Prod_t":540.076,"Value_R":132398.279},{"distr_id":56,"District":"PALHANO","the_year":2001,"Crop":"Maize","Area_ha":209.618,"Prod_t":12.33,"Value_R":3022.792},{"distr_id":56,"District":"PALHANO","the_year":2002,"Crop":"Maize","Area_ha":1916.159,"Prod_t":1341.558,"Value_R":328879.745},{"distr_id":56,"District":"PALHANO","the_year":2003,"Crop":"Maize","Area_ha":271.271,"Prod_t":97.411,"Value_R":23880.055},{"distr_id":56,"District":"PALHANO","the_year":2004,"Crop":"Maize","Area_ha":739.83,"Prod_t":199.754,"Value_R":48969.227},{"distr_id":56,"District":"PALHANO","the_year":2005,"Crop":"Maize","Area_ha":319.36,"Prod_t":229.347,"Value_R":56223.927},{"distr_id":56,"District":"PALHANO","the_year":1990,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":1991,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":1992,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":1993,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":1994,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":1995,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":1996,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":1997,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":1998,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":1999,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":2000,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":2001,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":2002,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":2003,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":2004,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":56,"District":"PALHANO","the_year":2005,"Crop":"Rice","Area_ha":0.0,"Prod_t":0.0,"Value_R":0.0},{"distr_id":68,"District":"QUIXERE","the_year":1990,"Crop":"Bean","Area_ha":3155.465,"Prod_t":401.839,"Value_R":315058.267},{"distr_id":68,"District":"QUIXERE","the_year":1991,"Crop":"Bean","Area_ha":2511.493,"Prod_t":1186.197,"Value_R":930027.772},{"distr_id":68,"District":"QUIXERE","the_year":1992,"Crop":"Bean","Area_ha":2769.082,"Prod_t":707.082,"Value_R":554381.375},{"distr_id":68,"District":"QUIXERE","the_year":1993,"Crop":"Bean","Area_ha":1803.123,"Prod_t":566.696,"Value_R":444312.942},{"distr_id":68,"District":"QUIXERE","the_year":1994,"Crop":"Bean","Area_ha":3091.068,"Prod_t":1674.329,"Value_R":1312742.784},{"distr_id":68,"District":"QUIXERE","the_year":1995,"Crop":"Bean","Area_ha":2125.109,"Prod_t":965.959,"Value_R":757351.606},{"distr_id":68,"District":"QUIXERE","the_year":1996,"Crop":"Bean","Area_ha":1110.209,"Prod_t":641.397,"Value_R":502881.467},{"distr_id":68,"District":"QUIXERE","the_year":1997,"Crop":"Bean","Area_ha":1339.463,"Prod_t":803.678,"Value_R":630116.536},{"distr_id":68,"District":"QUIXERE","the_year":1998,"Crop":"Bean","Area_ha":965.959,"Prod_t":327.138,"Value_R":256489.744},{"distr_id":68,"District":"QUIXERE","the_year":1999,"Crop":"Bean","Area_ha":1506.896,"Prod_t":821.709,"Value_R":644253.766},{"distr_id":68,"District":"QUIXERE","the_year":2000,"Crop":"Bean","Area_ha":758.319,"Prod_t":804.966,"Value_R":631126.338},{"distr_id":68,"District":"QUIXERE","the_year":2001,"Crop":"Bean","Area_ha":579.575,"Prod_t":332.29,"Value_R":260528.952},{"distr_id":68,"District":"QUIXERE","the_year":2002,"Crop":"Bean","Area_ha":1320.144,"Prod_t":694.202,"Value_R":544283.354},{"distr_id":68,"District":"QUIXERE","the_year":2003,"Crop":"Bean","Area_ha":1030.356,"Prod_t":583.439,"Value_R":457440.37},{"distr_id":68,"District":"QUIXERE","the_year":2004,"Crop":"Bean","Area_ha":753.448,"Prod_t":347.745,"Value_R":272646.578},{"distr_id":68,"District":"QUIXERE","the_year":2005,"Crop":"Bean","Area_ha":843.604,"Prod_t":574.424,"Value_R":450371.755},{"distr_id":68,"District":"QUIXERE","the_year":1990,"Crop":"Maize","Area_ha":6439.725,"Prod_t":1094.753,"Value_R":268376.145},{"distr_id":68,"District":"QUIXERE","the_year":1991,"Crop":"Maize","Area_ha":6439.725,"Prod_t":7727.671,"Value_R":1894419.848},{"distr_id":68,"District":"QUIXERE","the_year":1992,"Crop":"Maize","Area_ha":5151.78,"Prod_t":1545.534,"Value_R":378883.97},{"distr_id":68,"District":"QUIXERE","the_year":1993,"Crop":"Maize","Area_ha":1545.534,"Prod_t":991.12,"Value_R":242970.69},{"distr_id":68,"District":"QUIXERE","the_year":1994,"Crop":"Maize","Area_ha":5795.753,"Prod_t":5795.753,"Value_R":1420814.887},{"distr_id":68,"District":"QUIXERE","the_year":1995,"Crop":"Maize","Area_ha":5151.78,"Prod_t":6182.136,"Value_R":1515535.878},{"distr_id":68,"District":"QUIXERE","the_year":1996,"Crop":"Maize","Area_ha":5404.218,"Prod_t":4703.575,"Value_R":1153070.215},{"distr_id":68,"District":"QUIXERE","the_year":1997,"Crop":"Maize","Area_ha":3606.246,"Prod_t":1947.373,"Value_R":477393.802},{"distr_id":68,"District":"QUIXERE","the_year":1998,"Crop":"Maize","Area_ha":540.937,"Prod_t":20.607,"Value_R":5051.787},{"distr_id":68,"District":"QUIXERE","the_year":1999,"Crop":"Maize","Area_ha":2241.024,"Prod_t":1008.461,"Value_R":247221.79},{"distr_id":68,"District":"QUIXERE","the_year":2000,"Crop":"Maize","Area_ha":460.525,"Prod_t":1530.079,"Value_R":375095.129},{"distr_id":68,"District":"QUIXERE","the_year":2001,"Crop":"Maize","Area_ha":643.973,"Prod_t":48.942,"Value_R":11997.993},{"distr_id":68,"District":"QUIXERE","the_year":2002,"Crop":"Maize","Area_ha":2189.507,"Prod_t":2134.125,"Value_R":523175.615},{"distr_id":68,"District":"QUIXERE","the_year":2003,"Crop":"Maize","Area_ha":2382.698,"Prod_t":1334.311,"Value_R":327103.161},{"distr_id":68,"District":"QUIXERE","the_year":2004,"Crop":"Maize","Area_ha":1481.137,"Prod_t":533.209,"Value_R":130714.97},{"distr_id":68,"District":"QUIXERE","the_year":2005,"Crop":"Maize","Area_ha":637.533,"Prod_t":637.533,"Value_R":156289.637},{"distr_id":68,"District":"QUIXERE","the_year":1990,"Crop":"Rice","Area_ha":32.199,"Prod_t":128.795,"Value_R":45785.388},{"distr_id":68,"District":"QUIXERE","the_year":1991,"Crop":"Rice","Area_ha":25.759,"Prod_t":103.036,"Value_R":36628.311},{"distr_id":68,"District":"QUIXERE","the_year":1992,"Crop":"Rice","Area_ha":19.319,"Prod_t":106.899,"Value_R":38001.872},{"distr_id":68,"District":"QUIXERE","the_year":1993,"Crop":"Rice","Area_ha":38.638,"Prod_t":270.468,"Value_R":96149.315},{"distr_id":68,"District":"QUIXERE","the_year":1994,"Crop":"Rice","Area_ha":25.759,"Prod_t":154.553,"Value_R":54942.466},{"distr_id":68,"District":"QUIXERE","the_year":1995,"Crop":"Rice","Area_ha":38.638,"Prod_t":231.83,"Value_R":82413.698},{"distr_id":68,"District":"QUIXERE","the_year":1996,"Crop":"Rice","Area_ha":59.245,"Prod_t":216.375,"Value_R":76919.452},{"distr_id":68,"District":"QUIXERE","the_year":1997,"Crop":"Rice","Area_ha":51.518,"Prod_t":309.107,"Value_R":109884.931},{"distr_id":68,"District":"QUIXERE","the_year":1998,"Crop":"Rice","Area_ha":12.879,"Prod_t":77.277,"Value_R":27471.232},{"distr_id":68,"District":"QUIXERE","the_year":1999,"Crop":"Rice","Area_ha":19.319,"Prod_t":115.915,"Value_R":41206.849},{"distr_id":68,"District":"QUIXERE","the_year":2000,"Crop":"Rice","Area_ha":90.156,"Prod_t":450.781,"Value_R":160248.858},{"distr_id":68,"District":"QUIXERE","the_year":2001,"Crop":"Rice","Area_ha":128.795,"Prod_t":772.767,"Value_R":274712.328},{"distr_id":68,"District":"QUIXERE","the_year":2002,"Crop":"Rice","Area_ha":32.199,"Prod_t":193.192,"Value_R":68678.082},{"distr_id":68,"District":"QUIXERE","the_year":2003,"Crop":"Rice","Area_ha":38.638,"Prod_t":231.83,"Value_R":82413.698},{"distr_id":68,"District":"QUIXERE","the_year":2004,"Crop":"Rice","Area_ha":32.199,"Prod_t":193.192,"Value_R":68678.082},{"distr_id":68,"District":"QUIXERE","the_year":2005,"Crop":"Rice","Area_ha":38.638,"Prod_t":231.83,"Value_R":82413.698},{"distr_id":69,"District":"RUSSAS","the_year":1990,"Crop":"Bean","Area_ha":5214.926,"Prod_t":1051.677,"Value_R":824558.082},{"distr_id":69,"District":"RUSSAS","the_year":1991,"Crop":"Bean","Area_ha":4736.892,"Prod_t":2255.456,"Value_R":1768370.432},{"distr_id":69,"District":"RUSSAS","the_year":1992,"Crop":"Bean","Area_ha":4954.18,"Prod_t":1009.306,"Value_R":791337.25},{"distr_id":69,"District":"RUSSAS","the_year":1993,"Crop":"Bean","Area_ha":2607.463,"Prod_t":1075.579,"Value_R":843298.038},{"distr_id":69,"District":"RUSSAS","the_year":1994,"Crop":"Bean","Area_ha":4671.705,"Prod_t":2667.218,"Value_R":2091208.771},{"distr_id":69,"District":"RUSSAS","the_year":1995,"Crop":"Bean","Area_ha":4345.772,"Prod_t":2444.497,"Value_R":1916586.45},{"distr_id":69,"District":"RUSSAS","the_year":1996,"Crop":"Bean","Area_ha":4454.416,"Prod_t":1439.537,"Value_R":1128656.465},{"distr_id":69,"District":"RUSSAS","the_year":1997,"Crop":"Bean","Area_ha":2824.752,"Prod_t":1352.622,"Value_R":1060511.169},{"distr_id":69,"District":"RUSSAS","the_year":1998,"Crop":"Bean","Area_ha":2868.21,"Prod_t":1370.005,"Value_R":1074140.229},{"distr_id":69,"District":"RUSSAS","the_year":1999,"Crop":"Bean","Area_ha":3215.871,"Prod_t":1686.16,"Value_R":1322018.743},{"distr_id":69,"District":"RUSSAS","the_year":2000,"Crop":"Bean","Area_ha":2051.917,"Prod_t":750.732,"Value_R":588604.994},{"distr_id":69,"District":"RUSSAS","the_year":2001,"Crop":"Bean","Area_ha":1607.936,"Prod_t":304.204,"Value_R":238508.536},{"distr_id":69,"District":"RUSSAS","the_year":2002,"Crop":"Bean","Area_ha":2422.768,"Prod_t":1169.013,"Value_R":916554.232},{"distr_id":69,"District":"RUSSAS","the_year":2003,"Crop":"Bean","Area_ha":1629.665,"Prod_t":823.524,"Value_R":645676.679},{"distr_id":69,"District":"RUSSAS","the_year":2004,"Crop":"Bean","Area_ha":1912.14,"Prod_t":822.437,"Value_R":644824.863},{"distr_id":69,"District":"RUSSAS","the_year":2005,"Crop":"Bean","Area_ha":2553.141,"Prod_t":1517.761,"Value_R":1189987.232},{"distr_id":69,"District":"RUSSAS","the_year":1990,"Crop":"Maize","Area_ha":3259.329,"Prod_t":286.821,"Value_R":70313.468},{"distr_id":69,"District":"RUSSAS","the_year":1991,"Crop":"Maize","Area_ha":2607.463,"Prod_t":2607.463,"Value_R":639213.347},{"distr_id":69,"District":"RUSSAS","the_year":1992,"Crop":"Maize","Area_ha":3150.685,"Prod_t":1109.258,"Value_R":271932.012},{"distr_id":69,"District":"RUSSAS","the_year":1993,"Crop":"Maize","Area_ha":1086.443,"Prod_t":434.577,"Value_R":106535.558},{"distr_id":69,"District":"RUSSAS","the_year":1994,"Crop":"Maize","Area_ha":2607.463,"Prod_t":2085.971,"Value_R":511370.678},{"distr_id":69,"District":"RUSSAS","the_year":1995,"Crop":"Maize","Area_ha":1629.665,"Prod_t":1303.732,"Value_R":319606.674},{"distr_id":69,"District":"RUSSAS","the_year":1996,"Crop":"Maize","Area_ha":3259.329,"Prod_t":2009.92,"Value_R":492726.955},{"distr_id":69,"District":"RUSSAS","the_year":1997,"Crop":"Maize","Area_ha":1195.087,"Prod_t":288.994,"Value_R":70846.146},{"distr_id":69,"District":"RUSSAS","the_year":1998,"Crop":"Maize","Area_ha":749.646,"Prod_t":17.383,"Value_R":4261.423},{"distr_id":69,"District":"RUSSAS","the_year":1999,"Crop":"Maize","Area_ha":2716.108,"Prod_t":1548.181,"Value_R":379532.925},{"distr_id":69,"District":"RUSSAS","the_year":2000,"Crop":"Maize","Area_ha":735.861,"Prod_t":1567.737,"Value_R":384327.026},{"distr_id":69,"District":"RUSSAS","the_year":2001,"Crop":"Maize","Area_ha":478.035,"Prod_t":250.81,"Value_R":61485.47},{"distr_id":69,"District":"RUSSAS","the_year":2002,"Crop":"Maize","Area_ha":1629.665,"Prod_t":1303.732,"Value_R":319606.674},{"distr_id":69,"District":"RUSSAS","the_year":2003,"Crop":"Maize","Area_ha":738.781,"Prod_t":451.96,"Value_R":110796.98},{"distr_id":69,"District":"RUSSAS","the_year":2004,"Crop":"Maize","Area_ha":825.697,"Prod_t":222.721,"Value_R":54599.473},{"distr_id":69,"District":"RUSSAS","the_year":2005,"Crop":"Maize","Area_ha":627.964,"Prod_t":451.96,"Value_R":110796.98},{"distr_id":69,"District":"RUSSAS","the_year":1990,"Crop":"Rice","Area_ha":86.915,"Prod_t":434.577,"Value_R":154488.621},{"distr_id":69,"District":"RUSSAS","the_year":1991,"Crop":"Rice","Area_ha":54.322,"Prod_t":217.289,"Value_R":77244.31},{"distr_id":69,"District":"RUSSAS","the_year":1992,"Crop":"Rice","Area_ha":130.373,"Prod_t":782.239,"Value_R":278079.518},{"distr_id":69,"District":"RUSSAS","the_year":1993,"Crop":"Rice","Area_ha":760.51,"Prod_t":4943.316,"Value_R":1757308.066},{"distr_id":69,"District":"RUSSAS","the_year":1994,"Crop":"Rice","Area_ha":760.51,"Prod_t":4563.061,"Value_R":1622130.522},{"distr_id":69,"District":"RUSSAS","the_year":1995,"Crop":"Rice","Area_ha":1097.307,"Prod_t":6540.387,"Value_R":2325053.75},{"distr_id":69,"District":"RUSSAS","the_year":1996,"Crop":"Rice","Area_ha":977.799,"Prod_t":4888.994,"Value_R":1737996.989},{"distr_id":69,"District":"RUSSAS","the_year":1997,"Crop":"Rice","Area_ha":977.799,"Prod_t":5866.792,"Value_R":2085596.387},{"distr_id":69,"District":"RUSSAS","the_year":1998,"Crop":"Rice","Area_ha":869.154,"Prod_t":5214.926,"Value_R":1853863.455},{"distr_id":69,"District":"RUSSAS","the_year":1999,"Crop":"Rice","Area_ha":391.119,"Prod_t":2346.717,"Value_R":834238.554},{"distr_id":69,"District":"RUSSAS","the_year":2000,"Crop":"Rice","Area_ha":543.222,"Prod_t":3259.329,"Value_R":1158664.659},{"distr_id":69,"District":"RUSSAS","the_year":2001,"Crop":"Rice","Area_ha":34.766,"Prod_t":208.597,"Value_R":74154.538},{"distr_id":69,"District":"RUSSAS","the_year":2002,"Crop":"Rice","Area_ha":78.224,"Prod_t":469.343,"Value_R":166847.711},{"distr_id":69,"District":"RUSSAS","the_year":2003,"Crop":"Rice","Area_ha":78.224,"Prod_t":470.43,"Value_R":167233.933},{"distr_id":69,"District":"RUSSAS","the_year":2004,"Crop":"Rice","Area_ha":130.373,"Prod_t":130.373,"Value_R":46346.587},{"distr_id":69,"District":"RUSSAS","the_year":2005,"Crop":"Rice","Area_ha":162.966,"Prod_t":977.799,"Value_R":347599.398}],"pov_rates":[{"d_name":"ABAIARA","distr_id":1,"pov_rate":0.42,"pov_cat":"Medium"},{"d_name":"ACOPIARA","distr_id":2,"pov_rate":0.48,"pov_cat":"High"},{"d_name":"AIUABA","distr_id":3,"pov_rate":0.52,"pov_cat":"High"},{"d_name":"ALTANEIRA","distr_id":4,"pov_rate":0.44,"pov_cat":"Medium"},{"d_name":"ARACATI","distr_id":5,"pov_rate":0.36,"pov_cat":"Medium"},{"d_name":"ANTONINA DO NORTE","distr_id":6,"pov_rate":0.5,"pov_cat":"High"},{"d_name":"ARACATI","distr_id":7,"pov_rate":0.28,"pov_cat":"Low"},{"d_name":"ARARIPE","distr_id":8,"pov_rate":0.47,"pov_cat":"High"},{"d_name":"ARNEIROZ","distr_id":9,"pov_rate":0.51,"pov_cat":"High"},{"d_name":"ASSARE","distr_id":10,"pov_rate":0.49,"pov_cat":"High"},{"d_name":"AURORA","distr_id":11,"pov_rate":0.41,"pov_cat":"Medium"},{"d_name":"BAIXIO","distr_id":12,"pov_rate":0.4,"pov_cat":"Medium"},{"d_name":"BANABUIU","distr_id":13,"pov_rate":0.45,"pov_cat":"Medium"},{"d_name":"BARBALHA","distr_id":14,"pov_rate":0.3,"pov_cat":"Medium"},{"d_name":"BARRO","distr_id":15,"pov_rate":0.43,"pov_cat":"Medium"},{"d_name":"BOA VIAGEM","distr_id":16,"pov_rate":0.5,"pov_cat":"High"},{"d_name":"BREJO SANTO","distr_id":17,"pov_rate":0.38,"pov_cat":"Medium"},{"d_name":"CAMPOS SALES","distr_id":18,"pov_rate":0.51,"pov_cat":"High"},{"d_name":"CARIRIACU","distr_id":19,"pov_rate":0.39,"pov_cat":"Medium"},{"d_name":"CARIUS","distr_id":20,"pov_rate":0.47,"pov_cat":"High"},{"d_name":"CATARINA","distr_id":21,"pov_rate":0.52,"pov_cat":"High"},{"d_name":"CEDRO","distr_id":22,"pov_rate":0.46,"pov_cat":"High"},{"d_name":"CRATO","distr_id":23,"pov_rate":0.29,"pov_cat":"Low"},{"d_name":"DEP. IRAPUAN PINHEIRO","distr_id":24,"pov_rate":0.48,"pov_cat":"High"},{"d_name":"ERERE","distr_id":25,"pov_rate":0.35,"pov_cat":"Medium"},{"d_name":"FARIAS BRITO","distr_id":26,"pov_rate":0.42,"pov_cat":"Medium"},{"d_name":"GRANJEIRO","distr_id":27,"pov_rate":0.41,"pov_cat":"Medium"},{"d_name":"IBICUITINGA","distr_id":28,"pov_rate":0.44,"pov_cat":"Medium"},{"d_name":"ICAPUI","distr_id":29,"pov_rate":0.27,"pov_cat":"Low"},{"d_name":"ICO","distr_id":30,"pov_rate":0.43,"pov_cat":"Medium"},{"d_name":"IGUATU","distr_id":31,"pov_rate":0.37,"pov_cat":"Medium"},{"d_name":"IPAUMIRIM","distr_id":32,"pov_rate":0.4,"pov_cat":"Medium"},{"d_name":"IRACEMA","distr_id":33,"pov_rate":0.36,"pov_cat":"Medium"},{"d_name":"ITAICABA","distr_id":34,"pov_rate":0.33,"pov_cat":"Medium"},{"d_name":"ITATIRA","distr_id":35,"pov_rate":0.47,"pov_cat":"High"},{"d_name":"JAGUARETAMA","distr_id":36,"pov_rate":0.45,"pov_cat":"Medium"},{"d_name":"JAGUARIBARA","distr_id":37,"pov_rate":0.42,"pov_cat":"Medium"},{"d_name":"JAGUARIBE","distr_id":38,"pov_rate":0.4,"pov_cat":"Medium"},{"d_name":"JAGUARUANA","distr_id":39,"pov_rate":0.34,"pov_cat":"Medium"},{"d_name":"JARDIM","distr_id":40,"pov_rate":0.46,"pov_cat":"High"},{"d_name":"JATI","distr_id":41,"pov_rate":0.44,"pov_cat":"Medium"},{"d_name":"JUAZEIRO DO NORTE","distr_id":42,"pov_rate":0.26,"pov_cat":"Low"},{"d_name":"JUCAS","distr_id":43,"pov_rate":0.48,"pov_cat":"High"},{"d_name":"LAVRAS DA MANGABEIRA","distr_id":44,"pov_rate":0.45,"pov_cat":"Medium"},{"d_name":"LIMOEIRO DO NORTE","distr_id":45,"pov_rate":0.31,"pov_cat":"Medium"},{"d_name":"MADALENA","distr_id":46,"pov_rate":0.49,"pov_cat":"High"},{"d_name":"MAURITI","distr_id":47,"pov_rate":0.43,"pov_cat":"Medium"},{"d_name":"MILAGRES","distr_id":48,"pov_rate":0.39,"pov_cat":"Medium"},{"d_name":"MILHA","distr_id":49,"pov_rate":0.46,"pov_cat":"High"},{"d_name":"MISSAO VELHA","distr_id":50,"pov_rate":0.34,"pov_cat":"Medium"},{"d_name":"MOMBACA","distr_id":51,"pov_rate":0.5,"pov_cat":"High"},{"d_name":"MONSENHOR TABOSA","distr_id":52,"pov_rate":0.48,"pov_cat":"High"},{"d_name":"MORADA NOVA","distr_id":53,"pov_rate":0.35,"pov_cat":"Medium"},{"d_name":"NOVA OLINDA","distr_id":54,"pov_rate":0.41,"pov_cat":"Medium"},{"d_name":"OROS","distr_id":55,"pov_rate":0.44,"pov_cat":"Medium"},{"d_name":"PALHANO","distr_id":56,"pov_rate":0.33,"pov_cat":"Medium"},{"d_name":"PARAMBU","distr_id":57,"pov_rate":0.53,"pov_cat":"High"},{"d_name":"PEDRA BRANCA","distr_id":58,"pov_rate":0.49,"pov_cat":"High"},{"d_name":"PENAFORTE","distr_id":59,"pov_rate":0.45,"pov_cat":"Medium"},{"d_name":"PEREIRO","distr_id":60,"pov_rate":0.38,"pov_cat":"Medium"},{"d_name":"PIQUET CARNEIRO","distr_id":61,"pov_rate":0.47,"pov_cat":"High"},{"d_name":"PORTEIRAS","distr_id":62,"pov_rate":0.42,"pov_cat":"Medium"},{"d_name":"POTENGI","distr_id":63,"pov_rate":0.46,"pov_cat":"High"},{"d_name":"POTIRETAMA","distr_id":64,"pov_rate":0.37,"pov_cat":"Medium"},{"d_name":"QUIXADA","distr_id":65,"pov_rate":0.43,"pov_cat":"Medium"},{"d_name":"QUIXELO","distr_id":66,"pov_rate":0.46,"pov_cat":"High"},{"d_name":"QUIXERAMOBIM","distr_id":67,"pov_rate":0.45,"pov_cat":"Medium"},{"d_name":"QUIXERE","distr_id":68,"pov_rate":0.34,"pov_cat":"Medium"},{"d_name":"RUSSAS","distr_id":69,"pov_rate":0.32,"pov_cat":"Medium"},{"d_name":"SABOEIRO","distr_id":70,"pov_rate":0.49,"pov_cat":"High"},{"d_name":"SALITRE","distr_id":71,"pov_rate":0.5,"pov_cat":"High"},{"d_name":"SANTANA DO CARIRI","distr_id":72,"pov_rate":0.47,"pov_cat":"High"},{"d_name":"SAO JOAO DO JAGUARIBE","distr_id":73,"pov_rate":0.36,"pov_cat":"Medium"},{"d_name":"SENADOR POMPEU","distr_id":74,"pov_rate":0.48,"pov_cat":"High"},{"d_name":"SOLONOPOLE","distr_id":75,"pov_rate":0.46,"pov_cat":"High"},{"d_name":"TABULEIRO DO NORTE","distr_id":76,"pov_rate":0.33,"pov_cat":"Medium"},{"d_name":"TARRAFAS","distr_id":77,"pov_rate":0.51,"pov_cat":"High"},{"d_name":"TAUA","distr_id":78,"pov_rate":0.52,"pov_cat":"High"},{"d_name":"UMARI","distr_id":79,"pov_rate":0.41,"pov_cat":"Medium"},{"d_name":"VARZEA ALEGRE","distr_id":80,"pov_rate":0.4,"pov_cat":"Medium"}]};
+const AGRI = _D.agriculture;
+const POV  = _D.pov_rates;
+alasql('DROP TABLE IF EXISTS Agriculture');
+alasql('DROP TABLE IF EXISTS poverty_rates');
+alasql('CREATE TABLE Agriculture');
+alasql('CREATE TABLE poverty_rates');
+alasql.tables.Agriculture.data  = AGRI;
+alasql.tables.poverty_rates.data = POV;
+
+// ── Answer checkers ──────────────────────────────────────────────────────────
+const CHECKS = {
+  '0':  r => r.length > 0 && r.every(x => x.District === 'ARACATI'),
+  '1a': r => r.length > 0 && r.every(x => x.District === 'ARACATI' && x.Crop === 'Rice'),
+  '1b': r => r.length > 0 && r.every(x => x.Crop === 'Rice' || x.Crop === 'Bean') && r.some(x=>x.Crop==='Rice') && r.some(x=>x.Crop==='Bean'),
+  '2a': r => r.length > 0 && r.every(x => x.the_year === 2000),
+  '2b': r => r.length > 0 && r.every(x => x.the_year >= 1995 && x.the_year <= 2000),
+  '3a': r => r.length > 0 && Object.keys(r[0]).some(k => k.toLowerCase()==='yield'),
+  '3b': r => r.length > 0 && Object.keys(r[0]).some(k => k.toLowerCase()==='ec_prod'),
+  '4':  r => r.length > 0 && Object.keys(r[0]).some(k => k.toLowerCase().includes('total')),
+  '5':  r => r.length > 0 && r.every(x => {
+    const tp = x.total_production ?? x.TOTAL_PRODUCTION ?? Object.values(x).find((v,i)=>i>0&&typeof v==='number');
+    return tp > 2000;
+  }),
+  '6a': r => r.length > 0 && Object.keys(r[0]).includes('pov_rate'),
+  '6b': r => r.length > 0 && Object.keys(r[0]).some(k=>k.toLowerCase().includes('total')),
+};
+
+// Which exercises count for main-nav progress (not sub-parts)
+const MAIN_IDS = ['0','1a','2a','3a','4','5','6a'];
+const solved = new Set();
+let chartInstances = {};
+let dvActive = 0;
+
+// ── Formatting helpers ───────────────────────────────────────────────────────
+function fmtVal(col, v) {
+  if (v === null || v === undefined) return '<td style="color:var(--tx3);font-style:italic">NULL</td>';
+  const lc = String(col).toLowerCase();
+  if (col === 'Crop' || col === 'crop') {
+    const cls = {'Rice':'crop-Rice','Maize':'crop-Maize','Bean':'crop-Bean'}[v] || '';
+    return `<td><span class="${cls}">${v}</span></td>`;
+  }
+  if (col === 'pov_cat') {
+    const cls = {'Low':'pov-Low','Medium':'pov-Medium','High':'pov-High'}[v] || '';
+    return `<td><span class="${cls}">${v}</span></td>`;
+  }
+  if (col === 'distr_id' || col === 'distr_id') return `<td class="did">${v}</td>`;
+  if (typeof v === 'number') {
+    const disp = Number.isInteger(v) ? v.toLocaleString() : v.toFixed(2);
+    return `<td class="num">${disp}</td>`;
+  }
+  return `<td>${v}</td>`;
+}
+
+function buildTable(rows, maxRows=200) {
+  if (!rows || !rows.length) return '<div class="no-rows">Query returned 0 rows.</div>';
+  const cols = Object.keys(rows[0]);
+  let h = '<div class="table-wrap"><table><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+  const shown = rows.slice(0, maxRows);
+  shown.forEach(r => { h += '<tr>' + cols.map(c => fmtVal(c, r[c])).join('') + '</tr>'; });
+  h += '</tbody></table></div>';
+  if (rows.length > maxRows) h += `<div style="font-size:11px;color:var(--tx3);padding:6px 4px">Showing ${maxRows} of ${rows.length} rows.</div>`;
+  return h;
+}
+
+// ── Chart helper ──────────────────────────────────────────────────────────────
+function tryChart(key, rows) {
+  const wid = key === 'pg' ? 'chart-pg-wrap' : `chart${key}-wrap`;
+  const cid = key === 'pg' ? 'chart-pg'      : `chart${key}`;
+  const wrap = document.getElementById(wid);
+  if (!wrap || !rows || !rows.length) { if(wrap) wrap.style.display='none'; return; }
+  const cols = Object.keys(rows[0]);
+  const numCols = cols.filter(c => typeof rows[0][c] === 'number');
+  const strCols = cols.filter(c => typeof rows[0][c] === 'string');
+  if (!numCols.length || !strCols.length) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  if (chartInstances[key]) chartInstances[key].destroy();
+  const lc = strCols[0], vc = numCols[numCols.length-1];
+  if (key === 'pg') document.getElementById('chart-pg-ttl').textContent = vc + ' by ' + lc;
+  const pal = ['#4f8ef7','#3ecf8e','#a78bfa','#f5a623','#f7614f','#2dd4bf','#f472b6'];
+  const display = rows.slice(0,25);
+  const ctx = document.getElementById(cid).getContext('2d');
+  chartInstances[key] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: display.map(r=>r[lc]),
+      datasets: [{ data: display.map(r=>r[vc]),
+        backgroundColor: display.map((_,i)=>pal[i%pal.length]+'bb'),
+        borderColor:     display.map((_,i)=>pal[i%pal.length]),
+        borderWidth: 1, borderRadius: 4 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ x:{ticks:{color:'#8b93b0',font:{size:10,family:'IBM Plex Mono'},maxRotation:45},grid:{color:'#2a3050'}},
+               y:{ticks:{color:'#8b93b0',font:{size:10,family:'IBM Plex Mono'}},grid:{color:'#2a3050'}}  } }
+  });
+}
+
+// ── Run query ─────────────────────────────────────────────────────────────────
+function runQ(id) {
+  const qel = document.getElementById(id==='pg'?'q-pg':`q${id}`);
+  const out  = document.getElementById(id==='pg'?'res-pg':`res${id}`);
+  if (!qel || !out) return;
+  const q = qel.value.trim();
+  if (!q) { out.innerHTML='<div class="error-box">Please write a query first.</div>'; return; }
+  try {
+    const rows = alasql(q);
+    if (!Array.isArray(rows)) { out.innerHTML='<div class="result-meta"><span class="verdict ok">Query executed.</span></div>'; return; }
+    let verdict = '';
+    if (CHECKS[id]) {
+      const ok = CHECKS[id](rows);
+      verdict = ok
+        ? '<span class="verdict ok">✓ Correct!</span>'
+        : '<span class="verdict no">✗ Not quite — check your conditions</span>';
+      if (ok && !solved.has(id)) { solved.add(id); markSolved(id); }
+    }
+    out.innerHTML = `<div class="result-meta"><span style="font-family:var(--mono);font-size:12px">${rows.length} row${rows.length!==1?'s':''} returned</span>${verdict}</div>` + buildTable(rows);
+    if (id==='4' || id==='pg') tryChart(id==='4'?4:'pg', rows);
+  } catch(e) {
+    out.innerHTML = `<div class="error-box">${e.message}</div>`;
+  }
+}
+
+// ── Progress ──────────────────────────────────────────────────────────────────
+function markSolved(id) {
+  // map sub-ids to main nav
+  const navMap = {'0':'0','1a':'1','1b':'1','2a':'2','2b':'2','3a':'3','3b':'3','4':'4','5':'5','6a':'6','6b':'6'};
+  const navId = navMap[id];
+  if (navId) {
+    const dot = document.getElementById(`st${navId}`);
+    const nav = document.getElementById(`nav-${navId}`);
+    if (dot) { dot.style.background='var(--gn)'; dot.style.boxShadow='0 0 5px var(--gn)'; }
+    if (nav) nav.classList.add('done');
+  }
+  // count unique main exercises solved
+  const mainSolved = new Set([...solved].map(id => ({0:'0',1:'0','1a':'1','1b':'1','2a':'2','2b':'2','3a':'3','3b':'3',4:'4',5:'5','6a':'6','6b':'6'})[id]||id));
+  const n = mainSolved.size;
+  document.getElementById('prog-lbl').textContent = n + ' / 7';
+  document.getElementById('prog-fill').style.width = (n/7*100) + '%';
+}
+
+// ── Nav / UI ──────────────────────────────────────────────────────────────────
+function toggleHint(id) { document.getElementById(`hint${id}`).classList.toggle('show'); }
+function toggleSol(id)  { document.getElementById(`sol${id}`).classList.toggle('show');  }
+
+function switchEx(id) {
+  document.querySelectorAll('.ex').forEach(e => e.classList.remove('visible'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const exId  = `ex-${id}`;
+  const navId = `nav-${id}`;
+  const exEl  = document.getElementById(exId);
+  const navEl = document.getElementById(navId);
+  if (exEl)  exEl.classList.add('visible');
+  if (navEl) navEl.classList.add('active');
+  if (id === 'dv') dvRender();
+}
+
+// ── Data viewer ───────────────────────────────────────────────────────────────
+function dvSwitch(i) {
+  dvActive = i;
+  document.getElementById('dv-search').value = '';
+  document.querySelectorAll('.dv-tab').forEach((t,j) => t.classList.toggle('active', i===j));
+  dvRender();
+}
+
+function dvRender() {
+  const q    = document.getElementById('dv-search').value.toLowerCase();
+  const data = dvActive === 0 ? AGRI : POV;
+  const filt = q ? data.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q))) : data;
+  document.getElementById('dv-cnt').textContent = filt.length + ' / ' + data.length + ' rows';
+  document.getElementById('dv-table').innerHTML = buildTable(filt, 150);
+}
+
+function fillPG(q) { document.getElementById('q-pg').value = q; }
+
+// ── Init: show ex-0 ───────────────────────────────────────────────────────────
+document.getElementById('ex-0').classList.add('visible');
+</script>
+</body>
+</html>
