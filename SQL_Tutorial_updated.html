@@ -198,8 +198,9 @@ tbody td{padding:6px 11px;color:var(--tx);}
     <div class="nav-item" id="nav-2" onclick="switchEx(2)"><span>Range Operators</span><span class="nb">03</span><span class="nav-dot" id="st2"></span></div>
     <div class="nav-item" id="nav-3" onclick="switchEx(3)"><span>Creating new fields</span><span class="nb">04</span><span class="nav-dot" id="st3"></span></div>
     <div class="nav-item" id="nav-4" onclick="switchEx(4)"><span>GROUP BY</span><span class="nb">05</span><span class="nav-dot" id="st4"></span></div>
-    <div class="nav-item" id="nav-5" onclick="switchEx(5)"><span>HAVING</span><span class="nb">06</span><span class="nav-dot" id="st5"></span></div>
-    <div class="nav-item" id="nav-6" onclick="switchEx(6)"><span>JOIN</span><span class="nb">07</span><span class="nav-dot" id="st6"></span></div>
+    <div class="nav-item" id="nav-4b" onclick="switchEx('4b')"><span>Filter + Group</span><span class="nb">06</span><span class="nav-dot" id="st4b"></span></div>
+    <div class="nav-item" id="nav-5" onclick="switchEx(5)"><span>HAVING</span><span class="nb">07</span><span class="nav-dot" id="st5"></span></div>
+    <div class="nav-item" id="nav-6" onclick="switchEx(6)"><span>JOIN</span><span class="nb">08</span><span class="nav-dot" id="st6"></span></div>
   </div>
   <div class="nav-section">
     <div class="nav-label">Tools</div>
@@ -217,8 +218,8 @@ tbody td{padding:6px 11px;color:var(--tx);}
   <div class="ex-title">Explore the tables</div>
   <div class="ex-desc">Browse both tables before writing queries. Use the search box to filter rows.</div>
   <div class="dv-tabs">
-    <button class="dv-tab active" onclick="dvSwitch(0)">Agriculture <span style="opacity:.5;font-size:10px">(3840 rows)</span></button>
-    <button class="dv-tab" onclick="dvSwitch(1)">poverty_rates <span style="opacity:.5;font-size:10px">(80 rows)</span></button>
+    <button class="dv-tab active" onclick="dvSwitch(0)">Agriculture <span style="opacity:.5;font-size:10px">(384 rows)</span></button>
+    <button class="dv-tab" onclick="dvSwitch(1)">pov_M2 <span style="opacity:.5;font-size:10px">(80 rows)</span></button>
   </div>
   <div class="dv-search">
     <input type="text" id="dv-search" placeholder="Search…" oninput="dvRender()">
@@ -227,10 +228,10 @@ tbody td{padding:6px 11px;color:var(--tx);}
   <div id="dv-table"></div>
 </div>
 <div class="ex" id="ex-0">
-  <div class="ex-tag">01 . Fitering</div>
+  <div class="ex-tag">01 . Filtering</div>
   <div class="ex-title">Filter rows with WHERE</div>
-  <div class="ex-desc"><strong>WHERE</strong>  filters individual rows based on specified conditions.</div>
-  <div class="schema-row">
+  <div class="ex-desc"><strong>WHERE</strong> filters individual rows based on specified conditions.</div>
+<div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
     <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
@@ -242,15 +243,13 @@ tbody td{padding:6px 11px;color:var(--tx);}
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
 </div>
-
-  <div class="ex-desc">Return all rows from <code>Agriculture</code> where District is ARACATI.</div>
-
-  <div class="hint-box" id="hint0">Use WHERE with single quotes around the text value: <code>WHERE District = &#39;ARACATI&#39;</code></div>
+  <div class="ex-desc">Show all production data for district <strong>JAGUARUANA</strong>.</div>
+  <div class="hint-box" id="hint0">Use WHERE with single quotes around the text value: <code>WHERE District = &#39;JAGUARUANA&#39;</code></div>
   <div class="sol-box" id="sol0"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
-<span class='kw'>WHERE</span> District = <span class='val'>'ARACATI'</span>;</div>
+<span class='kw'>WHERE</span> District = <span class='val'>'JAGUARUANA'</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
-  <textarea class="sql-input" id="q0" style="min-height:132px" placeholder="SELECT  ___ 
+  <textarea class="sql-input" id="q0" placeholder="SELECT  ___
 FROM  ___
 WHERE  ___"></textarea></div>
   <div class="btn-row">
@@ -258,14 +257,13 @@ WHERE  ___"></textarea></div>
     <button class="btn btn-hint" onclick="toggleHint('0')">Hint</button>
     <button class="btn btn-sol" onclick="toggleSol('0')">Solution</button>
   </div>
-
   <div id="res0"></div>
 </div>
 <div class="ex" id="ex-1">
-  <div class="ex-tag">02 . Filtering with operators</div>
+  <div class="ex-tag">02 . Filtering with logical operators</div>
   <div class="ex-title">Filtering with logical operators — AND / OR</div>
-  <div class="ex-desc">Combine multiple conditions with <strong>AND</strong> (both must be true) or <strong>OR </strong>(either can be true).</div>
-  <div class="schema-row">
+  <div class="ex-desc">Combine multiple conditions with <strong>AND</strong> (both must be true) or <strong>OR</strong> (either can be true).</div>
+<div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
     <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
@@ -277,15 +275,15 @@ WHERE  ___"></textarea></div>
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
 </div>
- <div class="sub-label">2a · AND — Rice in ARACATI</div>
- <div class="ex-desc">Return all rows from <code>Agriculture</code> where the district  is ARACATI and the crop is Rice</div>
+  <div class="sub-label">2a · AND — Rice in JAGUARUANA</div>
+  <div class="ex-desc">Show production data for <strong>Rice</strong> in district <strong>JAGUARUANA</strong>.</div>
   <div class="hint-box" id="hint1a">List both conditions joined by AND. Text values need quotes.</div>
   <div class="sol-box" id="sol1a"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
-<span class='kw'>WHERE</span> District = <span class='val'>'ARACATI'</span>
+<span class='kw'>WHERE</span> District = <span class='val'>'JAGUARUANA'</span>
   <span class='kw'>AND</span> Crop = <span class='val'>'Rice'</span>;</div>
-  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_and.sql</span></div>
-  <textarea class="sql-input" id="q1a"  placeholder="SELECT  ___ 
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q1a" placeholder="SELECT  ___
 FROM  ___
 WHERE  ___ AND  ___"></textarea></div>
   <div class="btn-row">
@@ -296,32 +294,29 @@ WHERE  ___ AND  ___"></textarea></div>
   <div id="res1a"></div>
 
   <div class="sub-label">2b · OR — Rice OR Bean (all districts)</div>
-   <div class="ex-desc">Return all rows (all districts) from <code>Agriculture</code> for Rice as well as for Beans </div>
-  <div class="sub-label">2a · AND — Rice in ARACATI</div>
+  <div class="ex-desc">Show production for <strong>Rice</strong> as well as for <strong>Bean</strong> (all districts).</div>
   <div class="hint-box" id="hint1b">Use OR between two conditions on the same column: <code>Crop = &#39;Rice&#39; OR Crop = &#39;Bean&#39;</code></div>
   <div class="sol-box" id="sol1b"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> Crop = <span class='val'>'Rice'</span>
    <span class='kw'>OR</span> Crop = <span class='val'>'Bean'</span>;</div>
-  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_or.sql</span></div>
-  <textarea class="sql-input" id="q1b" placeholder="SELECT  ___ 
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q1b" placeholder="SELECT  ___
 FROM  ___
-WHERE  ___ "></textarea></div>
+WHERE  ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('1b')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('1b')">Hint</button>
     <button class="btn btn-sol" onclick="toggleSol('1b')">Solution</button>
   </div>
   <div id="res1b"></div>
-
   <div id="res1"></div>
 </div>
 <div class="ex" id="ex-2">
-  <div class="ex-tag">03 . Tuto</div>
+  <div class="ex-tag">03 . Filtering with operators</div>
   <div class="ex-title">Range operators — = and BETWEEN</div>
   <div class="ex-desc">Filter rows by numeric values using equality <code>=</code> or a range with <code>BETWEEN … AND …</code>.</div>
-
-  <div class="schema-row">
+<div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
     <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
@@ -333,18 +328,16 @@ WHERE  ___ "></textarea></div>
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
 </div>
-
-<div class="sub-label">3a · Exact year — year 2000</div>
-   <div class="ex-desc">Return all rows from <code>Agriculture</code> for  the year 2000</div>
-
-  <div class="hint-box" id="hint2a">Numbers don't need quotes: <code>WHERE the_year = 2000</code></div>
+  <div class="sub-label">3a · Exact year — year 2000</div>
+  <div class="ex-desc">Show all production data for the year <strong>2000</strong>.</div>
+  <div class="hint-box" id="hint2a">Numbers don&#39;t need quotes: <code>WHERE the_year = 2000</code></div>
   <div class="sol-box" id="sol2a"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> the_year = <span class='val'>2000</span>;</div>
-  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_year.sql</span></div>
-  <textarea class="sql-input" id="q2a" placeholder="SELECT  ___ 
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q2a" placeholder="SELECT  ___
 FROM  ___
-WHERE  ___ "></textarea></div>
+WHERE  ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('2a')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('2a')">Hint</button>
@@ -353,30 +346,27 @@ WHERE  ___ "></textarea></div>
   <div id="res2a"></div>
 
   <div class="sub-label">3b · Year range — 1995 to 2000</div>
-  <div class="ex-desc">Return all rows from <code>Agriculture</code> between 1995 and 2000</div>
-
-  <div class="hint-box" id="hint2b"> use BETWEEN: <code>WHERE the_year BETWEEN 1995 AND 2000</code></div>
+  <div class="ex-desc">Show all production data <strong>between 1995 and 2000</strong> (inclusive).</div>
+  <div class="hint-box" id="hint2b">Use BETWEEN: <code>WHERE the_year BETWEEN 1995 AND 2000</code></div>
   <div class="sol-box" id="sol2b"><span class='kw'>SELECT</span> *
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> the_year <span class='kw'>BETWEEN</span> <span class='val'>1995</span> <span class='kw'>AND</span> <span class='val'>2000</span>;</div>
-  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_range.sql</span></div>
-  <textarea class="sql-input" id="q2b" placeholder="SELECT  ___ 
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q2b" placeholder="SELECT  ___
 FROM  ___
-WHERE  ___ "></textarea></div>
+WHERE  ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('2b')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('2b')">Hint</button>
     <button class="btn btn-sol" onclick="toggleSol('2b')">Solution</button>
   </div>
   <div id="res2b"></div>
-
   <div id="res2"></div>
 </div>
 <div class="ex" id="ex-3">
   <div class="ex-tag">04 . New fields</div>
   <div class="ex-title">Computing new variables</div>
-
-  <div class="schema-row">
+<div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
     <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
@@ -388,20 +378,15 @@ WHERE  ___ "></textarea></div>
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
 </div>
-
-<div class="sub-label">4a · Land productivity — yield (Prod_t / Area_ha)</div>
-<div class="ex-desc">Calculate <strong>yields</strong> (defined as  Production /  surface)  in the table <code>Agriculture</code></div>
-<div class="ex-desc"> <i>Hint</i>:  <strong>Area_ha</strong> (surface) has to be positive! </div>
-
-  <div class="hint-box" id="hint3a">Divide two columns with /: <code>Prod_t / Area_ha AS yield</code>. Add a WHERE to skip zero-area rows.</div>
+  <div class="sub-label">4a · Land productivity — yield (Prod_t / Area_ha)</div>
+  <div class="ex-desc">Calculate <strong>yield</strong> (production ÷ area) as a new column. Use <code>IIF(Area_ha &gt; 0, Prod_t / Area_ha, 0)</code> to avoid division by zero.</div>
+  <div class="hint-box" id="hint3a">Use IIF to guard against zero area: <code>IIF(Area_ha &gt; 0, Prod_t/Area_ha, 0) AS yield</code></div>
   <div class="sol-box" id="sol3a"><span class='kw'>SELECT</span> District, the_year, Crop,
-       Prod_t / Area_ha <span class='kw'>AS</span> yield
-<span class='kw'>FROM</span> Agriculture
-<span class='kw'>WHERE</span> Area_ha > <span class='val'>0</span>;</div>
-  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_yield.sql</span></div>
-  <textarea class="sql-input" id="q3a" placeholder="SELECT  ___ 
-FROM  ___
-WHERE  ___ "></textarea></div>
+       <span class='fn'>IIF</span>(Area_ha > <span class='val'>0</span>, Prod_t / Area_ha, <span class='val'>0</span>) <span class='kw'>AS</span> yield
+<span class='kw'>FROM</span> Agriculture;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q3a" placeholder="SELECT  ___
+FROM  ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('3a')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('3a')">Hint</button>
@@ -410,19 +395,14 @@ WHERE  ___ "></textarea></div>
   <div id="res3a"></div>
 
   <div class="sub-label">4b · Economic productivity — value per hectare (Value_R / Area_ha)</div>
-<div class="ex-desc">Calculate <strong>Productivity</strong> (defined as  Value /  surface)  in the table <code>Agriculture</code></div>
-<div class="ex-desc"> <strong>Area_ha</strong> (surface) has to be positive! </div>
-
-
-  <div class="hint-box" id="hint3b">Same pattern as 4a but divide Value_R by Area_ha.</div>
+  <div class="ex-desc">Calculate <strong>economic productivity</strong> (value ÷ area) as a new column. Again guard against zero area.</div>
+  <div class="hint-box" id="hint3b">Same pattern as 4a but divide Value_R by Area_ha: <code>IIF(Area_ha &gt; 0, Value_R/Area_ha, 0) AS ec_prod</code></div>
   <div class="sol-box" id="sol3b"><span class='kw'>SELECT</span> District, the_year, Crop,
-       Value_R / Area_ha <span class='kw'>AS</span> ec_prod
-<span class='kw'>FROM</span> Agriculture
-<span class='kw'>WHERE</span> Area_ha > <span class='val'>0</span>;</div>
-  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_ec_prod.sql</span></div>
-  <textarea class="sql-input" id="q3b" placeholder="SELECT  ___ 
-FROM  ___
-WHERE  ___ "></textarea></div>
+       <span class='fn'>IIF</span>(Area_ha > <span class='val'>0</span>, Value_R / Area_ha, <span class='val'>0</span>) <span class='kw'>AS</span> ec_prod
+<span class='kw'>FROM</span> Agriculture;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q3b" placeholder="SELECT  ___
+FROM  ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('3b')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('3b')">Hint</button>
@@ -434,9 +414,8 @@ WHERE  ___ "></textarea></div>
 <div class="ex" id="ex-4">
   <div class="ex-tag">05 . Group by</div>
   <div class="ex-title">Aggregation with GROUP BY</div>
-  <div class="ex-desc"> <code>GROUP_BY</code> operates on each category (modality) of the specified variable. The output contains one row for each category. </div>
-
-  <div class="schema-row">
+  <div class="ex-desc"><code>GROUP BY</code> collapses rows into one per category and lets you apply aggregate functions like <code>SUM</code> or <code>AVG</code>.</div>
+<div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
     <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
@@ -448,39 +427,31 @@ WHERE  ___ "></textarea></div>
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
 </div>
-
-<div class="ex-desc">Compute <strong>total production </strong> for each district for the year 2000 in the table <code>Agriculture</code>. 
-</div>
-<div class="ex-desc"> <i>Hint</i>: Filter first with <strong>WHERE,</strong> then group and sum.</div>
-
-
-  <div class="hint-box" id="hint4">Use WHERE to filter the year first, then GROUP BY District. In the WHERE, use SUM(Prod_t) AS total_production.</div>
+  <div class="ex-desc">Show <strong>total agricultural production per district</strong> (all years combined).</div>
+  <div class="hint-box" id="hint4">Use SUM(Prod_t) AS total_prod and GROUP BY distr_id, District.</div>
   <div class="sol-box" id="sol4"><span class='kw'>SELECT</span> distr_id, District,
-       <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_production
+       <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_prod
 <span class='kw'>FROM</span> Agriculture
-<span class='kw'>WHERE</span> the_year = <span class='val'>2000</span>
 <span class='kw'>GROUP BY</span> distr_id, District;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
-  <textarea class="sql-input" id="q4" style="min-height:132px" placeholder="SELECT  ___ 
+  <textarea class="sql-input" id="q4" style="min-height:132px" placeholder="SELECT  ___
 FROM  ___
-WHERE  ___ 
-GROUP_BY  ___ "></textarea></div>
+GROUP BY  ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('4')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('4')">Hint</button>
     <button class="btn btn-sol" onclick="toggleSol('4')">Solution</button>
   </div>
-  <div id="chart4-wrap" style="display:none">
-  <div class="chart-wrap"><div class="chart-ttl">Total production by district — year 2000</div>
-  <div class="chart-container"><canvas id="chart4"></canvas></div></div></div>
   <div id="res4"></div>
+  <div id="chart4-wrap" style="display:none">
+  <div class="chart-wrap"><div class="chart-ttl">Total production by district</div>
+  <div class="chart-container"><canvas id="chart4"></canvas></div></div></div>
 </div>
-<div class="ex" id="ex-5">
-  <div class="ex-tag">06 . Conditions after a group_by</div>
-  <div class="ex-title">Filtering groups with HAVING</div>
-  <div class="ex-desc"><strong>HAVING</strong> filters aggregated results, allowing you to apply conditions on groups after a <strong>GROUP BY</strong> clause.</div>
-
-  <div class="schema-row">
+<div class="ex" id="ex-4b">
+  <div class="ex-tag">06 . Filtering and grouping</div>
+  <div class="ex-title">Filtering and grouping</div>
+  <div class="ex-desc">Combine <strong>WHERE</strong> (filter rows first) with <strong>GROUP BY</strong> (then aggregate).</div>
+<div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
     <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
@@ -492,38 +463,70 @@ GROUP_BY  ___ "></textarea></div>
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
 </div>
-
-  <div class="ex-desc">Show districts with <strong>total_production</strong>   greater than 2000 t in year 2000. </div>
-   <div class="ex-desc"><i>Hint:</i> HAVING filters <em>after</em> grouping — WHERE runs before. </div>
-
-
-  <div class="hint-box" id="hint5">Add HAVING SUM(Prod_t) > 2000 after GROUP BY. HAVING works on aggregated values; WHERE does not.</div>
-  <div class="sol-box" id="sol5"><span class='kw'>SELECT</span> District,
-       <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_production
+  <div class="ex-desc">Show <strong>total agricultural production per district in the year 2000</strong>.</div>
+  <div class="hint-box" id="hint4b">Filter with WHERE the_year = 2000 first, then GROUP BY distr_id, District, the_year.</div>
+  <div class="sol-box" id="sol4b"><span class='kw'>SELECT</span> distr_id, District, the_year,
+       <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_prod
 <span class='kw'>FROM</span> Agriculture
 <span class='kw'>WHERE</span> the_year = <span class='val'>2000</span>
-<span class='kw'>GROUP BY</span> District
+<span class='kw'>GROUP BY</span> distr_id, District, the_year;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q4b" style="min-height:150px" placeholder="SELECT  ___
+FROM  ___
+WHERE  ___
+GROUP BY  ___"></textarea></div>
+  <div class="btn-row">
+    <button class="btn btn-run" onclick="runQ('4b')">&#9654; Run</button>
+    <button class="btn btn-hint" onclick="toggleHint('4b')">Hint</button>
+    <button class="btn btn-sol" onclick="toggleSol('4b')">Solution</button>
+  </div>
+  <div id="res4b"></div>
+  <div id="chart4b-wrap" style="display:none">
+  <div class="chart-wrap"><div class="chart-ttl">Total production by district — year 2000</div>
+  <div class="chart-container"><canvas id="chart4b"></canvas></div></div></div>
+</div>
+<div class="ex" id="ex-5">
+  <div class="ex-tag">07 . Filtering, grouping, and filtering again</div>
+  <div class="ex-title">Filtering groups with HAVING</div>
+  <div class="ex-desc"><strong>HAVING</strong> filters <em>after</em> grouping — use it to keep only groups that meet an aggregate condition. <strong>WHERE</strong> runs before grouping.</div>
+<div class="schema-row">
+  <div class="schema-card">
+    <div class="schema-name">Agriculture</div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">District</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">the_year</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">Crop</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">Area_ha</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Prod_t</span><span class="ct">decimal</span></div>
+    <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
+  </div>
+</div>
+  <div class="ex-desc">Show districts with <strong>total production greater than 4000 t</strong> in year 2000.</div>
+  <div class="hint-box" id="hint5">Add HAVING SUM(Prod_t) &gt; 4000 after GROUP BY. Remember: HAVING works on aggregated values; WHERE does not.</div>
+  <div class="sol-box" id="sol5"><span class='kw'>SELECT</span> distr_id, District, the_year,
+       <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_prod
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>WHERE</span> the_year = <span class='val'>2000</span>
+<span class='kw'>GROUP BY</span> distr_id, District, the_year
 <span class='kw'>HAVING</span> <span class='fn'>SUM</span>(Prod_t) > <span class='val'>4000</span>;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
-  <textarea class="sql-input" id="q5" style="min-height:150px" placeholder="SELECT  ___ 
+  <textarea class="sql-input" id="q5" style="min-height:168px" placeholder="SELECT  ___
 FROM  ___
-WHERE  ___ 
-GROUP_BY  ___
+WHERE  ___
+GROUP BY  ___
 HAVING ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('5')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('5')">Hint</button>
     <button class="btn btn-sol" onclick="toggleSol('5')">Solution</button>
   </div>
-
   <div id="res5"></div>
 </div>
 <div class="ex" id="ex-6">
-  <div class="ex-tag">07 . Joining two tables</div>
+  <div class="ex-tag">08 . Joining two tables</div>
   <div class="ex-title">Combining tables with JOIN</div>
-  <div class="ex-desc">JOIN links two tables on a shared key. Here <strong>distr_id</strong> from the table <code>Agriculture</code> matches <strong>distr_id</strong> from the <code>poverty_rates</code> table.</div>
-
-  <div class="schema-row">
+  <div class="ex-desc">List both tables in <code>FROM</code> and link them in <code>WHERE</code> using their shared key: <strong>distr_id</strong> (Agriculture) = <strong>d_ID</strong> (pov_M2).</div>
+<div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
     <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
@@ -535,28 +538,24 @@ HAVING ___"></textarea></div>
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
   <div class="schema-card">
-    <div class="schema-name">poverty_rates</div>
-    <div class="sc"><span class="cn">distr_name</span><span class="ct">text</span></div>
-    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
+    <div class="schema-name">pov_M2</div>
+    <div class="sc"><span class="cn">d_name</span><span class="ct">text</span></div>
+    <div class="sc"><span class="cn">d_ID</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">pov_rate</span><span class="ct">decimal</span></div>
     <div class="sc"><span class="cn">pov_cat</span><span class="ct">text</span></div>
   </div>
 </div>
 
-  <div class="sub-label">7a · Full join — all production data with poverty rates</div>
-  <div class="ex-desc">Show all production data together from <code>Agriculture</code>  with poverty rates from table <code>poverty rate</code> </div>
-  <div class="ex-desc"><i>Hint</i>: Use the key variable  <strong>distr_id</strong>  from the table <code>Agriculture</code>  and  <strong>distr_id</strong> from the table <code>poverty rate</code> </div>
-
-  <div class="hint-box" id="hint6a">Use JOIN … ON to specify the key: <code>A.distr_id = P.distr_id</code>. Use aliases A and P for readability.</div>
+  <div class="sub-label">8a · Full join — all production data with poverty rates</div>
+  <div class="ex-desc">Show all production data from <code>Agriculture</code> together with poverty rates from <code>pov_M2</code>.</div>
+  <div class="hint-box" id="hint6a">List both tables in FROM separated by a comma, then link them in WHERE: <code>WHERE distr_id = d_ID</code></div>
   <div class="sol-box" id="sol6a"><span class='kw'>SELECT</span> *
-<span class='kw'>FROM</span> Agriculture <span class='kw'>AS</span> A
-<span class='kw'>JOIN</span> poverty_rates <span class='kw'>AS</span> P
-  <span class='kw'>ON</span> A.distr_id = P.distr_id;</div>
-  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_join.sql</span></div>
-  <textarea class="sql-input" id="q6a" placeholder="SELECT  ___ 
-FROM  ___
-JOIN  ___
-ON ___"></textarea></div>
+<span class='kw'>FROM</span> Agriculture, pov_M2
+<span class='kw'>WHERE</span> distr_id = d_ID;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q6a" placeholder="SELECT  ___
+FROM  ___, ___
+WHERE  ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('6a')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('6a')">Hint</button>
@@ -564,26 +563,21 @@ ON ___"></textarea></div>
   </div>
   <div id="res6a"></div>
 
-  <div class="sub-label">7b · JOIN + WHERE + GROUP BY — high-poverty districts in 2000</div>
-  <div class="ex-desc">Compute <strong>total_production</strong>  in the year 2000 in districts with pov_rate &lt; 0.33 </div>
-
-
-  <div class="hint-box" id="hint6b">Join first, then filter with WHERE on both year and pov_rate, then GROUP BY district to sum production.</div>
-  <div class="sol-box" id="sol6b"><span class='kw'>SELECT</span> A.District,
-       <span class='fn'>SUM</span>(A.Prod_t) <span class='kw'>AS</span> total_production
-<span class='kw'>FROM</span> Agriculture <span class='kw'>AS</span> A
-<span class='kw'>JOIN</span> poverty_rates <span class='kw'>AS</span> P
-  <span class='kw'>ON</span> A.distr_id = P.distr_id
-<span class='kw'>WHERE</span> A.the_year = <span class='val'>2000</span>
-  <span class='kw'>AND</span> P.pov_rate > <span class='val'>0.45</span>
-<span class='kw'>GROUP BY</span> A.District;</div>
-  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query_join_filter.sql</span></div>
-  <textarea class="sql-input" id="q6b" style="min-height:144px" placeholder="SELECT  ___ 
-FROM  ___
-JOIN  ___
-ON ___
-WHERE ___
-GROUP_BY ____"></textarea></div>
+  <div class="sub-label">8b · JOIN + WHERE + GROUP BY — low-poverty districts in 2000</div>
+  <div class="ex-desc">Show <strong>total production in 2000</strong> for districts with <strong>pov_rate &lt; 0.3</strong>.</div>
+  <div class="hint-box" id="hint6b">Join the two tables, filter with AND for the year and pov_rate, then GROUP BY distr_id, District, the_year.</div>
+  <div class="sol-box" id="sol6b"><span class='kw'>SELECT</span> distr_id, District, the_year,
+       <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_prod
+<span class='kw'>FROM</span> Agriculture, pov_M2
+<span class='kw'>WHERE</span> distr_id = d_ID
+  <span class='kw'>AND</span> the_year = <span class='val'>2000</span>
+  <span class='kw'>AND</span> pov_rate < <span class='val'>0.3</span>
+<span class='kw'>GROUP BY</span> distr_id, District, the_year;</div>
+  <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
+  <textarea class="sql-input" id="q6b" style="min-height:168px" placeholder="SELECT  ___
+FROM  ___, ___
+WHERE  ___
+GROUP BY ___"></textarea></div>
   <div class="btn-row">
     <button class="btn btn-run" onclick="runQ('6b')">&#9654; Run</button>
     <button class="btn btn-hint" onclick="toggleHint('6b')">Hint</button>
@@ -608,7 +602,7 @@ GROUP_BY ____"></textarea></div>
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
   <div class="schema-card">
-    <div class="schema-name">poverty_rates</div>
+    <div class="schema-name">pov_M2</div>
     <div class="sc"><span class="cn">distr_name</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">pov_rate</span><span class="ct">decimal</span></div>
@@ -617,7 +611,7 @@ GROUP_BY ____"></textarea></div>
 </div>
   <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
     <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT District, Crop, the_year,\n       Prod_t / Area_ha AS yield\nFROM Agriculture\nWHERE Area_ha > 0\nORDER BY yield DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Top yields</div>SELECT District, Crop, the_year, Prod_t/Area_ha AS yield FROM Agriculture WHERE Area_ha > 0 ORDER BY yield DESC;</div>
-    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT A.District, P.pov_cat,\n       SUM(A.Prod_t) AS total_prod\nFROM Agriculture AS A\nJOIN poverty_rates AS P ON A.distr_id = P.distr_id\nWHERE A.the_year BETWEEN 1995 AND 2000\nGROUP BY A.District, P.pov_cat\nORDER BY total_prod DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Production by poverty category (1995–2000)</div>SELECT A.District, P.pov_cat, SUM(A.Prod_t) AS total_prod FROM Agriculture AS A JOIN poverty_rates ...</div>
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT A.District, P.pov_cat,\n       SUM(A.Prod_t) AS total_prod\nFROM Agriculture AS A\nJOIN pov_M2 AS P ON A.distr_id = P.distr_id\nWHERE A.the_year BETWEEN 1995 AND 2000\nGROUP BY A.District, P.pov_cat\nORDER BY total_prod DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Production by poverty category (1995–2000)</div>SELECT A.District, P.pov_cat, SUM(A.Prod_t) AS total_prod FROM Agriculture AS A JOIN pov_M2 ...</div>
     <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT Crop, SUM(Prod_t) AS total_prod\nFROM Agriculture\nGROUP BY Crop\nORDER BY total_prod DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Total production by crop (all years)</div>SELECT Crop, SUM(Prod_t) AS total_prod FROM Agriculture GROUP BY Crop ORDER BY total_prod DESC;</div>
   </div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
@@ -637,32 +631,33 @@ const _D = {"agriculture":[{"distr_id":7,"District":"ARACATI","the_year":1990,"C
 const AGRI = _D.agriculture;
 const POV  = _D.pov_rates;
 alasql('DROP TABLE IF EXISTS Agriculture');
-alasql('DROP TABLE IF EXISTS poverty_rates');
+alasql('DROP TABLE IF EXISTS pov_M2');
 alasql('CREATE TABLE Agriculture');
-alasql('CREATE TABLE poverty_rates');
+alasql('CREATE TABLE pov_M2');
 alasql.tables.Agriculture.data  = AGRI;
-alasql.tables.poverty_rates.data = POV;
+alasql.tables.pov_M2.data = POV;
 
 // ── Answer checkers ──────────────────────────────────────────────────────────
 const CHECKS = {
-  '0':  r => r.length > 0 && r.every(x => x.District === 'ARACATI'),
-  '1a': r => r.length > 0 && r.every(x => x.District === 'ARACATI' && x.Crop === 'Rice'),
+  '0':  r => r.length > 0 && r.every(x => x.District === 'JAGUARUANA'),
+  '1a': r => r.length > 0 && r.every(x => x.District === 'JAGUARUANA' && x.Crop === 'Rice'),
   '1b': r => r.length > 0 && r.every(x => x.Crop === 'Rice' || x.Crop === 'Bean') && r.some(x=>x.Crop==='Rice') && r.some(x=>x.Crop==='Bean'),
   '2a': r => r.length > 0 && r.every(x => x.the_year === 2000),
   '2b': r => r.length > 0 && r.every(x => x.the_year >= 1995 && x.the_year <= 2000),
   '3a': r => r.length > 0 && Object.keys(r[0]).some(k => k.toLowerCase()==='yield'),
   '3b': r => r.length > 0 && Object.keys(r[0]).some(k => k.toLowerCase()==='ec_prod'),
   '4':  r => r.length > 0 && Object.keys(r[0]).some(k => k.toLowerCase().includes('total')),
+  '4b': r => r.length > 0 && Object.keys(r[0]).some(k => k.toLowerCase().includes('total')) && r.every(x => x.the_year === 2000),
   '5':  r => r.length > 0 && r.every(x => {
-    const tp = x.total_production ?? x.TOTAL_PRODUCTION ?? Object.values(x).find((v,i)=>i>0&&typeof v==='number');
-    return tp > 2000;
+    const tp = x.total_prod ?? x.TOTAL_PROD ?? Object.values(x).find((v,i)=>i>2&&typeof v==='number');
+    return tp > 4000;
   }),
-  '6a': r => r.length > 0 && Object.keys(r[0]).includes('pov_rate'),
+  '6a': r => r.length > 0 && Object.keys(r[0]).some(k=>k.toLowerCase().includes('pov')),
   '6b': r => r.length > 0 && Object.keys(r[0]).some(k=>k.toLowerCase().includes('total')),
 };
 
 // Which exercises count for main-nav progress (not sub-parts)
-const MAIN_IDS = ['0','1a','2a','3a','4','5','6a'];
+const MAIN_IDS = ['0','1a','2a','3a','4','4b','5','6a'];
 const solved = new Set();
 let chartInstances = {};
 let dvActive = 0;
@@ -749,7 +744,7 @@ function runQ(id) {
       if (ok && !solved.has(id)) { solved.add(id); markSolved(id); }
     }
     out.innerHTML = `<div class="result-meta"><span style="font-family:var(--mono);font-size:12px">${rows.length} row${rows.length!==1?'s':''} returned</span>${verdict}</div>` + buildTable(rows);
-    if (id==='4' || id==='pg') tryChart(id==='4'?4:'pg', rows);
+    if (id==='4' || id==='4b' || id==='pg') tryChart(id==='4'?4:(id==='4b'?'4b':'pg'), rows);
   } catch(e) {
     out.innerHTML = `<div class="error-box">${e.message}</div>`;
   }
@@ -758,7 +753,7 @@ function runQ(id) {
 // ── Progress ──────────────────────────────────────────────────────────────────
 function markSolved(id) {
   // map sub-ids to main nav
-  const navMap = {'0':'0','1a':'1','1b':'1','2a':'2','2b':'2','3a':'3','3b':'3','4':'4','5':'5','6a':'6','6b':'6'};
+  const navMap = {'0':'0','1a':'1','1b':'1','2a':'2','2b':'2','3a':'3','3b':'3','4':'4','4b':'4b','5':'5','6a':'6','6b':'6'};
   const navId = navMap[id];
   if (navId) {
     const dot = document.getElementById(`st${navId}`);
