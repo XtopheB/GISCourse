@@ -194,13 +194,13 @@ tbody td{padding:6px 11px;color:var(--tx);}
   <div class="nav-section">
     <div class="nav-label">Exercises</div>
     <div class="nav-item active" id="nav-0" onclick="switchEx(0)"><span>Filtering</span><span class="nb">01</span><span class="nav-dot" id="st0"></span></div>
-    <div class="nav-item" id="nav-1" onclick="switchEx(1)"><span>Filtering  + AND/OR</span><span class="nb">02</span><span class="nav-dot" id="st1"></span></div>
+    <div class="nav-item" id="nav-1" onclick="switchEx(1)"><span>Filtering with AND/OR</span><span class="nb">02</span><span class="nav-dot" id="st1"></span></div>
     <div class="nav-item" id="nav-2" onclick="switchEx(2)"><span>Range Operators</span><span class="nb">03</span><span class="nav-dot" id="st2"></span></div>
     <div class="nav-item" id="nav-3" onclick="switchEx(3)"><span>Creating new fields</span><span class="nb">04</span><span class="nav-dot" id="st3"></span></div>
-    <div class="nav-item" id="nav-4" onclick="switchEx(4)"><span>GROUP BY</span><span class="nb">05</span><span class="nav-dot" id="st4"></span></div>
-    <div class="nav-item" id="nav-4b" onclick="switchEx('4b')"><span>Filter + Group</span><span class="nb">06</span><span class="nav-dot" id="st4b"></span></div>
-    <div class="nav-item" id="nav-5" onclick="switchEx(5)"><span>HAVING</span><span class="nb">07</span><span class="nav-dot" id="st5"></span></div>
-    <div class="nav-item" id="nav-6" onclick="switchEx(6)"><span>JOIN</span><span class="nb">08</span><span class="nav-dot" id="st6"></span></div>
+    <div class="nav-item" id="nav-4" onclick="switchEx(4)"><span>Grouping</span><span class="nb">05</span><span class="nav-dot" id="st4"></span></div>
+    <div class="nav-item" id="nav-4b" onclick="switchEx('4b')"><span>Filter and Group</span><span class="nb">06</span><span class="nav-dot" id="st4b"></span></div>
+    <div class="nav-item" id="nav-5" onclick="switchEx(5)"><span>Multiple operations</span><span class="nb">07</span><span class="nav-dot" id="st5"></span></div>
+    <div class="nav-item" id="nav-6" onclick="switchEx(6)"><span>Joins</span><span class="nb">08</span><span class="nav-dot" id="st6"></span></div>
   </div>
   <div class="nav-section">
     <div class="nav-label">Tools</div>
@@ -315,7 +315,7 @@ WHERE  ___"></textarea></div>
 <div class="ex" id="ex-2">
   <div class="ex-tag">03 . Filtering with operators</div>
   <div class="ex-title">Range operators — = and BETWEEN</div>
-  <div class="ex-desc">Filter rows by numeric values using equality <code>=</code> or a range with <code>BETWEEN … AND …</code>.</div>
+  <div class="ex-desc">Filter rows by numeric values using equality <span class="op">=</span> or a range with <span class="op">BETWEEN … AND …</span>.</div>
 <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
@@ -379,7 +379,7 @@ WHERE  ___"></textarea></div>
   </div>
 </div>
   <div class="sub-label">4a · Land productivity — yield (Prod_t / Area_ha)</div>
-  <div class="ex-desc">Calculate <strong>yield</strong> (production / area) as a new column. Use <code>IIF(Area_ha &gt; 0, Prod_t / Area_ha, 0)</code> to avoid division by zero.</div>
+  <div class="ex-desc">Calculate <strong>yield</strong> (production / area) as a new column. Use <span class="op">IIF(Area_ha &gt; 0, Prod_t / Area_ha, 0)</span> to avoid division by zero.</div>
   <div class="hint-box" id="hint3a">Use IIF to guard against zero area: <code>IIF(Area_ha &gt; 0, Prod_t/Area_ha, 0) AS yield</code></div>
   <div class="sol-box" id="sol3a"><span class='kw'>SELECT</span> District, the_year, Crop,
        <span class='fn'>IIF</span>(Area_ha > <span class='val'>0</span>, Prod_t / Area_ha, <span class='val'>0</span>) <span class='kw'>AS</span> yield
@@ -395,7 +395,7 @@ FROM  ___"></textarea></div>
   <div id="res3a"></div>
 
   <div class="sub-label">4b · Economic productivity — value per hectare (Value_R / Area_ha)</div>
-  <div class="ex-desc">Calculate <strong>economic productivity</strong> (value ÷ area) as a new column. Again guard against zero area.</div>
+  <div class="ex-desc">Calculate <strong>economic productivity</strong> (value / area) as a new column. Again guard against zero area.</div>
   <div class="hint-box" id="hint3b">Same pattern as 4a but divide Value_R by Area_ha: <code>IIF(Area_ha &gt; 0, Value_R/Area_ha, 0) AS ec_prod</code></div>
   <div class="sol-box" id="sol3b"><span class='kw'>SELECT</span> District, the_year, Crop,
        <span class='fn'>IIF</span>(Area_ha > <span class='val'>0</span>, Value_R / Area_ha, <span class='val'>0</span>) <span class='kw'>AS</span> ec_prod
@@ -412,9 +412,9 @@ FROM  ___"></textarea></div>
   <div id="res3"></div>
 </div>
 <div class="ex" id="ex-4">
-  <div class="ex-tag">05 . Group by</div>
+  <div class="ex-tag">05 . Grouping</div>
   <div class="ex-title">Aggregation with GROUP BY</div>
-  <div class="ex-desc"><code>GROUP BY</code> collapses rows into one per category and lets you apply aggregate functions like <code>SUM</code> or <code>AVG</code>.</div>
+  <div class="ex-desc"><span class="op">GROUP BY</span> collapses rows into one per category and lets you apply aggregate functions like <span class="op">SUM</span> or <span class="op">AVG</span>.</div>
 <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
@@ -525,7 +525,7 @@ HAVING ___"></textarea></div>
 <div class="ex" id="ex-6">
   <div class="ex-tag">08 . Joining two tables</div>
   <div class="ex-title">Combining tables with JOIN</div>
-  <div class="ex-desc">List both tables in <code>FROM</code> and link them in <code>WHERE</code> using their shared key: <strong>distr_id</strong> (Agriculture) = <strong>d_ID</strong> (pov_M2).</div>
+  <div class="ex-desc">List both tables in <span class="op">FROM</span> and link them in <span class="op">WHERE</span> using their shared key: <strong>distr_id</strong> (Agriculture) = <strong>d_ID</strong> (pov_M2).</div>
 <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
