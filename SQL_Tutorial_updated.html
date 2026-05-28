@@ -379,7 +379,7 @@ WHERE  ___"></textarea></div>
   </div>
 </div>
   <div class="sub-label">4a · Land productivity — yield (Prod_t / Area_ha)</div>
-  <div class="ex-desc">Calculate <strong>yield</strong> (production ÷ area) as a new column. Use <code>IIF(Area_ha &gt; 0, Prod_t / Area_ha, 0)</code> to avoid division by zero.</div>
+  <div class="ex-desc">Calculate <strong>yield</strong> (production/ area) as a new column. Use <code>IIF(Area_ha &gt; 0, Prod_t / Area_ha, 0)</code> to avoid division by zero.</div>
   <div class="hint-box" id="hint3a">Use IIF to guard against zero area: <code>IIF(Area_ha &gt; 0, Prod_t/Area_ha, 0) AS yield</code></div>
   <div class="sol-box" id="sol3a"><span class='kw'>SELECT</span> District, the_year, Crop,
        <span class='fn'>IIF</span>(Area_ha > <span class='val'>0</span>, Prod_t / Area_ha, <span class='val'>0</span>) <span class='kw'>AS</span> yield
