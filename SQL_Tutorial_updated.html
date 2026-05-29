@@ -219,7 +219,7 @@ tbody td{padding:6px 11px;color:var(--tx);}
   <div class="ex-desc">Browse both tables before writing queries. Use the search box to filter rows.</div>
   <div class="dv-tabs">
     <button class="dv-tab active" onclick="dvSwitch(0)">Agriculture <span style="opacity:.5;font-size:10px">(384 rows)</span></button>
-    <button class="dv-tab" onclick="dvSwitch(1)">pov_M2 <span style="opacity:.5;font-size:10px">(80 rows)</span></button>
+    <button class="dv-tab" onclick="dvSwitch(1)">Poverty <span style="opacity:.5;font-size:10px">(80 rows)</span></button>
   </div>
   <div class="dv-search">
     <input type="text" id="dv-search" placeholder="Search…" oninput="dvRender()">
@@ -525,7 +525,7 @@ HAVING ___"></textarea></div>
 <div class="ex" id="ex-6">
   <div class="ex-tag">08 . Joining two tables</div>
   <div class="ex-title">Combining tables with JOIN</div>
-  <div class="ex-desc">List both tables in <span class="op">FROM</span> and link them in <span class="op">WHERE</span> using their shared key: <strong>distr_id</strong> (Agriculture) = <strong>d_ID</strong> (pov_M2).</div>
+  <div class="ex-desc">List both tables in <span class="op">FROM</span> and link them in <span class="op">WHERE</span> using their shared key: <strong>distr_id</strong> (Agriculture) = <strong>d_ID</strong> (Poverty).</div>
 <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
@@ -538,7 +538,7 @@ HAVING ___"></textarea></div>
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
   <div class="schema-card">
-    <div class="schema-name">pov_M2</div>
+    <div class="schema-name">Poverty</div>
     <div class="sc"><span class="cn">d_name</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">d_ID</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">pov_rate</span><span class="ct">decimal</span></div>
@@ -547,10 +547,10 @@ HAVING ___"></textarea></div>
 </div>
 
   <div class="sub-label">8a · Full join — all production data with poverty rates</div>
-  <div class="ex-desc">Show all production data from <code>Agriculture</code> together with poverty rates from <code>pov_M2</code>.</div>
+  <div class="ex-desc">Show all production data from <code>Agriculture</code> together with poverty rates from <code>Poverty</code>.</div>
   <div class="hint-box" id="hint6a">List both tables in FROM separated by a comma, then link them in WHERE: <code>WHERE distr_id = d_ID</code></div>
   <div class="sol-box" id="sol6a"><span class='kw'>SELECT</span> *
-<span class='kw'>FROM</span> Agriculture, pov_M2
+<span class='kw'>FROM</span> Agriculture, Poverty
 <span class='kw'>WHERE</span> distr_id = d_ID;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
   <textarea class="sql-input" id="q6a" placeholder="SELECT  ___
@@ -568,7 +568,7 @@ WHERE  ___"></textarea></div>
   <div class="hint-box" id="hint6b">Join the two tables, filter with AND for the year and pov_rate, then GROUP BY distr_id, District, the_year.</div>
   <div class="sol-box" id="sol6b"><span class='kw'>SELECT</span> distr_id, District, the_year,
        <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_prod
-<span class='kw'>FROM</span> Agriculture, pov_M2
+<span class='kw'>FROM</span> Agriculture, Poverty
 <span class='kw'>WHERE</span> distr_id = d_ID
   <span class='kw'>AND</span> the_year = <span class='val'>2000</span>
   <span class='kw'>AND</span> pov_rate < <span class='val'>0.3</span>
@@ -602,7 +602,7 @@ GROUP BY ___"></textarea></div>
     <div class="sc"><span class="cn">Value_R</span><span class="ct">decimal</span></div>
   </div>
   <div class="schema-card">
-    <div class="schema-name">pov_M2</div>
+    <div class="schema-name">Poverty</div>
     <div class="sc"><span class="cn">distr_name</span><span class="ct">text</span></div>
     <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">pov_rate</span><span class="ct">decimal</span></div>
@@ -611,7 +611,7 @@ GROUP BY ___"></textarea></div>
 </div>
   <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
     <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT District, Crop, the_year,\n       Prod_t / Area_ha AS yield\nFROM Agriculture\nWHERE Area_ha > 0\nORDER BY yield DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Top yields</div>SELECT District, Crop, the_year, Prod_t/Area_ha AS yield FROM Agriculture WHERE Area_ha > 0 ORDER BY yield DESC;</div>
-    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT A.District, P.pov_cat,\n       SUM(A.Prod_t) AS total_prod\nFROM Agriculture AS A\nJOIN pov_M2 AS P ON A.distr_id = P.distr_id\nWHERE A.the_year BETWEEN 1995 AND 2000\nGROUP BY A.District, P.pov_cat\nORDER BY total_prod DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Production by poverty category (1995–2000)</div>SELECT A.District, P.pov_cat, SUM(A.Prod_t) AS total_prod FROM Agriculture AS A JOIN pov_M2 ...</div>
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT A.District, P.pov_cat,\n       SUM(A.Prod_t) AS total_prod\nFROM Agriculture AS A\nJOIN Poverty AS P ON A.distr_id = P.distr_id\nWHERE A.the_year BETWEEN 1995 AND 2000\nGROUP BY A.District, P.pov_cat\nORDER BY total_prod DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Production by poverty category (1995–2000)</div>SELECT A.District, P.pov_cat, SUM(A.Prod_t) AS total_prod FROM Agriculture AS A JOIN Poverty ...</div>
     <div style="background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:11.5px;color:var(--tx2);cursor:pointer;" onclick="fillPG('SELECT Crop, SUM(Prod_t) AS total_prod\nFROM Agriculture\nGROUP BY Crop\nORDER BY total_prod DESC;')"><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em;">Total production by crop (all years)</div>SELECT Crop, SUM(Prod_t) AS total_prod FROM Agriculture GROUP BY Crop ORDER BY total_prod DESC;</div>
   </div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
@@ -631,11 +631,11 @@ const _D = {"agriculture":[{"distr_id":7,"District":"ARACATI","the_year":1990,"C
 const AGRI = _D.agriculture;
 const POV  = _D.pov_rates;
 alasql('DROP TABLE IF EXISTS Agriculture');
-alasql('DROP TABLE IF EXISTS pov_M2');
+alasql('DROP TABLE IF EXISTS Poverty');
 alasql('CREATE TABLE Agriculture');
-alasql('CREATE TABLE pov_M2');
+alasql('CREATE TABLE Poverty');
 alasql.tables.Agriculture.data  = AGRI;
-alasql.tables.pov_M2.data = POV;
+alasql.tables.Poverty.data = POV;
 
 // ── Answer checkers ──────────────────────────────────────────────────────────
 const CHECKS = {
