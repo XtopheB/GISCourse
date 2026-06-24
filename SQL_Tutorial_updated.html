@@ -540,7 +540,7 @@ HAVING ___"></textarea></div>
   <div class="schema-card">
     <div class="schema-name">Poverty</div>
     <div class="sc"><span class="cn">d_name</span><span class="ct">text</span></div>
-    <div class="sc"><span class="cn">d_ID</span><span class="ct">int</span></div>
+    <div class="sc"><span class="cn">distr_id</span><span class="ct">int</span></div>
     <div class="sc"><span class="cn">pov_rate</span><span class="ct">decimal</span></div>
     <div class="sc"><span class="cn">pov_cat</span><span class="ct">text</span></div>
   </div>
@@ -550,8 +550,11 @@ HAVING ___"></textarea></div>
   <div class="ex-desc">Show all production data from <code>Agriculture</code> together with poverty rates from <code>Poverty</code>.</div>
   <div class="hint-box" id="hint6a">List both tables in FROM separated by a comma, then link them in WHERE: <code>WHERE distr_id = d_ID</code></div>
   <div class="sol-box" id="sol6a"><span class='kw'>SELECT</span> *
-<span class='kw'>FROM</span> Agriculture, Poverty
-<span class='kw'>WHERE</span> distr_id = d_ID;</div>
+<span class='kw'>FROM</span> Agriculture
+<span class='kw'>As</span> A
+<span class='kw'>JOIN</span> Poverty
+<span class='kw'>As</span> P
+<span class='kw'>ON</span> A.distr_id = P.distr_id;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
   <textarea class="sql-input" id="q6a" placeholder="SELECT  ___
 FROM  ___
