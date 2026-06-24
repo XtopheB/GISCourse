@@ -525,7 +525,7 @@ HAVING ___"></textarea></div>
 <div class="ex" id="ex-6">
   <div class="ex-tag">08 . Joining two tables</div>
   <div class="ex-title">Combining tables with JOIN</div>
-  <div class="ex-desc">List both tables in <span class="op">FROM</span> and link them in <span class="op">WHERE</span> using their shared key: <strong>distr_id</strong> (Agriculture) = <strong>d_ID</strong> (Poverty).</div>
+  <div class="ex-desc">List both tables in <span class="op">FROM</span> and link them in <span class="op">WHERE</span> using their shared key: <strong>distr_id</strong> (Agriculture) = <strong>distr_id</strong> (Poverty).</div>
 <div class="schema-row">
   <div class="schema-card">
     <div class="schema-name">Agriculture</div>
@@ -568,14 +568,14 @@ WHERE  ___"></textarea></div>
 
   <div class="sub-label">8b · JOIN + WHERE + GROUP BY — low-poverty districts in 2000</div>
   <div class="ex-desc">Show <strong>total production in 2000</strong> for districts with <strong>pov_rate &lt; 0.3</strong>.</div>
-  <div class="hint-box" id="hint6b">Join the two tables, filter with AND for the year and pov_rate, then GROUP BY distr_id, District, the_year.</div>
-  <div class="sol-box" id="sol6b"><span class='kw'>SELECT</span> distr_id, District, the_year,
-       <span class='fn'>SUM</span>(Prod_t) <span class='kw'>AS</span> total_prod
-<span class='kw'>FROM</span> Agriculture, Poverty
-<span class='kw'>WHERE</span> distr_id = d_ID
-  <span class='kw'>AND</span> the_year = <span class='val'>2000</span>
-  <span class='kw'>AND</span> pov_rate < <span class='val'>0.3</span>
-<span class='kw'>GROUP BY</span> distr_id, District, the_year;</div>
+  <div class="hint-box" id="hint6b">Join the two tables on distr_id, filter with AND for the year and pov_rate, then GROUP BY District.</div>
+  <div class="sol-box" id="sol6b"><span class='kw'>SELECT</span> A.District,
+       <span class='fn'>SUM</span>(A.Prod_t) <span class='kw'>As</span> total_production
+<span class='kw'>FROM</span> Agriculture <span class='kw'>As</span> A <span class='kw'>JOIN</span> Poverty <span class='kw'>AS</span> P
+  <span class='kw'>ON</span> A.distr_id = P.distr_id
+<span class='kw'>WHERE</span> P.pov_rate < <span class='val'>0.3</span>
+  <span class='kw'>AND</span> A.the_year = <span class='val'>2000</span>
+<span class='kw'>GROUP BY</span> A.District;</div>
   <div class="editor-wrap"><div class="editor-hdr"><div class="editor-dots"><span></span><span></span><span></span></div><span class="editor-lbl">query.sql</span></div>
   <textarea class="sql-input" id="q6b" style="min-height:168px" placeholder="SELECT  ___
 FROM  ___
